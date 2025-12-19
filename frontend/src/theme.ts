@@ -78,7 +78,7 @@ const theme = createTheme({
     MuiButton: {
       defaultProps: {
         disableElevation: true,
-        variant:'contained'
+        variant: "contained",
       },
       styleOverrides: {
         root: {
@@ -89,7 +89,7 @@ const theme = createTheme({
           backgroundColor: "#5ca9e4ff",
           "&:hover": {
             backgroundColor: "#5d8fbdff",
-            color:"white"
+            color: "white",
           },
         },
         containedSecondary: {
@@ -98,23 +98,10 @@ const theme = createTheme({
             backgroundColor: "#7ad74eff",
           },
         },
-        outlined: {
-          borderWidth: 2,
-        },
+   
       },
     },
 
-    /* ================= Icon Button ================= */
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          color: "#d4dad3ff",
-        
-        },
-      },
-    },
-
-    /* ================= Card ================= */
     MuiCard: {
       styleOverrides: {
         root: {
@@ -195,7 +182,7 @@ const theme = createTheme({
         },
         notchedOutline: {
           borderColor: "#c1b49fff",
-        }
+        },
       },
     },
 

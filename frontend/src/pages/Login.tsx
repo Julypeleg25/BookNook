@@ -1,79 +1,174 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
 import loginIcon from "../assets/login-icon.png";
-import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import { Controller, useForm } from "react-hook-form";
+import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
+import { useState } from "react";
+
+interface ILoginForm {
+  username: string;
+  password: string;
+}
 
 const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const {
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ILoginForm>({
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+    mode: "onSubmit",
+  });
+
+  const onSubmit = (data: ILoginForm) => {
+    console.log("Form data:", data);
+    reset();
+  };
+
   return (
     <Box display="flex" marginTop={"8rem"}>
-      <Box flex={1} display="flex" marginLeft={"10rem"}>
-        <div>
-          <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
-            <Typography variant="h4" fontFamily={"Arial"}>
-              Welcome to BookNook
-            </Typography>
-            <Typography style={{ justifySelf: "start" }} variant="body2">
-              Please Enter your details
-            </Typography>
-          </div>
-          <div
-            style={{
-              gap: "1rem",
-              marginTop: "1rem",
-              marginBottom: "1rem",
-              justifySelf: "start",
-            }}
-          >
-            <div
-              style={{
-                gap: "1rem",
-                marginTop: "1rem",
-                marginBottom: "1rem",
-              }}
-            >
-              <Typography style={{ justifySelf: "start" }}>Username</Typography>
-              <TextField
-                style={{ width: "23rem" }}
-                placeholder="Enter your username"
-              ></TextField>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Box flex={1} display="flex" marginLeft={"10rem"}>
+          <div>
+            <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
+              <Typography variant="h4">Welcome to BookNook</Typography>
+              <Typography style={{ justifySelf: "start" }} variant="body2">
+                Please Enter your details
+              </Typography>
             </div>
             <div
               style={{
                 gap: "1rem",
                 marginTop: "1rem",
                 marginBottom: "1rem",
+                justifySelf: "start",
               }}
             >
-              <Typography style={{ justifySelf: "start" }}>Password</Typography>
-              <TextField
-                style={{ width: "23rem" }}
-                placeholder="Enter your password"
-              ></TextField>
-            </div>
-            <Button style={{ width: "18rem", marginTop: "2rem", justifySelf:'center', display:'flex' }}>
-              Log In
-            </Button>
-            <Typography
-              style={{
-                marginTop: "1.6rem",
-                display: "flex",
-                justifySelf: "center",
-                alignItems: "center",
-                gap: "1rem",
-              }}
-            >
-              Log in with
               <div
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+                style={{
+                  gap: "1rem",
+                  marginTop: "1rem",
+                  marginBottom: "1rem",
+                }}
               >
-                <FaFacebook /> <FcGoogle />
+                <Typography style={{ justifySelf: "start" }}>
+                  Username
+                </Typography>
+                <Controller
+                  name="username"
+                  control={control}
+                  rules={{
+                    required: "Username is required",
+                    // minLength: { value: 3, message: "Minimum 3 characters" }, TODO: for sign up
+                  }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      helperText={errors.username?.message}
+                      error={!!errors.username}
+                      style={{ width: "23rem" }}
+                      placeholder="Enter your username"
+                    />
+                  )}
+                />
               </div>
-            </Typography>
+              <div
+                style={{
+                  gap: "1rem",
+                  marginTop: "1rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                <Typography style={{ justifySelf: "start" }}>
+                  Password
+                </Typography>
+                <Controller
+                  name="password"
+                  control={control}
+                  rules={{
+                    required: "Password is required",
+                  }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      type={showPassword ? "text" : "password"}
+                      helperText={errors.password?.message}
+                      error={!!errors.password}
+                      style={{ width: "23rem" }}
+                      placeholder="Enter your password"
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <IconButton
+                              onClick={() => setShowPassword((prev) => !prev)}
+                              edge="end"
+                              sx={{
+                                outline: "none",
+                                border: "none",
+                                "&:focus": { outline: "none" },
+                              }}
+                            >
+                              {showPassword ? (
+                                <BsEyeSlashFill />
+                              ) : (
+                                <BsEyeFill />
+                              )}
+                            </IconButton>
+                          ),
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </div>
+              <Button
+                style={{
+                  width: "18rem",
+                  marginTop: "2rem",
+                  justifySelf: "center",
+                  display: "flex",
+                }}
+                type="submit"
+              >
+                Log In
+              </Button>
+              <Typography
+                style={{
+                  marginTop: "1.6rem",
+                  display: "flex",
+                  justifySelf: "center",
+                  alignItems: "center",
+                  gap: "1rem",
+                }}
+              >
+                Log in with
+                <FcGoogle />
+              </Typography>
+            </div>
           </div>
-        </div>
-      </Box>
-      <Box flex={1} marginRight={"2em"} marginTop={"1rem"} justifyItems={'center'} display={'grid'}>
-        <img src={loginIcon} style={{ width: "70%", height: "80%" }} />
+        </Box>
+      </form>
+      <Box
+        flex={1}
+        marginRight={"2em"}
+        marginTop={"1rem"}
+        justifyItems={"center"}
+        display={"grid"}
+      >
+        <img src={loginIcon} style={{ width: "50%", height: "90%" }} />
         <Typography variant="body2">
           Don't have an account? <Button href="/register">Sign up</Button>
         </Typography>
