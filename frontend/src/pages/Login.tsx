@@ -11,6 +11,8 @@ import { FcGoogle } from "react-icons/fc";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 interface ILoginForm {
   username: string;
@@ -19,6 +21,17 @@ interface ILoginForm {
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleLogin = () => {
+    login();
+    navigate("/homePage");
+  };
+
+  const handleSignup = () => {
+    navigate("/register");
+  };
 
   const {
     handleSubmit,
@@ -39,9 +52,9 @@ const Login = () => {
   };
 
   return (
-    <Box display="flex" marginTop={"8rem"}>
+    <Box display="flex" margin={"8rem"}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Box flex={1} display="flex" marginLeft={"4rem"}>
+        <Box flex={1} display="flex" marginLeft={"4rem"} marginTop={"5rem"}>
           <div>
             <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
               <Typography variant="h4">Welcome to BookNook</Typography>
@@ -72,7 +85,6 @@ const Login = () => {
                   control={control}
                   rules={{
                     required: "Username is required",
-                    // minLength: { value: 3, message: "Minimum 3 characters" }, TODO: for sign up
                   }}
                   render={({ field }) => (
                     <TextField
@@ -163,14 +175,32 @@ const Login = () => {
       </form>
       <Box
         flex={1}
-        marginRight={"2em"}
         marginTop={"1rem"}
-        justifyItems={"center"}
+        marginRight={"8rem"}
+        justifyItems={"end"}
         display={"grid"}
       >
         <img src={loginIcon} style={{ width: "50%", height: "90%" }} />
-        <Typography variant="body2">
-          Don't have an account? <Button href="/register">Sign up</Button>
+        <Typography
+          variant="body2"
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          Don't have an account?
+          <div
+            onClick={handleSignup}
+            style={{
+              color: "blue",
+              textDecoration: "underline",
+              cursor: "pointer",
+            }}
+          >
+            Sign up
+          </div>
         </Typography>
       </Box>
     </Box>
