@@ -38,7 +38,17 @@ const Login = () => {
             new to BookNook? <a href="/register">Register</a>
           </Typography>
           <Button color="success" variant="contained">
-            hello
+            Login
+          </Button>
+          <br />
+          <br />
+          <Button
+            variant="outlined"
+            onClick={() =>
+              (window.location.href = "http://localhost:3000/google")
+            }
+          >
+            Login with Google
           </Button>
         </div>
       </Box>
