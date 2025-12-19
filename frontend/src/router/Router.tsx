@@ -1,8 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import AuthLayout from "./AuthLayout";
+import AuthLayout from "./AppLayout";
 import Login from "../pages/Login";
 import SignUp from "../pages/SignUp";
 import NotFound from "../pages/NotFound";
+import ProtectedRoute from "./ProtectedRoute";
+import AppLayout from "./AppLayout";
+import Home from "../pages/Home";
 
 const Router = () => {
   return (
@@ -11,18 +14,15 @@ const Router = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<SignUp />} />
       </Route>
-
-      {/* App pages */}
-      {/* <Route
+      <Route
         element={
           <ProtectedRoute>
             <AppLayout />
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Route> */}
-
+        <Route path="/homePage" element={<Home />} />
+      </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

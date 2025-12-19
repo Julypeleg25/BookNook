@@ -48,7 +48,7 @@ const Login = () => {
   });
 
   const onSubmit = (data: ILoginForm) => {
-    console.log("Form data:", data);
+    handleLogin();
     reset();
   };
 
