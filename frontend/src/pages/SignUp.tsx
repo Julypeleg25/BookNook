@@ -46,12 +46,8 @@ const SignUp = () => {
     reset();
   };
 
-  const handleSignup = () => {
-    navigate("/register");
-  };
-
   return (
-    <Box display="flex" marginTop={"5rem"}>
+    <Box display="flex" marginTop={"5rem"} marginLeft={'4rem'}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Box flex={1} display="flex" marginLeft={"8rem"}>
           <div>

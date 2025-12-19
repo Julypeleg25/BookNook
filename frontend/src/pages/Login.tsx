@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Divider,
   IconButton,
   InputAdornment,
   TextField,
@@ -52,15 +53,20 @@ const Login = () => {
   };
 
   return (
-    <Box display="flex" margin={"8rem"}>
+    <Box display="flex" marginTop={"5rem"} marginLeft={"4rem"}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Box flex={1} display="flex" marginLeft={"4rem"} marginTop={"5rem"}>
+        <Box flex={1} display="flex" marginLeft={"8rem"}>
           <div>
             <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
               <Typography variant="h4">Welcome to BookNook</Typography>
-              <Typography style={{ justifySelf: "start" }} variant="body2">
-                Please Enter your details
-              </Typography>
+              <Button
+                style={{ width: "23rem", display: "flex" }}
+                variant="outlined"
+                startIcon={<FcGoogle />}
+              >
+                Log in with Google
+              </Button>
+              <Divider>or</Divider>
             </div>
             <div
               style={{
@@ -157,27 +163,15 @@ const Login = () => {
               >
                 Log in
               </Button>
-              <Typography
-                style={{
-                  marginTop: "1.6rem",
-                  display: "flex",
-                  justifySelf: "center",
-                  alignItems: "center",
-                  gap: "1rem",
-                }}
-              >
-                Log in with
-                <FcGoogle />
-              </Typography>
             </div>
           </div>
         </Box>
       </form>
       <Box
         flex={1}
+        marginRight={"2em"}
         marginTop={"1rem"}
-        marginRight={"8rem"}
-        justifyItems={"end"}
+        justifyItems={"center"}
         display={"grid"}
       >
         <img src={loginIcon} style={{ width: "50%", height: "90%" }} />

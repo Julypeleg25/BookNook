@@ -74,7 +74,6 @@ const theme = createTheme({
   },
 
   components: {
-    /* ================= Buttons ================= */
     MuiButton: {
       defaultProps: {
         disableElevation: true,
@@ -89,7 +88,13 @@ const theme = createTheme({
           backgroundColor: "#5ca9e4ff",
           "&:hover": {
             backgroundColor: "#5d8fbdff",
-            color: "white",
+          },
+          "&:focus": {
+            outline: "none",
+          },
+          "&:focus-visible": {
+            outline: "none",
+            boxShadow: "none",
           },
         },
         containedSecondary: {
@@ -98,7 +103,6 @@ const theme = createTheme({
             backgroundColor: "#7ad74eff",
           },
         },
-   
       },
     },
 
@@ -120,7 +124,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= AppBar ================= */
     MuiAppBar: {
       styleOverrides: {
         root: {
@@ -130,7 +133,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= Toolbar ================= */
     MuiToolbar: {
       styleOverrides: {
         root: {
@@ -139,7 +141,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= Paper ================= */
     MuiPaper: {
       styleOverrides: {
         root: {
@@ -149,7 +150,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= Dialog ================= */
     MuiDialog: {
       styleOverrides: {
         paper: {
@@ -167,7 +167,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= TextField / Inputs ================= */
     MuiTextField: {
       defaultProps: {
         variant: "outlined",
@@ -197,7 +196,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= Checkbox / Radio / Switch ================= */
     MuiCheckbox: {
       styleOverrides: {
         root: {
@@ -233,7 +231,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= Tabs ================= */
     MuiTabs: {
       styleOverrides: {
         indicator: {
@@ -253,7 +250,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= List ================= */
     MuiListItemButton: {
       styleOverrides: {
         root: {
@@ -265,7 +261,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= Snackbar / Alert ================= */
     MuiAlert: {
       styleOverrides: {
         root: {
@@ -275,7 +270,6 @@ const theme = createTheme({
       },
     },
 
-    /* ================= Tooltip ================= */
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
@@ -286,11 +280,10 @@ const theme = createTheme({
       },
     },
 
-    /* ================= Divider ================= */
     MuiDivider: {
       styleOverrides: {
         root: {
-          borderColor: "#E2DDD3",
+          borderColor: "#151514ff",
         },
       },
     },
