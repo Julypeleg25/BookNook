@@ -1,12 +1,25 @@
 import express from "express";
 import passport from "passport";
-import { googleAuthCallback, logout } from "../controllers/authController";
+import jwt from "jsonwebtoken";
+import {
+  googleAuthCallback,
+  logout,
+  register,
+  login,
+  refresh,
+} from "../controllers/authController";
 
 const router = express.Router();
 
 router.get("/", (req, res) => {
   res.send("Auth route is working");
 });
+
+// Traditional auth routes
+router.post("/register", register);
+router.post("/login", login);
+router.post("/refresh", refresh);
+
 // Initiates the Google OAuth process
 router.get(
   "/google",
@@ -22,19 +35,27 @@ router.get(
   (req, res, next) => {
     next();
   },
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  passport.authenticate("google", {
+    failureRedirect: `${process.env.FRONTEND_URL}/login`,
+  }),
   googleAuthCallback
 );
 
 // Logout
 router.get("/logout", logout);
 
-// Get current user
+// Get current user (requires JWT)
 router.get("/me", (req, res) => {
-  if (req.user) {
-    res.json(req.user);
-  } else {
-    res.status(401).json({ error: "Not authenticated" });
+  console.log("/me endpoint called", req.headers.authorization);
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: "No token" });
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as any;
+    // Fetch user from DB if needed, but for simplicity, return decoded
+    res.json({ userId: decoded.userId, email: decoded.email });
+  } catch (error) {
+    res.status(401).json({ error: "Invalid token" });
   }
 });
 
