@@ -5,11 +5,13 @@ import { FcGoogle } from "react-icons/fc";
 
 const Login = () => {
   return (
-    <Box display="flex">
-      <Box flex={1} display="flex" marginLeft={'4rem'} marginTop={'3rem'}>
+    <Box display="flex" marginTop={"8rem"}>
+      <Box flex={1} display="flex" marginLeft={"10rem"}>
         <div>
           <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
-            <Typography variant="h4" fontFamily={"Arial"}>Welcome to BookNook</Typography>
+            <Typography variant="h4" fontFamily={"Arial"}>
+              Welcome to BookNook
+            </Typography>
             <Typography style={{ justifySelf: "start" }} variant="body2">
               Please Enter your details
             </Typography>
@@ -48,7 +50,7 @@ const Login = () => {
                 placeholder="Enter your password"
               ></TextField>
             </div>
-            <Button style={{ width: "18rem", marginTop: "2rem" }}>
+            <Button style={{ width: "18rem", marginTop: "2rem", justifySelf:'center', display:'flex' }}>
               Log In
             </Button>
             <Typography
@@ -70,7 +72,7 @@ const Login = () => {
           </div>
         </div>
       </Box>
-      <Box flex={1} marginRight={'6em'} marginTop={'3rem'}>
+      <Box flex={1} marginRight={"2em"} marginTop={"1rem"} justifyItems={'center'} display={'grid'}>
         <img src={loginIcon} style={{ width: "70%", height: "80%" }} />
         <Typography variant="body2">
           Don't have an account? <Button href="/register">Sign up</Button>
