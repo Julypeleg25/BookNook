@@ -12,9 +12,9 @@ const theme = createTheme({
     },
 
     secondary: {
-      main: "#C65A5A",
-      light: "#E08080",
-      dark: "#9E3E3E",
+      main: "#619d80ff",
+      light: "#b2daacff",
+      dark: "#097a16ff",
       contrastText: "#FFFFFF",
     },
 
@@ -25,8 +25,8 @@ const theme = createTheme({
 
     text: {
       primary: "#2E2A36",
-      secondary: "#6B6478",
-      disabled: "#A5A1AF",
+      secondary: "#425f80ff",
+      disabled: "#918c9eff",
     },
 
     divider: "#E2DDD3",
@@ -78,22 +78,24 @@ const theme = createTheme({
     MuiButton: {
       defaultProps: {
         disableElevation: true,
+        variant:'contained'
       },
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          paddingInline: 20,
+          borderRadius: 8,
+          paddingInline: 12,
         },
         containedPrimary: {
-          backgroundColor: "#5B6F6A",
+          backgroundColor: "#5ca9e4ff",
           "&:hover": {
-            backgroundColor: "#3F524E",
+            backgroundColor: "#5d8fbdff",
+            color:"white"
           },
         },
         containedSecondary: {
-          backgroundColor: "#C65A5A",
+          backgroundColor: "#5ed149ff",
           "&:hover": {
-            backgroundColor: "#9E3E3E",
+            backgroundColor: "#7ad74eff",
           },
         },
         outlined: {
@@ -106,10 +108,8 @@ const theme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
-          color: "#5B6F6A",
-          "&:hover": {
-            backgroundColor: "rgba(91,111,106,0.08)",
-          },
+          color: "#d4dad3ff",
+        
         },
       },
     },
@@ -191,10 +191,10 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "#ffffffff",
         },
         notchedOutline: {
-          borderColor: "#D8D2C8",
+          borderColor: "#c1b49fff",
         }
       },
     },
