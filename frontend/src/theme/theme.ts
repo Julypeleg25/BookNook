@@ -24,7 +24,7 @@ const theme = createTheme({
     },
 
     text: {
-      primary: "#2E2A36",
+      primary: "#525246ff",
       secondary: "#425f80ff",
       disabled: "#918c9eff",
     },
@@ -49,7 +49,7 @@ const theme = createTheme({
   },
 
   typography: {
-    fontFamily: `"Inter", "Roboto", "Helvetica", "Arial", sans-serif`,
+    fontFamily: `"Inter", sans-serif`,
 
     h1: { fontWeight: 700, color: "#2E2A36" },
     h2: { fontWeight: 600 },
@@ -74,6 +74,24 @@ const theme = createTheme({
   },
 
   components: {
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          color: "red",
+          textDecoration: "none",
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          "& a": {
+            color: "inherit",
+            textDecoration: "none",
+          },
+        },
+      },
+    },
     MuiButton: {
       defaultProps: {
         disableElevation: true,
@@ -127,7 +145,7 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor:'#F6F2E9',
+          backgroundColor: "#F6F2E9",
           color: "#2E2A36",
         },
       },

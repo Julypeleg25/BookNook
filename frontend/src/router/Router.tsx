@@ -21,7 +21,7 @@ const Router = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/homePage" element={<Home />} />
+        <Route path="/home" element={<Home />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFound />} />
