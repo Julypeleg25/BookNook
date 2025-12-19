@@ -1,7 +1,9 @@
+import Explore from "./Explore";
+
 const Home=() => {
   return (
     <div>
-        <h1>Welcome to BookNook</h1>
+        <Explore/>
     </div>
     );
 };
