@@ -20,7 +20,7 @@ interface SearchFiltersSelectProps {
 
 const SearchFiltersSelect = (props: SearchFiltersSelectProps) => {
   return (
-    <FormControl fullWidth style={props.style}>
+    <FormControl  style={props.style}>
       <InputLabel id="demo-simple-select-label">{props.label}</InputLabel>
       <Select multiple value={props.selectedValues} label={props.label} >
         {props.menuItems.map((item) => (

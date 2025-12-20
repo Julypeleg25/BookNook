@@ -4,7 +4,7 @@ import { bookPosts } from "../exampleData";
 import type { BookPost } from "../models/Book";
 import { HiOutlineAdjustmentsVertical } from "react-icons/hi2";
 import { useState } from "react";
-import SearchFiltersModal from "../components/SearchFiltersModal";
+import SearchFiltersModal from "../components/searchFilters/SearchFiltersModal";
 
 const Explore = () => {
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
