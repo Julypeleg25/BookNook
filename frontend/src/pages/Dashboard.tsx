@@ -19,7 +19,7 @@ const Dashboard = () => {
       <Typography variant="h4">Welcome to Dashboard</Typography>
       {user && (
         <Box mt={2}>
-          <Typography>User ID: {user.userId}</Typography>
+          <Typography>User ID: {user.id}</Typography>
           <Typography>Email: {user.email}</Typography>
         </Box>
       )}

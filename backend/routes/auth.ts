@@ -47,11 +47,16 @@ router.get("/logout", logout);
 // Get current user (requires JWT)
 router.get("/me", (req, res) => {
   console.log("/me endpoint called", req.headers.authorization);
+  let token: string | undefined;
   const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ error: "No token" });
-  const token = authHeader.split(" ")[1];
+  if (authHeader) {
+    token = authHeader.split(" ")[1];
+  } else if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
+  }
+  if (!token) return res.status(401).json({ error: "No token" });
   try {
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as any;
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!);
     // Fetch user from DB if needed, but for simplicity, return decoded
     res.json({ userId: decoded.userId, email: decoded.email });
   } catch (error) {
