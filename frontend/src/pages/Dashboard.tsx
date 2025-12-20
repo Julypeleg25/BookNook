@@ -21,6 +21,12 @@ export async function searchBooks(params: SearchBooksParams) {
 
   return response.data;
 }
+
+export async function fetchBook(id: string) {
+  const response = await api.get(`/books/${id}`);
+  return response.data.book;
+}
+
 export default function BooksPage() {
   const [books, setBooks] = useState<any[]>([]);
   const [page, setPage] = useState(1);
@@ -36,7 +42,7 @@ export default function BooksPage() {
       <h1>Books</h1>
 
       {books.map((book) => (
-        <div key={book.id}>
+        <div key={book.id} onClick={() => fetchBook(book.id).then(console.log)}>
           <h3>{book.title}</h3>
           <img src={book.thumbnail} alt={book.title} />
           <p>{book.authors.join(', ')}</p>
