@@ -5,7 +5,8 @@ import SignUp from "../pages/SignUp";
 import NotFound from "../pages/NotFound";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "./AppLayout";
-import Home from "../pages/Home";
+import Explore from "../pages/Explore";
+import BookPostDetails from "../pages/BookPost";
 
 const Router = () => {
   return (
@@ -21,7 +22,10 @@ const Router = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/home" element={<Home />} />
+        <Route path="/booksPosts">
+          <Route index element={<Explore />} />
+          <Route path=":id" element={<BookPostDetails />} />
+        </Route>
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFound />} />
