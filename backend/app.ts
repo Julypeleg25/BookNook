@@ -8,6 +8,10 @@ import cors from "cors";
 import authRoutes from "./routes/auth";
 import User from "./models/User";
 import router from "./routes/auth";
+import swaggerUi from 'swagger-ui-express';
+import booksRouter from './routes/books';
+
+import { swaggerSpec } from './swagger';
 dotenv.config();
 
 const app = express();
@@ -89,6 +93,9 @@ passport.deserializeUser(async (id: string, done) => {
 
 // Routes
 app.use("/", authRoutes);
+
+app.use('/api/books', booksRouter);
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

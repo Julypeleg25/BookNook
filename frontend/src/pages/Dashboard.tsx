@@ -1,40 +1,55 @@
-import { Button, Typography, Box } from "@mui/material";
-import { useUserStore } from "../stores/userStore";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const Dashboard = () => {
-  const { user, logout } = useUserStore();
+const api = axios.create({
+  baseURL: 'http://localhost:3000/api',
+});
 
-  const handleLogout = async () => {
-    await fetch("http://localhost:3000/logout", {
-      credentials: "include",
-    });
-    logout();
-  };
+
+interface SearchBooksParams {
+  title?: string;
+  author?: string;
+  subject?: string;
+  page?: number;
+  limit?: number;
+}
+
+export async function searchBooks(params: SearchBooksParams) {
+  const response = await api.get('/books', {
+    params,
+  });
+
+  return response.data;
+}
+export default function BooksPage() {
+  const [books, setBooks] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    searchBooks({ title: 'flowers', page })
+      .then((data) => setBooks(data.items))
+      .catch(console.error);
+  }, [page]);
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" mt={4}>
-      <Typography variant="h4">Welcome to Dashboard</Typography>
-      {user && (
-        <Box mt={2}>
-          <Typography>Name: {user.name}</Typography>
-          <Typography>Email: {user.email}</Typography>
-          <img
-            src={user.avatar}
-            alt="Avatar"
-            style={{ width: 100, height: 100, borderRadius: "50%" }}
-          />
-        </Box>
-      )}
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={handleLogout}
-        sx={{ mt: 2 }}
-      >
-        Logout
-      </Button>
-    </Box>
-  );
-};
+    <div>
+      <h1>Books</h1>
 
-export default Dashboard;
+      {books.map((book) => (
+        <div key={book.id}>
+          <h3>{book.title}</h3>
+          <img src={book.thumbnail} alt={book.title} />
+          <p>{book.authors.join(', ')}</p>
+        </div>
+      ))}
+
+      <button onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+        Previous
+      </button>
+
+      <button onClick={() => setPage((p) => p + 1)}>
+        Next
+      </button>
+    </div>
+  );
+}
