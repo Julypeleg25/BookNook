@@ -12,6 +12,7 @@ import swaggerUi from 'swagger-ui-express';
 import booksRouter from './routes/books';
 
 import { swaggerSpec } from './swagger';
+import { UPLOADS_FOLDER } from "./multerConfig";
 dotenv.config();
 
 const app = express();
@@ -97,6 +98,10 @@ app.use("/", authRoutes);
 app.use('/api/books', booksRouter);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Serve uploaded images
+app.use('/uploads', express.static(UPLOADS_FOLDER));
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
