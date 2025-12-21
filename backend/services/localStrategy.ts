@@ -7,21 +7,21 @@ import { loginSchema } from './validator';
 
 export default new PassportLocalStrategy(
   {
-    usernameField: 'email',
+    usernameField: 'username',
     passwordField: 'password',
     session: false,
     passReqToCallback: true,
   },
-  async (req, email, password, done) => {
+  async (req, username, password, done) => {
     const { error } = loginSchema.validate(req.body);
     if (error) {
       return done(null, false, { message: error.details[0].message });
     }
 
     try {
-      const user = await User.findOne({ email: email.trim() });
+      const user = await User.findOne({ username: username.trim() });
       if (!user) {
-        return done(null, false, { message: 'Email does not exists.' });
+        return done(null, false, { message: 'Username does not exists.' });
       }
 
       user.comparePassword(password, function (err, isMatch) {

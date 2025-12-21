@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../models/User";
+import User, { JwtDecodedUser } from "../models/User";
 import { IUser } from "../models/User";
 
 // Generate JWT tokens
 function generateTokens(user: IUser) {
   const accessToken = jwt.sign(
-    {userId: user._id, email: user.email },
+    {userId: user._id, email: user.email } ,
     process.env.JWT_ACCESS_SECRET!,
     { expiresIn: "15m" }
   );
@@ -85,25 +85,38 @@ export const login = async (req: Request, res: Response) => {
 export const refresh = async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.cookies;
-    if (!refreshToken) return res.status(401).json({ error: "No refresh token" });
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
+    if (!refreshToken) {
+      return res.status(401).json({ error: "No refresh token" });
+    }
+
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET!
+    ) as JwtDecodedUser;
+
     const user = await User.findById(decoded.userId);
-    if (!user || user.refreshToken !== refreshToken)
+    if (!user || user.refreshToken !== refreshToken) {
       return res.status(401).json({ error: "Invalid refresh token" });
+    }
+
+    // Rotate access token
     const { accessToken } = generateTokens(user);
     user.accessToken = accessToken;
     await user.save();
+
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 15 * 60 * 1000,
     });
+
     res.json({ success: true });
   } catch {
     res.status(401).json({ error: "Invalid refresh token" });
   }
 };
+
 
 export const logout = (req: Request, res: Response, next: NextFunction) => {
   req.logout(async (err) => {

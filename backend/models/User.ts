@@ -20,6 +20,11 @@ export interface IUser extends Document {
   comparePassword: (candidatePassword: string, callback: (err: any, isMatch: boolean) => void) => void;
 }
 
+export interface JwtDecodedUser {
+  userId: string;
+  email: string;
+}
+
 const userSchema = new Schema<IUser>(
   {
     provider: {
