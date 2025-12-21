@@ -53,7 +53,7 @@ const BookPostCard = ({ book, onClick }: BookPostCardProps) => {
         <CardMedia component="img" height="260rem" image={book.imageUrl} />
         <CardContent>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            {book.description}
+            {book.description.substring(0,45)}...
           </Typography>
         </CardContent>
       </Link>

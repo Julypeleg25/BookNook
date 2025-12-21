@@ -1,4 +1,5 @@
 import type { User, Book, BookPost, Comment } from "./models/Book";
+import { faker } from "@faker-js/faker";
 
 const users: User[] = [
   {
@@ -61,21 +62,33 @@ const books: Book[] = [
 ];
 
 const postDescriptions = [
-  "Absolutely loved this book, couldn't put it down!",
-  "Very insightful and thought-provoking.",
-  "A bit slow at times, but worth finishing.",
-  "Amazing storytelling and character development.",
-  "I learned so much from this one.",
-  "Not what I expected, but pleasantly surprised.",
-  "Perfect read for a weekend.",
-  "Would highly recommend to friends.",
-  "Engaging from start to finish.",
-  "Interesting concepts, well explained.",
-  "Emotional and heartfelt.",
-  "I couldn’t relate to some parts.",
-  "Classic book, timeless lessons.",
-  "Motivational and inspiring.",
-  "A must-read for fans of the genre.",
+  Array.from({ length: 10 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n"),
+  Array.from({ length: 10 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n"),
+  Array.from({ length: 10 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n"),
+  Array.from({ length: 10 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n"),
+  Array.from({ length: 10 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n"),
+  Array.from({ length: 10 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n"),
+  Array.from({ length: 10 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n"),
+  Array.from({ length: 10 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n"),
+  Array.from({ length: 10 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n"),
 ];
 
 const commentContents = [
