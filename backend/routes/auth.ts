@@ -8,7 +8,8 @@ import {
   refresh,
 } from "../controllers/authController";
 import { requireAuth } from "../middlewares/authMiddleware";
-
+import dotenv from 'dotenv'
+dotenv.config();
 const router = express.Router();
 
 router.get("/", (_req, res) => {

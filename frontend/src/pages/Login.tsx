@@ -21,9 +21,7 @@ const Login = () => {
         await register(name, email, password);
         setIsRegister(false);
       } else {
-        console.log("loginnnnnnnnnnn");
         await login(email, password);
-        console.log("dash");
         navigate("/dashboard");
       }
     } catch (err) {

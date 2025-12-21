@@ -14,6 +14,7 @@ import { UPLOADS_FOLDER } from "./multerConfig";
 // Import strategies
 import googleStrategy from "./services/googleStrategy";
 import localLoginStrategy from "./services/localStrategy";
+import { requireAuth } from "./middlewares/authMiddleware";
 dotenv.config();
 
 const app = express();
@@ -65,11 +66,11 @@ passport.deserializeUser(async (id: string, done) => {
 // Routes
 app.use("/", authRoutes);
 
-app.use('/api/books', booksRouter);
+app.use('/api/books',requireAuth, booksRouter);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Serve uploaded images
-app.use('/uploads', express.static(UPLOADS_FOLDER));
+app.use('/uploads', requireAuth, express.static(UPLOADS_FOLDER));
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

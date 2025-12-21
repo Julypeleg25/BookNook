@@ -3,9 +3,12 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User, { JwtDecodedUser } from "../models/User";
 import { IUser } from "../models/User";
-
+import dotenv from "dotenv";
+dotenv.config();
 // Generate JWT tokens
+
 function generateTokens(user: IUser) {
+  console.log(user._id, user.email, process.env.JWT_ACCESS_SECRET);
   const accessToken = jwt.sign(
     {userId: user._id, email: user.email } ,
     process.env.JWT_ACCESS_SECRET!,
