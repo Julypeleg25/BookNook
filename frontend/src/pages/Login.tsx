@@ -10,7 +10,7 @@ const Login = () => {
   const [name, setName] = useState("");
   const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState("");
-  const { login, register } = useUserStore();
+  const { login, register , user} = useUserStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +33,7 @@ const Login = () => {
     <Box display="flex">
       <Box flex={1} display="flex" margin={"2rem"}>
         <div style={{ width: "100%" }}>
-          <h3>Welcome to BookNook</h3>
+          <h3>Welcome to BookNook {user?.name}</h3>
           <Typography variant="body2">Please Enter your details</Typography>
           <form onSubmit={handleSubmit}>
             {isRegister && (
