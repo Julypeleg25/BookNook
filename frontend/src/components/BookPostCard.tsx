@@ -18,10 +18,9 @@ import { Link } from "react-router-dom";
 
 interface BookPostCardProps {
   book: BookPost;
-  onClick: () => void;
 }
 
-const BookPostCard = ({ book, onClick }: BookPostCardProps) => {
+const BookPostCard = ({ book }: BookPostCardProps) => {
   return (
     <Card
       sx={{

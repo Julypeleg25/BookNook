@@ -5,11 +5,9 @@ import type { BookPost } from "../models/Book";
 import { HiOutlineAdjustmentsVertical } from "react-icons/hi2";
 import { useState } from "react";
 import SearchFiltersModal from "../components/searchFilters/SearchFiltersModal";
-import { useNavigate } from "react-router-dom";
 
 const Explore = () => {
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <div style={{ padding: "1rem", marginTop: "1.2rem" }}>
@@ -38,7 +36,6 @@ const Explore = () => {
           <BookPostCard
             key={post.id}
             book={post}
-            onClick={() => navigate(`booksPosts/${post.book.id}`)}
           />
         ))}
       </Box>

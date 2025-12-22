@@ -92,16 +92,10 @@ const postDescriptions = [
 ];
 
 const commentContents = [
-  "Totally agree with this!",
-  "I had a different opinion on this part.",
-  "Loved the insight you shared.",
-  "Couldn’t agree more!",
-  "Interesting perspective!",
-  "This made me want to reread the book.",
-  "Nice review, thanks for sharing!",
-  "I felt the same way.",
-  "I had mixed feelings about this one.",
-  "Great summary of the book.",
+  Array.from({ length: 1 })
+    .map((_, i) => faker.lorem.paragraph())
+    .join("\n\n").repeat(8),
+  
 ];
 
 // helper to pick a random item
@@ -112,7 +106,7 @@ const bookPosts: BookPost[] = Array.from({ length: 40 }, (_, i) => {
   const book = randomItem(books);
   const user = randomItem(users);
   const createdDate = new Date(
-    Date.now() - Math.floor(Math.random() * 10000000000)
+    Date.now() - Math.floor(Math.random() * 100000000)
   );
   const likes = Math.floor(Math.random() * 100);
   const rating = Math.floor(Math.random() * 5) + 1;

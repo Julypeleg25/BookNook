@@ -7,7 +7,7 @@ import {
   Rating,
   TextField,
 } from "@mui/material";
-import SearchFiltersSelect from "./SearchFiltersSelect";
+import Select from "../Select";
 import SearchFiltersToggleButtonGroup from "./SearchFiltersToggleButtonGroup";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -66,14 +66,14 @@ const SearchFiltersModal = (props: SearchFiltersModalProps) => {
               display: "flex",
             }}
           >
-            <SearchFiltersSelect
+            <Select
               menuItems={languageMenuItems}
               style={{ minWidth: "16rem" }}
               label="Language"
               selectedValues={[]}
               onChange={() => {}}
             />
-            <SearchFiltersSelect
+            <Select
               menuItems={genreMenuItems}
               label="Genre"
               selectedValues={[]}
