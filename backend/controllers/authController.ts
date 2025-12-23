@@ -8,7 +8,6 @@ dotenv.config();
 // Generate JWT tokens
 
 function generateTokens(user: IUser) {
-  console.log(user._id, user.email, process.env.JWT_ACCESS_SECRET);
   const accessToken = jwt.sign(
     {userId: user._id, email: user.email } ,
     process.env.JWT_ACCESS_SECRET!,
@@ -49,7 +48,7 @@ export const googleAuthCallback = async (req: Request, res: Response) => {
     const { accessToken, refreshToken } = generateTokens(user);
     await saveTokensToUser(user._id, accessToken, refreshToken);
     setAuthCookies(res, accessToken, refreshToken);
-    res.redirect(process.env.FRONTEND_URL || "http://localhost:5173");
+    res.redirect((process.env.FRONTEND_URL || "http://localhost:5173") + '/dashboard');
   } else {
     res.redirect(`${process.env.FRONTEND_URL}/login`);
   }
@@ -121,14 +120,28 @@ export const refresh = async (req: Request, res: Response) => {
 };
 
 
-export const logout = (req: Request, res: Response, next: NextFunction) => {
-  req.logout(async (err) => {
-    if (err) return next(err);
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.logout((err) => {
+      if (err) return next(err);
+    });
+
     if (req.user) {
-      await User.findByIdAndUpdate((req.user as any)._id, { refreshToken: null, accessToken: null });
+      await User.findByIdAndUpdate((req.user as any)._id, {
+        refreshToken: null,
+        accessToken: null, // optional — see note below
+      });
     }
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
-    res.redirect(process.env.FRONTEND_URL || "http://localhost:5173");
-  });
+
+    res.clearCookie("accessToken", { path: "/" });
+    res.clearCookie("refreshToken", { path: "/" });
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    next(err);
+  }
 };

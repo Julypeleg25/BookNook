@@ -14,15 +14,17 @@ import { UPLOADS_FOLDER } from "./multerConfig";
 // Import strategies
 import googleStrategy from "./services/googleStrategy";
 import localLoginStrategy from "./services/localStrategy";
+import cookieParser from "cookie-parser";
+
 import { requireAuth } from "./middlewares/authMiddleware";
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.use(cookieParser());
 
 // CORS
-app.use(
-  cors({
+app.use(cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
   })
