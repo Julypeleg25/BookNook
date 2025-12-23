@@ -32,6 +32,7 @@ const CommentsSection = ({ bookPost }: CommentsSectionProps) => {
         maxHeight: "30rem",
         overflowY: "scroll",
         minHeight: 0,
+        marginTop: "2rem",
       }}
     >
       <Box justifySelf="center" style={{ backgroundColor: "white" }}>
@@ -105,7 +106,7 @@ const CommentsSection = ({ bookPost }: CommentsSectionProps) => {
                 padding: "0.6rem",
               },
             }}
-            style={{ marginRight: "2.5rem" }}
+            style={{ marginRight: "2.8rem" }}
             label=""
             startIcon={<TbArrowsSort size={"2rem"} />}
             onChange={() => {}}

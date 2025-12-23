@@ -4,7 +4,7 @@ interface Book {
   author: string;
   description: string;
   coverImage: string;
-  publishedDate: string;
+  publishedDate: Date;
   genre: string;
 }
 

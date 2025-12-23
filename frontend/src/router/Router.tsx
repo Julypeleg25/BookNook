@@ -5,8 +5,10 @@ import SignUp from "../pages/SignUp";
 import NotFound from "../pages/NotFound";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "./AppLayout";
-import Explore from "../pages/Explore";
-import BookPostDetails from "../pages/BookPost";
+import ExplorePosts from "../pages/ExplorePosts";
+import BookPost from "../pages/BookPost";
+import ExploreBooks from "../pages/ExploreBooks";
+import BookInfo from "../pages/BookInfo";
 
 const Router = () => {
   return (
@@ -23,8 +25,12 @@ const Router = () => {
         }
       >
         <Route path="/booksPosts">
-          <Route index element={<Explore />} />
-          <Route path=":id" element={<BookPostDetails />} />
+          <Route index element={<ExplorePosts />} />
+          <Route path=":id" element={<BookPost />} />
+        </Route>
+        <Route path="/books">
+          <Route index element={<ExploreBooks />} />
+          <Route path=":id" element={<BookInfo />} />
         </Route>
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />

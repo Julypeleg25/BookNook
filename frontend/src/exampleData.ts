@@ -36,7 +36,7 @@ const books: Book[] = [
     description: "A journey through parallel lives and choices.",
     coverImage:
       "https://images-na.ssl-images-amazon.com/images/I/81J6APjwxlL.jpg",
-    publishedDate: "2020-09-29",
+    publishedDate: new Date(Date.now() - Math.floor(Math.random() * 100000000)),
     genre: "Fiction",
   },
   {
@@ -46,7 +46,7 @@ const books: Book[] = [
     description: "Small habits, remarkable results.",
     coverImage:
       "https://images-na.ssl-images-amazon.com/images/I/91bYsX41DVL.jpg",
-    publishedDate: "2018-10-16",
+    publishedDate: new Date(Date.now() - Math.floor(Math.random() * 100000000)),
     genre: "Self-help",
   },
   {
@@ -56,7 +56,7 @@ const books: Book[] = [
     description: "A dystopian classic about control and truth.",
     coverImage:
       "https://images-na.ssl-images-amazon.com/images/I/71kxa1-0mfL.jpg",
-    publishedDate: "1949-06-08",
+    publishedDate: new Date(Date.now() - Math.floor(Math.random() * 100000000)),
     genre: "Dystopian",
   },
 ];
@@ -94,8 +94,8 @@ const postDescriptions = [
 const commentContents = [
   Array.from({ length: 1 })
     .map((_, i) => faker.lorem.paragraph())
-    .join("\n\n").repeat(2),
-  
+    .join("\n\n")
+    .repeat(2),
 ];
 
 // helper to pick a random item

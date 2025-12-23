@@ -44,7 +44,7 @@ const AppBar = () => {
   const navigate = useNavigate();
 
   return (
-    <MuiAppBar position="sticky" style={{top:0}}>
+    <MuiAppBar position="sticky" style={{ top: 0 }}>
       <Toolbar style={{ height: "4.5rem", display: "flex" }}>
         <Box display="flex" alignItems="center" flexGrow={1}>
           <img src={bookNookLogo} alt="BookNook" style={{ height: "2.5rem" }} />
@@ -58,7 +58,10 @@ const AppBar = () => {
               }}
             >
               <Typography component={NavLink} to="/booksPosts" sx={navItemSx}>
-                Home
+                Posts
+              </Typography>
+                <Typography component={NavLink} to="/books" sx={navItemSx}>
+                Books
               </Typography>
               <Typography component={NavLink} to="/lists" sx={navItemSx}>
                 My Lists
