@@ -67,7 +67,7 @@ const BookPostDetails = () => {
         />
       </Box>
       <CommentsSection bookPost={bookPost} />
-      <div style={{ border: "solid", height: "30rem" }}>
+      <div style={{ border: "solid", height: "30rem",margin:'1rem' }}>
         Not sure if this book fits you? describe what you like shortly and we'll try to find out!
       </div>
     </div>

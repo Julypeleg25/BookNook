@@ -94,7 +94,7 @@ const postDescriptions = [
 const commentContents = [
   Array.from({ length: 1 })
     .map((_, i) => faker.lorem.paragraph())
-    .join("\n\n").repeat(8),
+    .join("\n\n").repeat(2),
   
 ];
 
@@ -113,7 +113,7 @@ const bookPosts: BookPost[] = Array.from({ length: 40 }, (_, i) => {
 
   // generate 0-3 comments per post
   const comments: Comment[] = Array.from(
-    { length: Math.floor(Math.random() * 4) },
+    { length: Math.floor(Math.random() * 20) },
     (_, j) => {
       const commentUser = randomItem(users);
       return {
