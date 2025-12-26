@@ -1,10 +1,15 @@
-import { Box, Typography } from "@mui/material";
-import { FaCalendar } from "react-icons/fa6";
-import { formatDate } from "../utils/dateUtils";
+import { Typography } from "@mui/material";
 import { books } from "../exampleData";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import NotFound from "./NotFound";
+import BookInfoHeader from "../components/bookHeaders/BookInfoHeader";
+import { CgMenu } from "react-icons/cg";
+import { BsType } from "react-icons/bs";
+import { PiArrowsOutLineHorizontal } from "react-icons/pi";
+import { FaTheaterMasks } from "react-icons/fa";
+import { FaUserPen } from "react-icons/fa6";
+import { MdMenuBook } from "react-icons/md";
 
 const BookInfo = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,49 +21,50 @@ const BookInfo = () => {
   }
 
   return (
-    <div style={{ margin: "3rem" }}>
-      <Box
-        display="grid"
-        gap="2rem"
-        gridTemplateColumns="70% 30%"
-        width="100%"
-        marginTop={"2rem"}
-        alignItems={"center"}
-      >
-        <div style={{ display: "grid" }}>
-          <div
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ fontSize: "3rem" }}>{book.title}</div>
-            <div
-              style={{
-                fontSize: "2.5rem",
-                marginRight: "1rem",
-              }}
-            >
-              ({new Date(book.publishedDate).getFullYear()})
-            </div>
+    <div
+      style={{
+        // gridTemplateColumns: "90% 10%",
+        display: "grid",
+        gap: "2rem",
+        margin: "3rem",
+        alignItems: "center",
+      }}
+    >
+      <div>
+        <BookInfoHeader book={book} />
+        <div
+          style={{
+            display: "flex",
+            gap: "2rem",
+            marginTop: "2rem",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "grid" }}>
+            <Typography fontSize={"1.6rem"}>
+              <MdMenuBook /> {book.description}
+            </Typography>
+            <Typography fontSize={"1.6rem"}>
+              <FaTheaterMasks /> 
+              {book.genres.join(", ")}
+            </Typography>
+            <Typography fontSize={"1.6rem"}>
+              <FaUserPen /> {book.author}
+            </Typography>
+              <Typography fontSize={"1.6rem"}>
+              <FaUserPen /> {book.author}
+            </Typography>  <Typography fontSize={"1.6rem"}>
+              <FaUserPen /> {book.author}
+            </Typography>
           </div>
-          <Typography variant="h5" style={{ display: "flex", gap: "1rem" }}>
-            <div style={{ display: "flex", gap: "0.3rem" }}>
-              <FaCalendar />
-              {formatDate(book.publishedDate)}
-            </div>
-          </Typography>
-          <Typography marginTop={"1.5rem"} fontSize={"1.2rem"}>
-            {book.description}
-          </Typography>
+          <img
+            src={book.coverImage}
+            style={{ borderRadius: "1rem" }}
+            width={"20%"}
+            height="20%"
+          />
         </div>
-        <img
-          src={book.coverImage}
-          style={{ borderRadius: "1rem" }}
-          width={"100%"}
-        />
-      </Box>
+      </div>
     </div>
   );
 };

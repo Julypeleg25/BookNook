@@ -1,3 +1,5 @@
+import type { GenreOptionsType } from "../components/searchFilters/models/SearchFiltersOptions";
+
 interface Book {
   id: string;
   title: string;
@@ -5,7 +7,7 @@ interface Book {
   description: string;
   coverImage: string;
   publishedDate: Date;
-  genre: string;
+  genres: GenreOptionsType[];
 }
 
 interface BookPost {

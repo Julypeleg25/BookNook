@@ -1,12 +1,12 @@
 import { Box } from "@mui/material";
-import { books } from "../exampleData";
-import type { Book } from "../models/Book";
+import BookPostCard from "../components/bookCards/BookPostCard";
+import { bookPosts } from "../exampleData";
+import type { BookPost } from "../models/Book";
 import { useState } from "react";
 import SearchFiltersModal from "../components/searchFilters/SearchFiltersModal";
 import SearchBar from "../components/searchFilters/SearchBar";
-import BookInfoCard from "../components/bookCards/BookInfoCard";
 
-const ExploreBooks = () => {
+const ExplorePosts = () => {
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
 
   return (
@@ -18,12 +18,12 @@ const ExploreBooks = () => {
         gridTemplateColumns={{
           xs: "1fr",
           sm: "1fr 1fr",
-          md: "1fr 1fr 1fr 1fr 1fr",
+          md: "1fr 1fr 1fr 1fr",
         }}
         gap={"2rem"}
       >
-        {books.map((book: Book) => (
-          <BookInfoCard key={book.id} book={book} />
+        {bookPosts.map((post: BookPost) => (
+          <BookPostCard key={post.id} book={post} />
         ))}
       </Box>
       <SearchFiltersModal
@@ -33,4 +33,4 @@ const ExploreBooks = () => {
     </div>
   );
 };
-export default ExploreBooks;
+export default ExplorePosts;

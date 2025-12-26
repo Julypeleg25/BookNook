@@ -7,17 +7,20 @@ import {
   CardMedia,
   Chip,
   IconButton,
+  Rating,
   Typography,
 } from "@mui/material";
 import { CgMoreVertical } from "react-icons/cg";
-import type { Book } from "../models/Book";
+import { GrFavorite } from "react-icons/gr";
+import type { BookPost } from "../../models/Book";
+import { MdComment } from "react-icons/md";
 import { Link } from "react-router-dom";
 
-interface BookInfoCardProps {
-  book: Book;
+interface BookPostCardProps {
+  book: BookPost;
 }
 
-const BookInfoCard = ({ book }: BookInfoCardProps) => {
+const BookPostCard = ({ book }: BookPostCardProps) => {
   return (
     <Card
       sx={{
@@ -31,11 +34,11 @@ const BookInfoCard = ({ book }: BookInfoCardProps) => {
         },
       }}
     >
-      <Link to={`/books/${book.id}`} style={{ textDecoration: "none" }}>
+      <Link to={`/booksPosts/${book.id}`} style={{ textDecoration: "none" }}>
         <CardHeader
           avatar={
             <Avatar>
-              <img src={book.coverImage} alt={book.title} />
+              <img src={book.user.avatarUrl} alt={book.user.name} />
             </Avatar>
           }
           action={
@@ -43,10 +46,10 @@ const BookInfoCard = ({ book }: BookInfoCardProps) => {
               <CgMoreVertical />
             </IconButton>
           }
-          title={book.title}
-          subheader={book.publishedDate.toDateString()}
+          title={book.book.title}
+          subheader={book.createdDate.toDateString()}
         />
-        <CardMedia component="img" height="260rem" image={book.coverImage} />
+        <CardMedia component="img" height="260rem" image={book.imageUrl} />
         <CardContent>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
             {book.description.substring(0, 45)}...
@@ -56,15 +59,29 @@ const BookInfoCard = ({ book }: BookInfoCardProps) => {
       <CardActions
         style={{
           justifyContent: "space-between",
-          display: "flex",
-          alignItems: "center",
           width: "100%",
         }}
       >
-        <Chip label={book.genre}></Chip>
+        <div>
+          <IconButton>
+            <GrFavorite />
+          </IconButton>
+          {book.likes}
+        </div>
+        <div>
+          <IconButton>
+            <MdComment />
+          </IconButton>
+          {book.comments.length}
+        </div>
+
+        <Rating value={book.rating} precision={0.5} readOnly />
+        {book.book.genres.map((genre) => (
+          <Chip key={genre} label={genre} />
+        ))}
       </CardActions>
     </Card>
   );
 };
 
-export default BookInfoCard;
+export default BookPostCard;

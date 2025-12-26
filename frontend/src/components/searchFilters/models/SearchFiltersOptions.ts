@@ -9,7 +9,7 @@ export interface ISearchFiltersForm {
   rating: number;
 }
 
-const amountOptions = {
+export const amountOptions = {
   LOW_AMOUT: "lowAmount",
   MEDIUM_AMOUNT: "mediumAmount",
   HIGH_AMOUNT: "highAmount",
@@ -80,7 +80,7 @@ const LanguageOptions = {
   BULGARIAN: "Bulgarian",
 } as const;
 
-type LanguageOptionsType =
+export type LanguageOptionsType =
   (typeof LanguageOptions)[keyof typeof LanguageOptions];
 
 const languageMenuItems = Object.entries(LanguageOptions).map(([_, label]) => ({
@@ -88,7 +88,7 @@ const languageMenuItems = Object.entries(LanguageOptions).map(([_, label]) => ({
   label,
 }));
 
-const GenreOptions = {
+export const GenreOptions = {
   FICTION: "Fiction",
   NON_FICTION: "Non-Fiction",
   MYSTERY: "Mystery",
@@ -117,9 +117,13 @@ const GenreOptions = {
   LAW: "Law",
   MEDICINE: "Medicine",
   PSYCHOLOGY: "Psychology",
+  BUSINESS: "Business",
+  ECONOMICS: "Economics",
+  SPORTS: "Sports",
+  MUSIC: "Music"
 } as const;
 
-type GenreOptionsType = (typeof GenreOptions)[keyof typeof GenreOptions];
+export type GenreOptionsType = (typeof GenreOptions)[keyof typeof GenreOptions];
 
 const genreMenuItems = Object.entries(GenreOptions).map(([_, label]) => ({
   value: label,

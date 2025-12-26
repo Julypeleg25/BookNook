@@ -77,7 +77,6 @@ const theme = createTheme({
     MuiLink: {
       styleOverrides: {
         root: {
-          color: "red",
           textDecoration: "none",
         },
       },

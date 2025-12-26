@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import NotFound from "./NotFound";
 import { Box, Typography } from "@mui/material";
 import CommentsSection from "../components/searchFilters/sections/CommentsSection";
-import BookPostHeader from "../components/BookPostHeader";
+import BookPostHeader from "../components/bookHeaders/BookPostHeader";
 
 const BookPost = () => {
   const { id } = useParams<{ id: string }>();
