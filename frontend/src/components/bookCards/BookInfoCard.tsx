@@ -1,8 +1,15 @@
-import { Box, IconButton, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Tooltip,
+  Typography,
+  Stack,
+  Rating,
+} from "@mui/material";
 import type { Book } from "../../models/Book";
 import { formatDate } from "../../utils/dateUtils";
 import { BiBookmark } from "react-icons/bi";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { LuBookCheck } from "react-icons/lu";
 
 interface BookInfoCardProps {
@@ -11,93 +18,88 @@ interface BookInfoCardProps {
 
 const BookInfoCard = ({ book }: BookInfoCardProps) => {
   return (
-    // <Card
-    //   sx={{
-    //     width: "22rem",
-    //     cursor: "pointer",
-    //     transition: "box-shadow 0.2s ease, transform 0.2s ease",
-    //     boxShadow: 1,
-    //     "&:hover": {
-    //       boxShadow: 6,
-    //       transform: "translateY(-2px)",
-    //     },
-    //   }}
-    // >
-    //   <Link to={`/books/${book.id}`} style={{ textDecoration: "none" }}>
-    //     <CardHeader
-    //       action={
-    //         <IconButton aria-label="settings">
-    //           <CgMoreVertical />
-    //         </IconButton>
-    //       }
-    //       // title={book.title}
-    //       // subheader={book.publishedDate.toDateString()}
-    //     />
-    //     <CardMedia component="img" height="260rem" image={book.coverImage} />
-    //     <CardContent>
-    //       <Typography variant="body2" sx={{ color: "text.secondary" }}>
-    //         {book.description.substring(0, 45)}...
-    //       </Typography>
-    //     </CardContent>
-    //   </Link>
-    //   <CardActions
-    //     style={{
-    //       justifyContent: "space-between",
-    //       display: "flex",
-    //       alignItems: "center",
-    //       width: "100%",
-    //     }}
-    //   >
-    //     <Chip label={book.genre}></Chip>
-    //   </CardActions>
-    // </Card>
-
-    <div style={{ display: "grid", justifyItems: "center" }}>
-      <Link to={`/books/${book.id}`} style={{ textDecoration: "none" }}>
+    <Stack alignItems="center" spacing="0.6rem">
+      <Box
+        component={RouterLink}
+        to={`/books/${book.id}`}
+        sx={{
+          width: "15rem",
+          height: "18rem",
+          borderRadius: "1rem",
+          overflow: "hidden",
+          textDecoration: "none",
+          boxShadow: 1,
+          transition: "box-shadow 0.2s ease, transform 0.2s ease",
+          "&:hover": {
+            boxShadow: 6,
+            transform: "translateY(-0.2rem)",
+          },
+        }}
+      >
         <Box
-        borderRadius={'1rem'}
-          width="15rem"
-          height="18rem"
+          component="img"
+          src={book.coverImage}
+          alt={book.title}
           sx={{
-            transition: "box-shadow 0.2s ease, transform 0.2s ease",
-            boxShadow: 1,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      </Box>
+
+      <Stack spacing="0.2rem" width="15rem">
+        <Typography
+          component={RouterLink}
+          to={`/books/${book.id}`}
+          sx={{
+            fontSize: "1rem",
+            fontWeight: 600,
+            color: "text.primary",
+            textDecoration: "none",
+            lineHeight: 1.3,
             "&:hover": {
-              boxShadow: 6,
-              transform: "translateY(-2px)",
+              textDecoration: "underline",
             },
           }}
         >
-          <img
-            style={{ borderRadius: "1rem" }}
-            src={book.coverImage}
-            alt={book.title}
-            width="100%"
-            height="100%"
-          />
-        </Box>
-        <div style={{ display: "grid",textWrap:'balance' }}>
-
-        <Typography variant="h6" style={{ marginTop: "0.5rem" }}>
           {book.title}
         </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+        <Typography fontSize="0.85rem">{book.author}</Typography>
+        <Typography fontSize="0.85rem" color="text.secondary">
           {formatDate(book.publishedDate)}
         </Typography>
+      </Stack>
+
+      <div
+        style={{
+          display: "grid",
+          justifyItems: "center",
+          gap: "0.5rem",
+          width: "100%",
+        }}
+      >
+        <Rating
+          // value={book.averageRating}
+          value={4.5}
+          precision={0.5}
+          readOnly
+          size="small"
+        />
+        <div style={{ display: "flex", gap: "1.6rem" }}>
+          <Tooltip title="Add to read list">
+            <IconButton size="small">
+              <LuBookCheck />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Add to wish list">
+            <IconButton size="small">
+              <BiBookmark />
+            </IconButton>
+          </Tooltip>
         </div>
-      </Link>
-      <div>
-        <Tooltip title="Add to read list">
-          <IconButton>
-            <LuBookCheck />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Add to wish list">
-          <IconButton>
-            <BiBookmark />
-          </IconButton>
-        </Tooltip>
       </div>
-    </div>
+    </Stack>
   );
 };
 

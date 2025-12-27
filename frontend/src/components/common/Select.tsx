@@ -12,7 +12,7 @@ interface MenuItem {
   label: string;
 }
 
-interface SearchFiltersSelectProps {
+interface SelectProps {
   menuItems: MenuItem[];
   label?: string;
   selectedValues: (string | number)[];
@@ -23,7 +23,7 @@ interface SearchFiltersSelectProps {
   sx?: SxProps;
 }
 
-const Select = (props: SearchFiltersSelectProps) => {
+const Select = (props: SelectProps) => {
   return (
     <FormControl style={props.style}>
       <InputLabel style={{ gap: "3rem" }}>{props.label}</InputLabel>

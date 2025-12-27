@@ -9,6 +9,8 @@ import ExplorePosts from "../pages/ExplorePosts";
 import BookPost from "../pages/BookPost";
 import ExploreBooks from "../pages/ExploreBooks";
 import BookInfo from "../pages/BookInfo";
+import Profile from "../pages/Profile";
+import MyPosts from "../pages/MyPosts";
 
 const Router = () => {
   return (
@@ -32,6 +34,8 @@ const Router = () => {
           <Route index element={<ExploreBooks />} />
           <Route path=":id" element={<BookInfo />} />
         </Route>
+        <Route path="/profile" element={<Profile />} />
+        <Route path='/myPosts' element={<MyPosts />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFound />} />

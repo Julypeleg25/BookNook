@@ -10,7 +10,7 @@ import {
 import { MdSend } from "react-icons/md";
 import { TbArrowsSort } from "react-icons/tb";
 import { timeAgo } from "../../../utils/dateUtils";
-import Select from "../../Select";
+import Select from "../../common/Select";
 import type { BookPost } from "../../../models/Book";
 
 interface CommentsSectionProps {

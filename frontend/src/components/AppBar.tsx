@@ -4,6 +4,7 @@ import {
   IconButton,
   AppBar as MuiAppBar,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import bookNookLogo from "../assets/booknook.png";
@@ -60,25 +61,27 @@ const AppBar = () => {
               <Typography component={NavLink} to="/booksPosts" sx={navItemSx}>
                 Posts
               </Typography>
-                <Typography component={NavLink} to="/books" sx={navItemSx}>
+              <Typography component={NavLink} to="/books" sx={navItemSx}>
                 Books
               </Typography>
               <Typography component={NavLink} to="/lists" sx={navItemSx}>
                 My Lists
               </Typography>
 
-              <Typography component={NavLink} to="/posts" sx={navItemSx}>
+              <Typography component={NavLink} to="/myPosts" sx={navItemSx}>
                 My Posts
               </Typography>
             </div>
           )}
         </Box>
         {isAuthenticated && (
-          <IconButton onClick={() => navigate("/profile")} color="inherit">
-            <Avatar sx={{ width: "2rem", height: "2rem" }}>
-              <BiUser />
-            </Avatar>
-          </IconButton>
+          <Tooltip title="Profile page">
+            <IconButton onClick={() => navigate("/profile")} color="inherit">
+              <Avatar sx={{ width: "2rem", height: "2rem" }}>
+                <BiUser />
+              </Avatar>
+            </IconButton>
+          </Tooltip>
         )}
       </Toolbar>
     </MuiAppBar>

@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { bookPosts } from "../exampleData";
 import { useMemo } from "react";
 import NotFound from "./NotFound";
-import { Box, Typography } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import CommentsSection from "../components/searchFilters/sections/CommentsSection";
 import BookPostHeader from "../components/bookHeaders/BookPostHeader";
 
@@ -36,10 +36,27 @@ const BookPost = () => {
         />
       </Box>
       <CommentsSection bookPost={bookPost} />
-      <div style={{ border: "solid", height: "30rem", margin: "1rem" }}>
-        Not sure if this book fits you? describe what you like shortly and we'll
-        try to find out!
-      </div>
+      <Paper
+        elevation={2}
+        sx={{
+          marginTop: "4rem",
+          padding: "2rem",
+          borderRadius: "1rem",
+        }}
+      >
+        <Typography
+          sx={{ fontSize: "1.2rem", fontWeight: 600, marginBottom: "0.8rem" }}
+        >
+          Not sure if this book fits you?
+        </Typography>
+
+        <Typography color="text.secondary">
+          Describe what you like in a few words and we’ll help you decide if
+          this book is right for you.
+        </Typography>
+
+        {/* future: input + action */}
+      </Paper>
     </div>
   );
 };

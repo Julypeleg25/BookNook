@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Divider, IconButton, TextField, Typography } from "@mui/material";
 import loginIcon from "../assets/login-icon.png";
 import { FcGoogle } from "react-icons/fc";
 import { Controller, useForm } from "react-hook-form";
@@ -14,6 +6,7 @@ import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import useUserStore from "../state/useUserStore";
 
 interface ILoginForm {
   username: string;
@@ -21,9 +14,10 @@ interface ILoginForm {
 }
 
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
+  const { setUsername, setName } = useUserStore();
 
   const handleLogin = () => {
     login();
@@ -37,7 +31,7 @@ const Login = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors},
     reset,
   } = useForm<ILoginForm>({
     defaultValues: {
@@ -48,6 +42,9 @@ const Login = () => {
   });
 
   const onSubmit = (data: ILoginForm) => {
+    setName(data.username);
+    setUsername(data.username);
+    //TODO: data from backend
     handleLogin();
     reset();
   };

@@ -25,7 +25,7 @@ const SignUp = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<ISignUpForm>({
     defaultValues: {

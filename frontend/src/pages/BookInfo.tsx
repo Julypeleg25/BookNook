@@ -4,11 +4,8 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import NotFound from "./NotFound";
 import BookInfoHeader from "../components/bookHeaders/BookInfoHeader";
-import { CgMenu } from "react-icons/cg";
-import { BsType } from "react-icons/bs";
-import { PiArrowsOutLineHorizontal } from "react-icons/pi";
 import { FaTheaterMasks } from "react-icons/fa";
-import { FaUserPen } from "react-icons/fa6";
+import { FaUserPen  } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
 
 const BookInfo = () => {
