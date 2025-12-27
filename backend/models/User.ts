@@ -1,8 +1,8 @@
-import mongoose, { Document, Model } from 'mongoose';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import Joi from 'joi';
-import dotenv from 'dotenv';
+import mongoose, { Document, Model } from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import Joi from "joi";
+import dotenv from "dotenv";
 dotenv.config();
 const { Schema } = mongoose;
 
@@ -14,11 +14,14 @@ export interface IUser extends Document {
   name?: string;
   avatar?: string;
   bio?: string;
-  googleId?: string;
+  providerId?: string;
   refreshToken?: string; // <-- Add this
-  accessToken?: string;  // <-- Optional, usually not needed
+  accessToken?: string; // <-- Optional, usually not needed
   generateJWT: () => string;
-  comparePassword: (candidatePassword: string, callback: (err: any, isMatch: boolean) => void) => void;
+  comparePassword: (
+    candidatePassword: string,
+    callback: (err: any, isMatch: boolean) => void
+  ) => void;
 }
 
 export interface JwtDecodedUser {
@@ -37,7 +40,7 @@ const userSchema = new Schema<IUser>(
       lowercase: true,
       unique: true,
       required: [true, "can't be blank"],
-      match: [/^[a-zA-Z0-9_]+$/, 'is invalid'],
+      match: [/^[a-zA-Z0-9_]+$/, "is invalid"],
       index: true,
     },
     email: {
@@ -45,7 +48,7 @@ const userSchema = new Schema<IUser>(
       lowercase: true,
       unique: true,
       required: [true, "can't be blank"],
-      match: [/\S+@\S+\.\S+/, 'is invalid'],
+      match: [/\S+@\S+\.\S+/, "is invalid"],
       index: true,
     },
     password: {
@@ -57,8 +60,8 @@ const userSchema = new Schema<IUser>(
     name: String,
     avatar: String,
     bio: String,
-    // google
-    googleId: {
+    // provider-specific id for OAuth (google, github, etc.)
+    providerId: {
       type: String,
       unique: true,
       sparse: true,
@@ -72,11 +75,13 @@ const userSchema = new Schema<IUser>(
       default: null,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-const isProduction = process.env.NODE_ENV === 'production';
-const secretOrKey = isProduction ? process.env.JWT_SECRET_PROD : process.env.JWT_SECRET_DEV;
+const isProduction = process.env.NODE_ENV === "production";
+const secretOrKey = isProduction
+  ? process.env.JWT_SECRET_PROD
+  : process.env.JWT_SECRET_DEV;
 
 userSchema.methods.generateJWT = function (this: IUser) {
   const token = jwt.sign(
@@ -87,17 +92,20 @@ userSchema.methods.generateJWT = function (this: IUser) {
     },
     secretOrKey!,
     {
-      expiresIn: '12h',
+      expiresIn: "12h",
     }
   );
   return token;
 };
 
 // Static method for registering a user
-userSchema.statics.registerUser = async function (newUser: IUser, callback: (err: any, user?: IUser) => void) {
+userSchema.statics.registerUser = async function (
+  newUser: IUser,
+  callback: (err: any, user?: IUser) => void
+) {
   try {
     const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(newUser.password || '', salt);
+    const hash = await bcrypt.hash(newUser.password || "", salt);
     newUser.password = hash;
     await newUser.save();
     callback(null, newUser);
@@ -106,7 +114,11 @@ userSchema.statics.registerUser = async function (newUser: IUser, callback: (err
   }
 };
 
-userSchema.methods.comparePassword = function (this: IUser, candidatePassword: string, callback: (err: any, isMatch: boolean) => void) {
+userSchema.methods.comparePassword = function (
+  this: IUser,
+  candidatePassword: string,
+  callback: (err: any, isMatch: boolean) => void
+) {
   if (!this.password) return callback(null, false);
   bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
     if (err) return callback(err, false);
@@ -114,15 +126,14 @@ userSchema.methods.comparePassword = function (this: IUser, candidatePassword: s
   });
 };
 
-
 export async function hashPassword(password: string): Promise<string> {
   const saltRounds = 10;
-  return await new Promise((resolve, reject) => {
+  return (await new Promise((resolve, reject) => {
     bcrypt.hash(password, saltRounds, function (err, hash) {
       if (err) reject(err);
       else resolve(hash);
     });
-  }) as string;
+  })) as string;
 }
 
 export const validateUser = (user: Partial<IUser>) => {
@@ -134,15 +145,18 @@ export const validateUser = (user: Partial<IUser>) => {
       .max(20)
       .regex(/^[a-zA-Z0-9_]+$/)
       .required(),
-    password: Joi.string().min(6).max(20).allow('').allow(null),
+    password: Joi.string().min(6).max(20).allow("").allow(null),
   });
   return schema.validate(user);
 };
 
 interface UserModel extends Model<IUser> {
-  registerUser(newUser: IUser, callback: (err: any, user?: IUser) => void): void;
+  registerUser(
+    newUser: IUser,
+    callback: (err: any, user?: IUser) => void
+  ): void;
 }
 
-const User = mongoose.model<IUser, UserModel>('User', userSchema);
+const User = mongoose.model<IUser, UserModel>("User", userSchema);
 
 export default User;
