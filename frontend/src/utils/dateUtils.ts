@@ -26,3 +26,23 @@ export function timeAgo(date: Date): string {
 
   return date.toLocaleDateString("en-GB");
 }
+
+const timeOfDay = {
+  MORNING: "morning",
+  AFTERNOON: "afternoon",
+  EVENING: "evening",
+} as const;
+export type TimeOfDay = (typeof timeOfDay)[keyof typeof timeOfDay];
+
+export const getTimeOfDay = (): string => {
+  const now = new Date();
+  const hours = now.getHours();
+
+  if (hours < 12) {
+    return timeOfDay.MORNING;
+  } else if (hours < 18) {
+    return timeOfDay.AFTERNOON;
+  } else {
+    return timeOfDay.EVENING;
+  }
+};

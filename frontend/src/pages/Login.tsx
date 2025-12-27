@@ -1,4 +1,11 @@
-import { Box, Button, Divider, IconButton, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  TextField,
+  Typography,
+} from "@mui/material";
 import loginIcon from "../assets/login-icon.png";
 import { FcGoogle } from "react-icons/fc";
 import { Controller, useForm } from "react-hook-form";
@@ -31,7 +38,7 @@ const Login = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors},
+    formState: { errors },
     reset,
   } = useForm<ILoginForm>({
     defaultValues: {
@@ -172,16 +179,19 @@ const Login = () => {
         display={"grid"}
       >
         <img src={loginIcon} style={{ width: "50%", height: "90%" }} />
-        <Typography
-          variant="body2"
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          Don't have an account?
+        <Box>
+          <Typography
+            variant="body2"
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            Don't have an account?
+          </Typography>
+
           <div
             onClick={handleSignup}
             style={{
@@ -192,7 +202,7 @@ const Login = () => {
           >
             Sign up
           </div>
-        </Typography>
+        </Box>
       </Box>
     </Box>
   );

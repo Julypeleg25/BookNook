@@ -1,19 +1,67 @@
 import {
-  Avatar,
-  Box,
-  Button,
   Card,
   CardContent,
-  TextField,
   Typography,
+  Box,
+  TextField,
+  Button,
 } from "@mui/material";
-import useUserStore from "../state/useUserStore";
+import { useForm, Controller } from "react-hook-form";
+import ImageUpload from "../components/ImageUpload";
 import MyPostsSection from "../components/MyPostsSection";
+import useUserStore from "../state/useUserStore";
 import { bookPosts } from "../exampleData";
+import { useSnackbar } from "notistack";
+
+interface IProfileInputs {
+  name: string;
+  username: string;
+  avatar: File | string | null;
+}
 
 const Profile = () => {
-  const { username, name, avatarUrl } = useUserStore();
+  const { username, name, avatar, setName, setUsername, setAvatar } =
+    useUserStore();
+  const { enqueueSnackbar } = useSnackbar();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors, isDirty, dirtyFields },
+  } = useForm<IProfileInputs>({
+    defaultValues: {
+      name: name,
+      username: username,
+      avatar: avatar,
+    },
+  });
+
   const postsCount = bookPosts.filter((post) => post.user.id === "u1").length;
+
+  const onSubmit = async (data: IProfileInputs) => {
+    if (isDirty) {
+      if (dirtyFields.name) {
+        setName(data.name);
+      }
+      if (dirtyFields.username) {
+        setUsername(data.username);
+      }
+
+      if (data.avatar instanceof File && dirtyFields.avatar) {
+        // const formData = new FormData();
+        // formData.append('file', data.avatar);
+        // const response = await uploadApi(formData);
+        // setAvatar(response.url);
+
+        // For local demo/testing:
+        const localPreviewUrl = URL.createObjectURL(data.avatar);
+        setAvatar(localPreviewUrl);
+      }
+
+      enqueueSnackbar("Profile updated successfully!", {
+        variant: "success",
+      });
+    }
+  };
 
   return (
     <div style={{ padding: "2rem", margin: "1rem" }}>
@@ -21,8 +69,7 @@ const Profile = () => {
         sx={{
           borderRadius: "1.5rem",
           padding: "1rem",
-          width: "60%",
-          justifySelf: "center",
+          width: "95%",
         }}
       >
         <CardContent>
@@ -31,45 +78,93 @@ const Profile = () => {
           >
             User information
           </Typography>
-          <Box justifySelf={"center"}>
-            <Typography color="text.secondary" fontSize={"1.5rem"}>
+
+          <Box sx={{ mb: "1rem" }}>
+            <Typography color="text.secondary" fontSize={"1.1rem"}>
               {postsCount} Post{postsCount !== 1 ? "s" : ""} | 8 Books
             </Typography>
           </Box>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <Avatar
-              src={avatarUrl}
-              alt={name}
-              sx={{ width: 100, height: 100 }}
-            />
-            <Button variant="outlined">change profile picture</Button>{" "}
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Box sx={{ marginBottom: "2rem" }}>
+              <Controller
+                name="avatar"
+                control={control}
+                render={({ field }) => (
+                  <ImageUpload
+                    value={field.value}
+                    onChange={(file) => field.onChange(file)}
+                  />
+                )}
+              />
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: "1.5rem",
+                marginTop: "2rem",
+              }}
+            >
+              <Controller
+                name="name"
+                control={control}
+                rules={{
+                  required: "Name is required",
+                  minLength: { value: 3, message: "Minimum 3 characters" },
+                  maxLength: { value: 14, message: "Maximum 14 characters" },
+                }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Full name"
+                    fullWidth
+                    error={!!errors.name}
+                    helperText={errors.name?.message}
+                  />
+                )}
+              />
+              <Controller
+                name="username"
+                control={control}
+                rules={{
+                  required: "Username is required",
+                  minLength: { value: 3, message: "Minimum 3 characters" },
+                  maxLength: { value: 14, message: "Maximum 14 characters" },
+                }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Username"
+                    fullWidth
+                    error={!!errors.username}
+                    helperText={errors.username?.message}
+                  />
+                )}
+              />
+            </Box>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: "1.5rem",
-              marginTop: "2rem",
-            }}
-          >
-            <TextField label="Full name" value={name} fullWidth />
-            <TextField label="Username" value={username} fullWidth />
-          </div>
-          <Button
-            style={{
-              width: "20%",
-              marginTop: "2rem",
-              display: "flex",
-              justifySelf: "end",
-            }}
-          >
-            Save changes
-          </Button>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={!isDirty}
+                sx={{
+                  padding: "10px 30px",
+                  borderRadius: "10px",
+                  textTransform: "none",
+                }}
+              >
+                Save changes
+              </Button>
+            </Box>
+          </form>
         </CardContent>
       </Card>
-      <MyPostsSection postsCount={postsCount}/>
+
+      <Box sx={{ mt: "1rem" }}>
+        <MyPostsSection postsCount={postsCount} />
+      </Box>
     </div>
   );
 };

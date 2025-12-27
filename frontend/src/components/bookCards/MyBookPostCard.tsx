@@ -35,7 +35,7 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => {
       >
         <Box
           component="img"
-          src={post.book.coverImage}
+          src={post.imageUrl}
           alt={post.book.title}
           sx={{
             width: "100%",

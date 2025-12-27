@@ -10,7 +10,8 @@ import {
 import bookNookLogo from "../assets/booknook.png";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { BiUser } from "react-icons/bi";
+import useUserStore from "../state/useUserStore";
+import { getTimeOfDay } from "../utils/dateUtils";
 
 const navItemSx = {
   position: "relative",
@@ -42,6 +43,7 @@ const navItemSx = {
 
 const AppBar = () => {
   const { isAuthenticated } = useAuth();
+  const { avatar, username } = useUserStore();
   const navigate = useNavigate();
 
   return (
@@ -75,13 +77,14 @@ const AppBar = () => {
           )}
         </Box>
         {isAuthenticated && (
-          <Tooltip title="Profile page">
-            <IconButton onClick={() => navigate("/profile")} color="inherit">
-              <Avatar sx={{ width: "2rem", height: "2rem" }}>
-                <BiUser />
-              </Avatar>
-            </IconButton>
-          </Tooltip>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+           Good {getTimeOfDay()}, {username}
+            <Tooltip title="Profile page">
+              <IconButton onClick={() => navigate("/profile")} color="inherit">
+                <Avatar sx={{ width: "3rem", height: "3rem" }} src={avatar} />
+              </IconButton>
+            </Tooltip>
+          </div>
         )}
       </Toolbar>
     </MuiAppBar>

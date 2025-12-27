@@ -1,25 +1,25 @@
-import {create} from "zustand";
+import { create } from "zustand";
 
 interface UserStoreProps {
   id: string;
   username: string;
   name: string;
-  avatarUrl: string;
+  avatar: string;
   setId: (id: string) => void;
   setUsername: (username: string) => void;
   setName: (name: string) => void;
-  setAvatarUrl: (avatarUrl: string) => void;
+  setAvatar: (avatar: string) => void;
 }
 
 const useUserStore = create<UserStoreProps>((set) => ({
   id: "",
   username: "",
   name: "",
-  avatarUrl: "",
+  avatar: "",
   setId: (id: string) => set({ id }),
   setUsername: (username: string) => set({ username }),
   setName: (name: string) => set({ name }),
-  setAvatarUrl: (avatarUrl: string) => set({ avatarUrl }),
+  setAvatar: (avatar: string) => set({ avatar }),
 }));
 
 export default useUserStore;

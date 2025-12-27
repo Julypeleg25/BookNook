@@ -86,6 +86,7 @@ const SignUp = () => {
                   rules={{
                     required: "Username is required",
                     minLength: { value: 3, message: "Minimum 3 characters" },
+                    maxLength: { value: 14, message: "Maximum 14 characters" },
                   }}
                   render={({ field }) => (
                     <TextField
@@ -112,7 +113,7 @@ const SignUp = () => {
                   rules={{
                     required: "Name is required",
                     minLength: { value: 3, message: "Minimum 3 characters" },
-                    maxLength: { value: 10, message: "Maximum 10 characters" },
+                    maxLength: { value: 14, message: "Maximum 14 characters" },
                   }}
                   render={({ field }) => (
                     <TextField

@@ -25,7 +25,7 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
         <Stack direction="row" spacing="1.5rem">
           <Box
             component="img"
-            src={post.book.coverImage}
+            src={post.imageUrl}
             alt={post.book.title}
             sx={{
               width: "11rem",
