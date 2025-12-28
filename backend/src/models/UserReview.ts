@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ReviewComment {
   userId: Types.ObjectId;
@@ -11,7 +11,7 @@ export interface IUserReview extends Document {
   bookId: string; // Google Books volume ID
   review: string;
   rating: number; // 0-5, increments of 0.5
-  picturePath?: string; 
+  picturePath?: string;
   comments: ReviewComment[];
   createdAt: Date;
   updatedAt: Date;
@@ -20,16 +20,16 @@ export interface IUserReview extends Document {
 
 const ReviewCommentSchema = new Schema<ReviewComment>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     comment: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
   },
-  { _id: true } 
+  { _id: true }
 );
 
 const UserReviewSchema = new Schema<IUserReview>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     bookId: { type: String, required: true },
     review: { type: String, required: true },
     rating: {
@@ -39,17 +39,18 @@ const UserReviewSchema = new Schema<IUserReview>(
       max: 5,
       validate: {
         validator: (v: number) => v * 2 === Math.floor(v * 2),
-        message: (props) => `${props.value} is not a valid rating (increments of 0.5)!`,
+        message: (props) =>
+          `${props.value} is not a valid rating (increments of 0.5)!`,
       },
     },
-    likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     picturePath: { type: String },
     comments: [ReviewCommentSchema],
   },
-  { timestamps: true } 
+  { timestamps: true }
 );
 
 export const UserReviewModel = mongoose.model<IUserReview>(
-  'UserReview',
+  "UserReview",
   UserReviewSchema
 );

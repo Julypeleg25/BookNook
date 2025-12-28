@@ -9,7 +9,7 @@ dotenv.config();
 
 function generateTokens(user: IUser) {
   const accessToken = jwt.sign(
-    {userId: user._id, email: user.email } ,
+    { userId: user._id, email: user.email },
     process.env.JWT_ACCESS_SECRET!,
     { expiresIn: "15m" }
   );
@@ -22,7 +22,11 @@ function generateTokens(user: IUser) {
 }
 
 // Set tokens as HTTP-only cookies
-function setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
+function setAuthCookies(
+  res: Response,
+  accessToken: string,
+  refreshToken: string
+) {
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -38,7 +42,11 @@ function setAuthCookies(res: Response, accessToken: string, refreshToken: string
 }
 
 // Save tokens to user in DB
-async function saveTokensToUser(id: string, accessToken: string, refreshToken: string) {
+async function saveTokensToUser(
+  id: string,
+  accessToken: string,
+  refreshToken: string
+) {
   await User.findByIdAndUpdate(id, { accessToken, refreshToken });
 }
 
@@ -48,7 +56,9 @@ export const googleAuthCallback = async (req: Request, res: Response) => {
     const { accessToken, refreshToken } = generateTokens(user);
     await saveTokensToUser(user._id, accessToken, refreshToken);
     setAuthCookies(res, accessToken, refreshToken);
-    res.redirect((process.env.FRONTEND_URL || "http://localhost:5173") + '/dashboard');
+    res.redirect(
+      (process.env.FRONTEND_URL || "http://localhost:5173") + "/dashboard"
+    );
   } else {
     res.redirect(`${process.env.FRONTEND_URL}/login`);
   }
@@ -56,21 +66,44 @@ export const googleAuthCallback = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, username, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
+    // Ensure local registrations use provider='local' and do NOT set providerId
+    const user = new User({
+      name,
+      email,
+      username,
+      provider: "local",
+      password: hashedPassword,
+    });
     await user.save();
-    res.status(201).json({ message: "User registered successfully" });
-  } catch {
-    res.status(400).json({ error: "Registration failed" });
+    // After successful registration, generate tokens and set cookies (auto-login)
+    const { accessToken, refreshToken } = generateTokens(user as any);
+    await saveTokensToUser(String(user._id), accessToken, refreshToken);
+    setAuthCookies(res, accessToken, refreshToken);
+    res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        username: user.username,
+      },
+    });
+  } catch (e) {
+    res.status(400).json({ error: e });
   }
 };
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (
+      !user ||
+      !user.password ||
+      !(await bcrypt.compare(password, user.password))
+    ) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
     const { accessToken, refreshToken } = generateTokens(user);
@@ -78,7 +111,16 @@ export const login = async (req: Request, res: Response) => {
     user.refreshToken = refreshToken;
     await user.save();
     setAuthCookies(res, accessToken, refreshToken);
-    res.json({ success: true });
+    res.json({
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        username: user.username,
+        refreshToken: user.refreshToken,
+        accessToken: user.accessToken,
+      },
+    });
   } catch {
     res.status(500).json({ error: "Login failed" });
   }
@@ -118,7 +160,6 @@ export const refresh = async (req: Request, res: Response) => {
     res.status(401).json({ error: "Invalid refresh token" });
   }
 };
-
 
 export const logout = async (
   req: Request,

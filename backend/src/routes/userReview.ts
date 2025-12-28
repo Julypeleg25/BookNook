@@ -1,15 +1,16 @@
-import { Router, Request, Response } from 'express';
-import multer from 'multer';
-import { UserReviewModel } from '../models/UserReview';
-import { isReviewAuthor } from '../../middlewares/userReview';
-import { requireAuth } from '../../middlewares/authMiddleware';
+import { Router, Request, Response } from "express";
+import axios from "axios";
+import multer from "multer";
+import { UserReviewModel } from "../models/UserReview";
+import { isReviewAuthor } from "../middlewares/userReview";
+import { recomputeBookRating } from "../services/bookService";
 
 const router = Router();
 
 // Multer for picture upload
 const storage = multer.diskStorage({
-  destination: 'uploads/',
-  filename: (_, file, cb) => cb(null, Date.now() + '-' + file.originalname),
+  destination: "uploads/",
+  filename: (_, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 const upload = multer({ storage });
 
@@ -19,25 +20,125 @@ const upload = multer({ storage });
  * Body: { bookId, review, rating }
  * File: picture
  */
-router.post('/', requireAuth, upload.single('picture'), async (req: Request, res: Response) => {
+router.post(
+  "/",
+  upload.single("picture"),
+  async (req: Request, res: Response) => {
+    try {
+      const { bookId, review, rating } = req.body;
+      const picturePath = req.file
+        ? `/uploads/${req.file.filename}`
+        : undefined;
+
+      const newReview = await UserReviewModel.create({
+        userId: req.user.id,
+        bookId,
+        review,
+        rating,
+        picturePath,
+        comments: [],
+        likes: [],
+      });
+
+      // Recompute book rating after creating review
+      await recomputeBookRating(bookId);
+
+      res.status(201).json(newReview);
+    } catch (error: any) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to create review" });
+    }
+  }
+);
+
+/**
+ * Get all reviews
+ * GET /reviews
+ */
+router.get("/", async (req: Request, res: Response) => {
   try {
-    const { bookId, review, rating } = req.body;
-    const picturePath = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const reviews = await UserReviewModel.find()
+      .sort({ createdAt: -1 })
+      .populate({ path: "userId", select: "name username avatar" });
 
-    const newReview = await UserReviewModel.create({
-      userId: req.user.id,
-      bookId,
-      review,
-      rating,
-      picturePath,
-      comments: [],
-      likes: [],
-    });
+    const enriched = await Promise.all(
+      reviews.map(async (r) => {
+        const reviewObj = r.toObject();
+        try {
+          const resp = await axios.get(
+            `http://localhost:${process.env.PORT || 3000}/api/books/${
+              reviewObj.bookId
+            }`
+          );
+          reviewObj.book = resp.data.book;
+        } catch (e) {
+          // ignore book fetch errors
+        }
+        return reviewObj;
+      })
+    );
 
-    res.status(201).json(newReview);
+    res.json(enriched);
   } catch (error: any) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to create review' });
+    res.status(500).json({ message: "Failed to fetch reviews" });
+  }
+});
+
+/**
+ * Get reviews by user id
+ * GET /reviews/user/:userId
+ */
+router.get("/user/:userId", async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const reviews = await UserReviewModel.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({ path: "userId", select: "name username avatar" });
+
+    const enriched = await Promise.all(
+      reviews.map(async (r) => {
+        const reviewObj = r.toObject();
+        try {
+          const resp = await axios.get(
+            `http://localhost:${process.env.PORT || 3000}/api/books/${
+              reviewObj.bookId
+            }`
+          );
+          reviewObj.book = resp.data.book;
+        } catch (e) {
+          // ignore
+        }
+        return reviewObj;
+      })
+    );
+
+    res.json(enriched);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch user reviews" });
+  }
+});
+
+/**
+ * Get review by review id with populated author and book info
+ * GET /reviews/:id
+ */
+router.get("/:id", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const review = await UserReviewModel.findById(id).populate({
+      path: "userId",
+      select: "name username avatar bio",
+    });
+
+    if (!review) return res.status(404).json({ message: "Review not found" });
+
+    // If you want to include book details from the books API, you can fetch it here using bookId.
+    res.json(review);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch review" });
   }
 });
 
@@ -46,38 +147,50 @@ router.post('/', requireAuth, upload.single('picture'), async (req: Request, res
  * PATCH /reviews/:id
  * Only the author can update
  */
-router.patch('/:id', isReviewAuthor, upload.single('picture'), async (req: Request, res: Response) => {
-  try {
-    const { review, rating } = req.body;
-    const updateData: any = {};
-    if (review) updateData.review = review;
-    if (rating) updateData.rating = rating;
-    if (req.file) updateData.picturePath = `/uploads/${req.file.filename}`;
+router.patch(
+  "/:id",
+  isReviewAuthor,
+  upload.single("picture"),
+  async (req: Request, res: Response) => {
+    try {
+      const { review, rating } = req.body;
+      const updateData: any = {};
+      if (review) updateData.review = review;
+      if (rating) updateData.rating = rating;
+      if (req.file) updateData.picturePath = `/uploads/${req.file.filename}`;
 
-    const updated = await UserReviewModel.findByIdAndUpdate(
-      req.params.id,
-      { $set: updateData },
-      { new: true }
-    );
+      const updated = await UserReviewModel.findByIdAndUpdate(
+        req.params.id,
+        { $set: updateData },
+        { new: true }
+      );
 
-    res.json(updated);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+      // Recompute book rating after updating review
+      if (updated) {
+        await recomputeBookRating(updated.bookId);
+      }
+
+      res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 
 /**
  * Like a review
  * POST /reviews/:id/like
  * Cannot like your own review
  */
-router.post('/:id/like', async (req: Request, res: Response) => {
+router.post("/:id/like", async (req: Request, res: Response) => {
   try {
     const review = await UserReviewModel.findById(req.params.id);
-    if (!review) return res.status(404).json({ message: 'Review not found' });
+    if (!review) return res.status(404).json({ message: "Review not found" });
 
     if (review.userId.toString() === req.user.id) {
-      return res.status(400).json({ message: "You can't like your own review" });
+      return res
+        .status(400)
+        .json({ message: "You can't like your own review" });
     }
 
     // Add user to likes if not already liked
@@ -87,6 +200,25 @@ router.post('/:id/like', async (req: Request, res: Response) => {
     }
 
     res.json({ likes: review.likes.length });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+/**
+ * Delete a review
+ * DELETE /reviews/:id
+ * Only the author can delete
+ */
+router.delete("/:id", isReviewAuthor, async (req: Request, res: Response) => {
+  try {
+    const review = await UserReviewModel.findByIdAndDelete(req.params.id);
+    if (!review) return res.status(404).json({ message: "Review not found" });
+
+    // Recompute book rating after deleting review
+    await recomputeBookRating(review.bookId);
+
+    res.json({ message: "Review deleted successfully" });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

@@ -1,10 +1,11 @@
-import { Router, Request, Response } from 'express';
-import axios from 'axios';
-import dotenv from 'dotenv';
+import { Router, Request, Response } from "express";
+import axios from "axios";
+import dotenv from "dotenv";
+import Book from "../models/Book";
 dotenv.config();
 const router = Router();
 
-const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
+const GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes";
 const API_KEY = process.env.GOOGLE_BOOKS_API_KEY as string;
 
 /* -----------------------------
@@ -56,6 +57,8 @@ export interface BookDetail extends BookSummary {
   pageCount?: number;
   categories: string[];
   previewLink?: string;
+  avgRating?: number;
+  ratingCount?: number;
 }
 
 /* -----------------------------
@@ -140,14 +143,14 @@ function normalizeBookDetail(volume: GoogleBooksVolume): BookDetail {
  *                   items:
  *                     $ref: '#/components/schemas/BookSummary'
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
   try {
     const {
       title,
       author,
       subject,
-      page = '1',
-      limit = '10',
+      page = "1",
+      limit = "10",
     } = req.query as BooksQuery;
 
     const queryParts: string[] = [];
@@ -155,13 +158,14 @@ router.get('/', async (req: Request, res: Response) => {
     if (author) queryParts.push(`inauthor:${author}`);
     if (subject) queryParts.push(`subject:${subject}`);
 
-    const q = queryParts.length ? queryParts.join('+') : ' ';
+    const q = queryParts.length ? queryParts.join("+") : " ";
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
     const startIndex = (pageNumber - 1) * limitNumber;
 
-    const fields = 'items(id,volumeInfo(title,authors,imageLinks/thumbnail)),totalItems';
+    const fields =
+      "items(id,volumeInfo(title,authors,imageLinks/thumbnail)),totalItems";
 
     const response = await axios.get<GoogleBooksResponse>(GOOGLE_BOOKS_API, {
       params: {
@@ -179,11 +183,13 @@ router.get('/', async (req: Request, res: Response) => {
       page: pageNumber,
       limit: limitNumber,
       totalItems: data.totalItems ?? 0,
-      totalPages: data.totalItems ? Math.ceil(data.totalItems / limitNumber) : 0,
+      totalPages: data.totalItems
+        ? Math.ceil(data.totalItems / limitNumber)
+        : 0,
       items: data.items?.map(normalizeBookSummary) ?? [],
     });
   } catch (error: any) {
-    res.status(500).json({ message: 'Failed to fetch books' });
+    res.status(500).json({ message: "Failed to fetch books" });
   }
 });
 
@@ -215,7 +221,7 @@ router.get('/', async (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-router.get('/:id', async (req: Request, res: Response) => {
+router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -224,11 +230,20 @@ router.get('/:id', async (req: Request, res: Response) => {
       { params: { key: API_KEY } }
     );
 
+    const bookDetail = normalizeBookDetail(response.data);
+
+    // Fetch local rating data
+    const localBook = await Book.findOne({ bookId: id });
+    if (localBook) {
+      bookDetail.avgRating = localBook.avgRating;
+      bookDetail.ratingCount = localBook.ratingCount;
+    }
+
     res.json({
-      book: normalizeBookDetail(response.data),
+      book: bookDetail,
     });
   } catch {
-    res.status(500).json({ message: 'Failed to fetch book' });
+    res.status(500).json({ message: "Failed to fetch book" });
   }
 });
 

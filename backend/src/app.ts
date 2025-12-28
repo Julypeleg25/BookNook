@@ -6,8 +6,9 @@ import session from "express-session";
 import cors from "cors";
 import authRoutes from "./routes/auth";
 import User, { IUser } from "./models/User";
-import swaggerUi from 'swagger-ui-express';
-import booksRouter from './routes/books';
+import swaggerUi from "swagger-ui-express";
+import booksRouter from "./routes/books";
+import userReviewsRouter from "./routes/userReview";
 
 import { swaggerSpec } from '../swagger';
 import { UPLOADS_FOLDER } from "../multerConfig";
@@ -24,7 +25,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cookieParser());
 
 // CORS
-app.use(cors({
+app.use(
+  cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
   })
@@ -43,7 +45,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: true }, 
+    cookie: { secure: true },
   })
 );
 app.use(passport.initialize());
@@ -51,10 +53,10 @@ app.use(passport.session());
 passport.use(localLoginStrategy);
 passport.use(googleStrategy);
 
-passport.serializeUser(function(user, done) {
-  const userObj = user as IUser
-               done(null, userObj._id);
-              });
+passport.serializeUser(function (user, done) {
+  const userObj = user as IUser;
+  done(null, userObj._id);
+});
 
 passport.deserializeUser(async (id: string, done) => {
   try {
@@ -68,13 +70,13 @@ passport.deserializeUser(async (id: string, done) => {
 // Routes
 app.use("/", authRoutes);
 
-app.use('/api/books',requireAuth, booksRouter);
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api/books", requireAuth, booksRouter);
+app.use("/userReviews", requireAuth, userReviewsRouter);
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Serve uploaded images
-app.use('/uploads', requireAuth, express.static(UPLOADS_FOLDER));
+app.use("/uploads", requireAuth, express.static(UPLOADS_FOLDER));
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-
