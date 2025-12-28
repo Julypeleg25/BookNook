@@ -3,12 +3,10 @@ import jwt from "jsonwebtoken";
 import User, { IUser, JwtDecodedUser } from "../models/User";
 import dotenv from "dotenv";
 dotenv.config();
-export interface AuthRequest extends Request {
-  user?: Express.User;
-}
+
 
 export const requireAuth = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {

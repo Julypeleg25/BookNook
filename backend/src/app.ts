@@ -9,8 +9,8 @@ import User, { IUser } from "./models/User";
 import swaggerUi from 'swagger-ui-express';
 import booksRouter from './routes/books';
 
-import { swaggerSpec } from './swagger';
-import { UPLOADS_FOLDER } from "./multerConfig";
+import { swaggerSpec } from '../swagger';
+import { UPLOADS_FOLDER } from "../multerConfig";
 // Import strategies
 import googleStrategy from "./services/googleStrategy";
 import localLoginStrategy from "./services/localStrategy";

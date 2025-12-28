@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { UserReviewModel } from '../models/UserReview';
-import { isReviewAuthor } from '../middlewares/userReview';
+import { isReviewAuthor } from '../../middlewares/userReview';
+import { requireAuth } from '../../middlewares/authMiddleware';
 
 const router = Router();
 
@@ -18,7 +19,7 @@ const upload = multer({ storage });
  * Body: { bookId, review, rating }
  * File: picture
  */
-router.post('/', upload.single('picture'), async (req: Request, res: Response) => {
+router.post('/', requireAuth, upload.single('picture'), async (req: Request, res: Response) => {
   try {
     const { bookId, review, rating } = req.body;
     const picturePath = req.file ? `/uploads/${req.file.filename}` : undefined;
