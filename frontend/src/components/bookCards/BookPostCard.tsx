@@ -11,20 +11,18 @@ import {
   Typography,
   Stack,
   Box,
+  Link as MuiLink,
 } from "@mui/material";
-import { CgMoreVertical } from "react-icons/cg";
-import { GrFavorite } from "react-icons/gr";
-import { MdComment } from "react-icons/md";
 import type { BookPost } from "../../models/Book";
 import { Link as RouterLink } from "react-router-dom";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 
 interface BookPostCardProps {
-  book: BookPost;
+  post: BookPost;
 }
 
-const BookPostCard = ({ book }: BookPostCardProps) => {
+const BookPostCard = ({ post }: BookPostCardProps) => {
   return (
     <Card
       sx={{
@@ -39,34 +37,42 @@ const BookPostCard = ({ book }: BookPostCardProps) => {
       }}
     >
       <CardHeader
-        avatar={<Avatar src={book.user.avatarUrl} alt={book.user.name} />}
+        avatar={<Avatar src={post.user.avatarUrl} alt={post.user.name} />}
         title={
-          <Typography
+          <MuiLink
             component={RouterLink}
-            to={`/posts/${book.id}`}
+            to={`/books/${post.book.id}`}
+            underline="none"
+            color="primary.main"
             sx={{
-              fontWeight: 600,
-              color: "text.primary",
-              textDecoration: "none",
+              transition: "color 0.2s ease",
               "&:hover": {
-                textDecoration: "underline",
+                color: "primary.light",
               },
             }}
           >
-            {book.book.title}
-          </Typography>
+            <Typography
+              sx={{
+                fontSize: "1rem",
+                fontWeight: 600,
+                transition: "text-decoration 0.2s ease",
+              }}
+            >
+              {post.book.title}
+            </Typography>
+          </MuiLink>
         }
-        subheader={book.createdDate.toDateString()}
+        subheader={post.createdDate.toDateString()}
       />
 
       <Box
         component={RouterLink}
-        to={`/posts/${book.id}`}
+        to={`/posts/${post.id}`}
         sx={{ textDecoration: "none" }}
       >
         <CardMedia
           component="img"
-          image={book.imageUrl}
+          image={post.imageUrl}
           sx={{
             height: "16rem",
             objectFit: "cover",
@@ -76,7 +82,7 @@ const BookPostCard = ({ book }: BookPostCardProps) => {
 
       <CardContent>
         <Typography color="text.secondary">
-          {book.description.slice(0, 90)}…
+          {post.description.slice(0, 90)}…
         </Typography>
       </CardContent>
 
@@ -93,22 +99,22 @@ const BookPostCard = ({ book }: BookPostCardProps) => {
             <IconButton size="small">
               <FiHeart />
             </IconButton>
-            <Typography fontSize="1rem">{book.likes}</Typography>
+            <Typography fontSize="1rem">{post.likes}</Typography>
           </Stack>
 
           <Stack direction="row" spacing="0.3rem" alignItems="center">
             <IconButton size="small">
               <FaRegComment />
             </IconButton>
-            <Typography fontSize="1rem">{book.comments.length}</Typography>
+            <Typography fontSize="1rem">{post.comments.length}</Typography>
           </Stack>
         </Stack>
-        <Rating size="small" value={book.rating} precision={0.5} readOnly />
+        <Rating size="small" value={post.rating} precision={0.5} readOnly />
       </CardActions>
 
       <Box px="1rem" pb="1rem">
         <Stack direction="row" spacing="0.4rem" flexWrap="wrap">
-          {book.book.genres.map((genre) => (
+          {post.book.genres.map((genre) => (
             <Chip key={genre} label={genre} size="small" />
           ))}
         </Stack>

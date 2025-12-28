@@ -9,6 +9,9 @@ import {
   Stack,
 } from "@mui/material";
 import { BiSend } from "react-icons/bi";
+import { AiFillAlert } from "react-icons/ai";
+import { GiSparkles } from "react-icons/gi";
+import { IoSparkles } from "react-icons/io5";
 
 const EXAMPLE_AI_PROMPT =
   "e.g., I want a mystery novel that i won't be able to put it down...";
@@ -50,7 +53,7 @@ const AiBookRecommendation = ({
       }}
     >
       <Typography variant="h6" gutterBottom>
-        AI Book Recommendation
+      <IoSparkles/>  AI Book Recommendation
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: "1rem" }}>
         Describe what kind of book you're looking for, and our AI will help you

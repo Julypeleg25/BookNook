@@ -70,12 +70,7 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
                 setIsDeleteModalOpen={setIsDeleteModalOpen}
               />
             </Stack>
-
-            <Stack direction="row" alignItems="center" spacing="0.5rem">
-              <Typography fontWeight={500}>Your rating:</Typography>
-              <Rating value={post.rating} readOnly size="small" />
-            </Stack>
-
+            <Rating value={post.rating} readOnly size="small" />
             <Typography color="text.secondary">
               {post.description.slice(0, 260)}…
             </Typography>

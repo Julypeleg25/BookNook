@@ -26,7 +26,7 @@ const ExplorePosts = () => {
         gap={"2rem"}
       >
         {bookPosts.map((post: BookPost) => (
-          <BookPostCard key={post.id} book={post} />
+          <BookPostCard key={post.id} post={post} />
         ))}
       </Box>
       <SearchFiltersModal
