@@ -36,7 +36,7 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate(`/books/${id}`)}
+        onClick={() => navigate(`/post`)}
           startIcon={<BiBookAdd />}
         >
           Write a review

@@ -17,6 +17,8 @@ import { GrFavorite } from "react-icons/gr";
 import { MdComment } from "react-icons/md";
 import type { BookPost } from "../../models/Book";
 import { Link as RouterLink } from "react-router-dom";
+import { FaRegComment } from "react-icons/fa6";
+import { FiHeart } from "react-icons/fi";
 
 interface BookPostCardProps {
   book: BookPost;
@@ -37,21 +39,11 @@ const BookPostCard = ({ book }: BookPostCardProps) => {
       }}
     >
       <CardHeader
-        avatar={
-          <Avatar
-            src={book.user.avatarUrl}
-            alt={book.user.name}
-          />
-        }
-        action={
-          <IconButton>
-            <CgMoreVertical />
-          </IconButton>
-        }
+        avatar={<Avatar src={book.user.avatarUrl} alt={book.user.name} />}
         title={
           <Typography
             component={RouterLink}
-            to={`/booksPosts/${book.id}`}
+            to={`/posts/${book.id}`}
             sx={{
               fontWeight: 600,
               color: "text.primary",
@@ -69,7 +61,7 @@ const BookPostCard = ({ book }: BookPostCardProps) => {
 
       <Box
         component={RouterLink}
-        to={`/booksPosts/${book.id}`}
+        to={`/posts/${book.id}`}
         sx={{ textDecoration: "none" }}
       >
         <CardMedia
@@ -99,38 +91,25 @@ const BookPostCard = ({ book }: BookPostCardProps) => {
         <Stack direction="row" spacing="1rem" alignItems="center">
           <Stack direction="row" spacing="0.3rem" alignItems="center">
             <IconButton size="small">
-              <GrFavorite />
+              <FiHeart />
             </IconButton>
-            <Typography fontSize="0.85rem">
-              {book.likes}
-            </Typography>
+            <Typography fontSize="1rem">{book.likes}</Typography>
           </Stack>
 
           <Stack direction="row" spacing="0.3rem" alignItems="center">
             <IconButton size="small">
-              <MdComment />
+              <FaRegComment />
             </IconButton>
-            <Typography fontSize="0.85rem">
-              {book.comments.length}
-            </Typography>
+            <Typography fontSize="1rem">{book.comments.length}</Typography>
           </Stack>
         </Stack>
-        <Rating
-          size="small"
-          value={book.rating}
-          precision={0.5}
-          readOnly
-        />
+        <Rating size="small" value={book.rating} precision={0.5} readOnly />
       </CardActions>
 
       <Box px="1rem" pb="1rem">
         <Stack direction="row" spacing="0.4rem" flexWrap="wrap">
           {book.book.genres.map((genre) => (
-            <Chip
-              key={genre}
-              label={genre}
-              size="small"
-            />
+            <Chip key={genre} label={genre} size="small" />
           ))}
         </Stack>
       </Box>

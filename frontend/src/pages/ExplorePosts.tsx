@@ -1,12 +1,15 @@
-import { Box } from "@mui/material";
+import { Box, Fab } from "@mui/material";
 import BookPostCard from "../components/bookCards/BookPostCard";
 import { bookPosts } from "../exampleData";
 import type { BookPost } from "../models/Book";
 import { useState } from "react";
 import SearchFiltersModal from "../components/searchFilters/SearchFiltersModal";
 import SearchBar from "../components/searchFilters/SearchBar";
+import { MdAdd } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 const ExplorePosts = () => {
+  const navigate = useNavigate();
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
 
   return (
@@ -30,6 +33,15 @@ const ExplorePosts = () => {
         open={isFiltersModalOpen}
         onClose={() => setIsFiltersModalOpen(false)}
       />
+      <Fab
+        color="primary"
+        sx={{ position: "fixed", bottom: 24, right: 24 }}
+        onClick={() => {
+          navigate("/post");
+        }}
+      >
+        <MdAdd size={"1.8rem"} />
+      </Fab>
     </div>
   );
 };

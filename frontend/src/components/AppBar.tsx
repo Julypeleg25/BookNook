@@ -60,7 +60,7 @@ const AppBar = () => {
                 alignSelf: "end",
               }}
             >
-              <Typography component={NavLink} to="/booksPosts" sx={navItemSx}>
+              <Typography component={NavLink} to="/posts" sx={navItemSx}>
                 Posts
               </Typography>
               <Typography component={NavLink} to="/books" sx={navItemSx}>
