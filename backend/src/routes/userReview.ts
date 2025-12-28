@@ -31,7 +31,7 @@ router.post(
         : undefined;
 
       const newReview = await UserReviewModel.create({
-        userId: req.user.id,
+        userId: req.user._id,
         bookId,
         review,
         rating,
@@ -187,15 +187,15 @@ router.post("/:id/like", async (req: Request, res: Response) => {
     const review = await UserReviewModel.findById(req.params.id);
     if (!review) return res.status(404).json({ message: "Review not found" });
 
-    if (review.userId.toString() === req.user.id) {
+    if (review.userId.toString() === req.user?._id.toString()) {
       return res
         .status(400)
         .json({ message: "You can't like your own review" });
     }
 
     // Add user to likes if not already liked
-    if (!review.likes.includes(req.user.id)) {
-      review.likes.push(req.user.id);
+    if (!review.likes.includes(req.user!._id)) {
+      review.likes.push(req.user!._id);
       await review.save();
     }
 
