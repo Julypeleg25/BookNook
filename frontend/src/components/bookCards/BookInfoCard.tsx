@@ -1,26 +1,17 @@
-import {
-  Box,
-  IconButton,
-  Tooltip,
-  Typography,
-  Stack,
-  Rating,
-} from "@mui/material";
+import { Box, Typography, Stack, Rating } from "@mui/material";
 import type { Book } from "../../models/Book";
 import { formatDate } from "../../utils/dateUtils";
-import { BiBookmark } from "react-icons/bi";
 import { Link as RouterLink } from "react-router-dom";
-import { LuBookCheck } from "react-icons/lu";
 import BookInfoActions from "./BookInfoActions";
 
 interface BookInfoCardProps {
   book: Book;
+  isOnlyInfo?: boolean;
 }
 
-const BookInfoCard = ({ book }: BookInfoCardProps) => {
+const BookInfoCard = ({ book, isOnlyInfo }: BookInfoCardProps) => {
   return (
     <Stack alignItems="center" spacing="0.6rem">
-      
       <Box
         component={RouterLink}
         to={`/books/${book.id}`}
@@ -37,7 +28,6 @@ const BookInfoCard = ({ book }: BookInfoCardProps) => {
             transform: "translateY(-0.2rem)",
           },
         }}
-        
       >
         <Box
           component="img"
@@ -61,11 +51,10 @@ const BookInfoCard = ({ book }: BookInfoCardProps) => {
             color: "text.primary",
             textDecoration: "none",
             lineHeight: 1.3,
-           transition: "color 0.2s ease",
-          "&:hover": {
-            color: "primary.main",
-          },
-        
+            transition: "color 0.2s ease",
+            "&:hover": {
+              color: "primary.main",
+            },
           }}
         >
           {book.title}
@@ -91,7 +80,7 @@ const BookInfoCard = ({ book }: BookInfoCardProps) => {
           readOnly
           size="small"
         />
-        <BookInfoActions />
+        {!isOnlyInfo && <BookInfoActions />}
       </div>
     </Stack>
   );

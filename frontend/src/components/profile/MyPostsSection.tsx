@@ -1,13 +1,8 @@
 import { Box, Button } from "@mui/material";
-import { bookPosts } from "../../exampleData";
 import type { BookPost } from "../../models/Book";
 import MyBookPostCard from "../bookCards/MyBookPostCard";
 import { useNavigate } from "react-router-dom";
-
-const user_id = "u1"; //TODO: Example user ID
-const exampleUserPosts = bookPosts
-  .filter((post) => post.user.id === user_id)
-  .slice(0, 5);
+import { bookPosts } from "../../exampleData";
 
 interface MyPostsSectionProps {
   postsCount: number;
@@ -20,7 +15,7 @@ const MyPostsSection = ({ postsCount }: MyPostsSectionProps) => {
     <div
       style={{
         padding: "1rem",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#ece9e4ff",
         marginTop: "2rem",
         borderRadius: "1rem",
       }}
@@ -47,7 +42,7 @@ const MyPostsSection = ({ postsCount }: MyPostsSectionProps) => {
         }}
         gap={"2rem"}
       >
-        {exampleUserPosts.map((post: BookPost) => (
+        {bookPosts.slice(0,5).map((post: BookPost) => (
           <MyBookPostCard key={post.id} post={post} />
         ))}
       </Box>

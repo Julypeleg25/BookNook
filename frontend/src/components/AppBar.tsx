@@ -47,8 +47,8 @@ const AppBar = () => {
   const navigate = useNavigate();
 
   return (
-    <MuiAppBar position="sticky" style={{ top: 0 }}>
-      <Toolbar style={{ height: "4.5rem", display: "flex" }}>
+    <MuiAppBar position="sticky" style={{ top: 0,width:"100%" }}>
+      <Toolbar style={{ height: "4.5rem", display: "flex",width:'100%' }}>
         <Box display="flex" alignItems="center" flexGrow={1}>
           <img src={bookNookLogo} alt="BookNook" style={{ height: "2.5rem" }} />
           {isAuthenticated && (
