@@ -1,4 +1,18 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import type { IUser } from "./User";
+import { IBook } from "./Book";
+// Populated comment with user object
+export interface PopulatedReviewComment extends Omit<ReviewComment, "userId"> {
+  user: IUser;
+}
+
+// Populated review with user and populated comment users
+export interface PopulatedUserReview extends Omit<IUserReview, "userId" | "comments" | "likes" | "bookId"> {
+  user: IUser;
+  comments: PopulatedReviewComment[];
+  likes: IUser[];
+  book: IBook
+}
 
 export interface ReviewComment {
   userId: Types.ObjectId;

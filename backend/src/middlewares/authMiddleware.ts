@@ -35,9 +35,7 @@ export const requireAuth = async (
       return res.status(401).json({ error: "User not found" });
     }
 
-    req.user = {
-      id: user._id.toString(),
-    };
+    req.authenticatedUser = user
 
     next();
   } catch {

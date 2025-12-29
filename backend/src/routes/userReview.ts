@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import axios from "axios";
 import multer from "multer";
-import { UserReviewModel } from "../models/UserReview";
+import { PopulatedUserReview, UserReviewModel } from "../models/UserReview";
 import { isReviewAuthor } from "../middlewares/userReview";
 import { recomputeBookRating } from "../services/bookService";
 
@@ -31,7 +31,7 @@ router.post(
         : undefined;
 
       const newReview = await UserReviewModel.create({
-        userId: req.user._id,
+        userId: req.authenticatedUser!._id,
         bookId,
         review,
         rating,
@@ -59,7 +59,8 @@ router.get("/", async (req: Request, res: Response) => {
   try {
     const reviews = await UserReviewModel.find()
       .sort({ createdAt: -1 })
-      .populate({ path: "userId", select: "name username avatar" });
+      .populate({ path: "userId", select: "name username avatar" })
+      .populate({ path: "bookId", select: "title authors thumbnail" });
 
     const enriched = await Promise.all(
       reviews.map(async (r) => {
@@ -187,15 +188,15 @@ router.post("/:id/like", async (req: Request, res: Response) => {
     const review = await UserReviewModel.findById(req.params.id);
     if (!review) return res.status(404).json({ message: "Review not found" });
 
-    if (review.userId.toString() === req.user?._id.toString()) {
+    if (review.userId.toString() === req.authenticatedUser?._id.toString()) {
       return res
         .status(400)
         .json({ message: "You can't like your own review" });
     }
 
     // Add user to likes if not already liked
-    if (!review.likes.includes(req.user!._id)) {
-      review.likes.push(req.user!._id);
+    if (!review.likes.includes(req.authenticatedUser!._id)) {
+      review.likes.push(req.authenticatedUser!._id);
       await review.save();
     }
 

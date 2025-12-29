@@ -4,20 +4,20 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import session from "express-session";
 import cors from "cors";
-import authRoutes from "./routes/auth";
-import User, { IUser } from "./models/User";
+import authRoutes from "./src/routes/auth";
+import User, { IUser } from "./src/models/User";
 import swaggerUi from "swagger-ui-express";
-import booksRouter from "./routes/books";
-import userReviewsRouter from "./routes/userReview";
+import booksRouter from "./src/routes/books";
+import userReviewsRouter from "./src/routes/userReview";
 
-import { swaggerSpec } from '../swagger';
-import { UPLOADS_FOLDER } from "../multerConfig";
+import { swaggerSpec } from './swagger';
+import { UPLOADS_FOLDER } from "./multerConfig";
 // Import strategies
-import googleStrategy from "./services/googleStrategy";
-import localLoginStrategy from "./services/localStrategy";
+import googleStrategy from "./src/services/googleStrategy";
+import localLoginStrategy from "./src/services/localStrategy";
 import cookieParser from "cookie-parser";
 
-import { requireAuth } from "./middlewares/authMiddleware";
+import { requireAuth } from "./src/middlewares/authMiddleware";
 dotenv.config();
 
 const app = express();

@@ -39,9 +39,9 @@ router.get(
 // Protected routes
 router.get("/me", requireAuth, (req: any, res) => {
   res.json({
-    id: req.user._id,
-    email: req.user.email,
-    name: req.user.name,
+    id: req.authenticatedUser._id,
+    email: req.authenticatedUser.email,
+    name: req.authenticatedUser.name,
   });
 });
 
