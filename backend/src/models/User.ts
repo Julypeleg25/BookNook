@@ -15,6 +15,8 @@ export interface IUser extends Document {
   avatar?: string;
   bio?: string;
   providerId?: string;
+  wishlist: mongoose.Types.ObjectId[];
+  readlist: mongoose.Types.ObjectId[];
   refreshToken?: string; // <-- Add this
   accessToken?: string; // <-- Optional, usually not needed
   generateJWT: () => string;
@@ -60,6 +62,18 @@ const userSchema = new Schema<IUser>(
     name: String,
     avatar: String,
     bio: String,
+    wishlist: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Book", // This must match the name in your Book model
+      },
+    ],
+    readlist: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Book",
+      },
+    ],
     // provider-specific id for OAuth (google, github, etc.)
     providerId: {
       type: String,
@@ -146,6 +160,8 @@ export const validateUser = (user: Partial<IUser>) => {
       .regex(/^[a-zA-Z0-9_]+$/)
       .required(),
     password: Joi.string().min(6).max(20).allow("").allow(null),
+    wishlist: Joi.array().items(Joi.string()), 
+    readlist: Joi.array().items(Joi.string()),
   });
   return schema.validate(user);
 };
