@@ -2,27 +2,17 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 import type { IUser } from "./User";
 import { IBook } from "./Book";
 // Populated comment with user object
-export interface PopulatedReviewComment extends Omit<ReviewComment, "userId"> {
-  user: IUser;
-}
 
-// Populated review with user and populated comment users
-export interface PopulatedUserReview extends Omit<IUserReview, "userId" | "comments" | "likes" | "bookId"> {
-  user: IUser;
-  comments: PopulatedReviewComment[];
-  likes: IUser[];
-  book: IBook
-}
 
 export interface ReviewComment {
-  userId: Types.ObjectId;
+  user: Types.ObjectId;
   comment: string;
   createdAt: Date;
 }
 
 export interface IUserReview extends Document {
-  userId: Types.ObjectId;
-  bookId: string; // Google Books volume ID
+  user: Types.ObjectId;
+  book: string; // Google Books volume ID
   review: string;
   rating: number; // 0-5, increments of 0.5
   picturePath?: string;
@@ -34,7 +24,7 @@ export interface IUserReview extends Document {
 
 const ReviewCommentSchema = new Schema<ReviewComment>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     comment: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
   },
@@ -43,8 +33,8 @@ const ReviewCommentSchema = new Schema<ReviewComment>(
 
 const UserReviewSchema = new Schema<IUserReview>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    bookId: { type: String, required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    book: { type: String, required: true },
     review: { type: String, required: true },
     rating: {
       type: Number,

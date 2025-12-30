@@ -1,9 +1,11 @@
 import { Router, Request, Response } from "express";
 import axios from "axios";
 import multer from "multer";
-import { PopulatedUserReview, UserReviewModel } from "../models/UserReview";
+import { IUserReview, UserReviewModel } from "../models/UserReview";
 import { isReviewAuthor } from "../middlewares/userReview";
 import { recomputeBookRating } from "../services/bookService";
+import { IBook } from "../models/Book";
+import { IUser } from "../models/User";
 
 const router = Router();
 
@@ -31,8 +33,8 @@ router.post(
         : undefined;
 
       const newReview = await UserReviewModel.create({
-        userId: req.authenticatedUser!._id,
-        bookId,
+        user: req.authenticatedUser!._id,
+        book: bookId,
         review,
         rating,
         picturePath,
@@ -59,8 +61,8 @@ router.get("/", async (req: Request, res: Response) => {
   try {
     const reviews = await UserReviewModel.find()
       .sort({ createdAt: -1 })
-      .populate({ path: "userId", select: "name username avatar" })
-      .populate({ path: "bookId", select: "title authors thumbnail" });
+      .populate<{ user: IUser }>({ path: "user", select: "name username avatar" })
+      .populate<{ book: IBook }>({ path: "book", select: "title authors thumbnail" });
 
     const enriched = await Promise.all(
       reviews.map(async (r) => {
@@ -68,7 +70,7 @@ router.get("/", async (req: Request, res: Response) => {
         try {
           const resp = await axios.get(
             `http://localhost:${process.env.PORT || 3000}/api/books/${
-              reviewObj.bookId
+              reviewObj.book._id.toString()
             }`
           );
           reviewObj.book = resp.data.book;
@@ -93,17 +95,17 @@ router.get("/", async (req: Request, res: Response) => {
 router.get("/user/:userId", async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const reviews = await UserReviewModel.find({ userId })
+    const reviews = await UserReviewModel.find({ user: userId })
       .sort({ createdAt: -1 })
-      .populate({ path: "userId", select: "name username avatar" });
-
+      .populate<{ user: IUser }>({ path: "user", select: "name username avatar" })
+      .populate<{ book: IBook }>({ path: "book", select: "title authors thumbnail" });
     const enriched = await Promise.all(
       reviews.map(async (r) => {
         const reviewObj = r.toObject();
         try {
           const resp = await axios.get(
             `http://localhost:${process.env.PORT || 3000}/api/books/${
-              reviewObj.bookId
+              reviewObj.book._id.toString()
             }`
           );
           reviewObj.book = resp.data.book;
@@ -128,8 +130,8 @@ router.get("/user/:userId", async (req: Request, res: Response) => {
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const review = await UserReviewModel.findById(id).populate({
-      path: "userId",
+    const review = await UserReviewModel.findById(id).populate<{ user: IUser }>({
+      path: "user",
       select: "name username avatar bio",
     });
 
@@ -155,23 +157,23 @@ router.patch(
   async (req: Request, res: Response) => {
     try {
       const { review, rating } = req.body;
-      const updateData: any = {};
+      const updateData: Partial<IUserReview> = {};
       if (review) updateData.review = review;
       if (rating) updateData.rating = rating;
       if (req.file) updateData.picturePath = `/uploads/${req.file.filename}`;
 
-      const updated = await UserReviewModel.findByIdAndUpdate(
+      const updatedUserReview = await UserReviewModel.findByIdAndUpdate(
         req.params.id,
         { $set: updateData },
         { new: true }
       );
 
       // Recompute book rating after updating review
-      if (updated) {
-        await recomputeBookRating(updated.bookId);
+      if (updatedUserReview) {
+        await recomputeBookRating(updatedUserReview._id.toString());
       }
 
-      res.json(updated);
+      res.json(updatedUserReview);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -188,7 +190,7 @@ router.post("/:id/like", async (req: Request, res: Response) => {
     const review = await UserReviewModel.findById(req.params.id);
     if (!review) return res.status(404).json({ message: "Review not found" });
 
-    if (review.userId.toString() === req.authenticatedUser?._id.toString()) {
+    if (review.user.toString() === req.authenticatedUser?._id.toString()) {
       return res
         .status(400)
         .json({ message: "You can't like your own review" });
@@ -217,7 +219,7 @@ router.delete("/:id", isReviewAuthor, async (req: Request, res: Response) => {
     if (!review) return res.status(404).json({ message: "Review not found" });
 
     // Recompute book rating after deleting review
-    await recomputeBookRating(review.bookId);
+    await recomputeBookRating(review.book.toString());
 
     res.json({ message: "Review deleted successfully" });
   } catch (error: any) {

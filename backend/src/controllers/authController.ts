@@ -52,9 +52,9 @@ async function saveTokensToUser(
 
 export const googleAuthCallback = async (req: Request, res: Response) => {
   if (req.user) {
-    const user = req.user as any;
+    const user = req.user as IUser;
     const { accessToken, refreshToken } = generateTokens(user);
-    await saveTokensToUser(user._id, accessToken, refreshToken);
+    await saveTokensToUser(user._id.toString(), accessToken, refreshToken);
     setAuthCookies(res, accessToken, refreshToken);
     res.redirect(
       (process.env.FRONTEND_URL || "http://localhost:5173") + "/dashboard"
@@ -78,7 +78,7 @@ export const register = async (req: Request, res: Response) => {
     });
     await user.save();
     // After successful registration, generate tokens and set cookies (auto-login)
-    const { accessToken, refreshToken } = generateTokens(user as any);
+    const { accessToken, refreshToken } = generateTokens(user);
     await saveTokensToUser(String(user._id), accessToken, refreshToken);
     setAuthCookies(res, accessToken, refreshToken);
     res.status(201).json({
@@ -171,10 +171,10 @@ export const logout = async (
       if (err) return next(err);
     });
 
-    if (req.user) {
-      await User.findByIdAndUpdate((req.user as any)._id, {
+    if (req.authenticatedUser) {
+      await User.findByIdAndUpdate((req.authenticatedUser._id), {
         refreshToken: null,
-        accessToken: null, // optional — see note below
+        accessToken: null,
       });
     }
 

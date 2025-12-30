@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import passport from "passport";
 import {
   googleAuthCallback,
@@ -9,8 +9,10 @@ import {
 } from "../controllers/authController";
 import { requireAuth } from "../middlewares/authMiddleware";
 import dotenv from 'dotenv'
+import { IUser } from "../models/User";
 dotenv.config();
 const router = express.Router();
+
 
 router.get("/", (_req, res) => {
   res.send("Auth route is working");
@@ -37,11 +39,11 @@ router.get(
 );
 
 // Protected routes
-router.get("/me", requireAuth, (req: any, res) => {
+router.get("/me", requireAuth, (req: Request, res: Response) => {
   res.json({
-    id: req.authenticatedUser._id,
-    email: req.authenticatedUser.email,
-    name: req.authenticatedUser.name,
+    id: req.authenticatedUser!._id,
+    email: req.authenticatedUser!.email,
+    name: req.authenticatedUser!.name,
   });
 });
 
