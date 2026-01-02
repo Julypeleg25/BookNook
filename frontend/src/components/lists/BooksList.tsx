@@ -1,8 +1,9 @@
-import { Box, Button, Stack, Grow } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 import type { Book } from "../../models/Book";
 import BookInfoCard from "../bookCards/BookInfoCard";
-import { useState, useMemo, useRef, useEffect, type ReactNode } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa6";
+import { useInfiniteLoader } from "../../hooks/useInfiniteLoader";
 
 interface BooksListProps {
   booksList: Book[];
@@ -12,31 +13,25 @@ interface BooksListProps {
 const BATCH_SIZE = 4;
 
 const BooksList = ({ booksList, title }: BooksListProps) => {
-  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
-  const loaderRef = useRef<HTMLDivElement | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  useEffect(() => {
-    if (!loaderRef.current || visibleCount >= booksList.length || !isExpanded)
-      return;
+  const { visibleItems, loaderRef, reset } = useInfiniteLoader({
+    items: booksList,
+    batchSize: BATCH_SIZE,
+    rootMargin: "150px",
+  });
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisibleCount((v) => Math.min(v + BATCH_SIZE, booksList.length));
-        }
-      },
-      { rootMargin: "150px" }
-    );
+  const visibleBooks = useMemo(
+    () => (isExpanded ? booksList : visibleItems),
+    [isExpanded, booksList, visibleItems]
+  );
 
-    observer.observe(loaderRef.current);
-    return () => observer.disconnect();
-  }, [visibleCount, booksList.length, isExpanded]);
-
-  const visibleBooks = useMemo(() => {
-    const count = isExpanded ? booksList.length : visibleCount;
-    return booksList.slice(0, count);
-  }, [booksList, visibleCount, isExpanded]);
+  const toggleExpand = () => {
+    setIsExpanded((prev) => {
+      if (prev) reset();
+      return !prev;
+    });
+  };
 
   return (
     <Box
@@ -55,19 +50,15 @@ const BooksList = ({ booksList, title }: BooksListProps) => {
           mb="1rem"
         >
           {title}
-          {booksList.length > BATCH_SIZE && (
-            <Button
-              variant="outlined"
-              onClick={() => setIsExpanded((prev) => !prev)}
-            >
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <span>
-                  {isExpanded ? "View less" : `View all ${booksList.length}`}
-                </span>
-                {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
-              </Stack>
-            </Button>
-          )}
+
+          <Button variant="outlined" onClick={toggleExpand}>
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <span>
+                {isExpanded ? "view less" : `view all ${booksList.length}`}
+              </span>
+              {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
+            </Stack>
+          </Button>
         </Stack>
       )}
 
@@ -80,15 +71,12 @@ const BooksList = ({ booksList, title }: BooksListProps) => {
         }}
         gap="1.5rem"
       >
-        {visibleBooks.map((book, i) => (
-          <Grow in timeout={200 + i * 50} key={book.id}>
-            <Box>
-              <BookInfoCard book={book} />
-            </Box>
-          </Grow>
+        {visibleBooks.map((book) => (
+          <BookInfoCard book={book} key={book.id} />
         ))}
       </Box>
-      <Box ref={loaderRef} />
+
+      {isExpanded && <Box ref={loaderRef} />}
     </Box>
   );
 };

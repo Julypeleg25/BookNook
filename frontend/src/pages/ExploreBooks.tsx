@@ -1,41 +1,21 @@
-import { Box, Fab, Grow } from "@mui/material";
+import { Box, Fab } from "@mui/material";
 import { books } from "../exampleData";
-import type { Book } from "../models/Book";
-import { useState, useRef, useEffect, useMemo } from "react";
 import SearchFiltersModal from "../components/searchFilters/SearchFiltersModal";
 import SearchBar from "../components/searchFilters/SearchBar";
 import BookInfoCard from "../components/bookCards/BookInfoCard";
 import { MdAdd } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-
-const BATCH_SIZE = 10;
+import { useInfiniteLoader } from "../hooks/useInfiniteLoader";
+import { useState } from "react";
 
 const ExploreBooks = () => {
   const navigate = useNavigate();
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
-  const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!loaderRef.current || visibleCount >= books.length) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisibleCount((v) => Math.min(v + BATCH_SIZE, books.length));
-        }
-      },
-      { rootMargin: "150px" }
-    );
-
-    observer.observe(loaderRef.current);
-    return () => observer.disconnect();
-  }, [visibleCount]);
-
-  const visibleBooks = useMemo(
-    () => books.slice(0, visibleCount),
-    [visibleCount]
-  );
+  const { visibleItems, loaderRef } = useInfiniteLoader({
+    items: books,
+    batchSize: 20,
+  });
 
   return (
     <Box sx={{ p: "1rem", mt: "1.5rem" }}>
@@ -51,14 +31,11 @@ const ExploreBooks = () => {
         }}
         gap="1.5rem"
       >
-        {visibleBooks.map((book: Book, i: number) => (
-          <Grow in timeout={200 + i * 50} key={book.id}>
-            <Box>
-              <BookInfoCard key={book.id} book={book} />
-            </Box>
-          </Grow>
+        {visibleItems.map((book) => (
+          <BookInfoCard key={book.id} book={book} />
         ))}
       </Box>
+
       <Box ref={loaderRef} />
 
       <SearchFiltersModal
@@ -71,7 +48,7 @@ const ExploreBooks = () => {
         sx={{ position: "fixed", bottom: "1.5rem", right: "1.5rem" }}
         onClick={() => navigate("/post")}
       >
-        <MdAdd size={"1.8rem"} />
+        <MdAdd size="1.8rem" />
       </Fab>
     </Box>
   );

@@ -3,6 +3,7 @@ import type { Book } from "../../models/Book";
 import { formatDate } from "../../utils/dateUtils";
 import { Link as RouterLink } from "react-router-dom";
 import BookInfoActions from "./BookInfoActions";
+import React from "react";
 
 interface BookInfoCardProps {
   book: Book;
@@ -80,10 +81,10 @@ const BookInfoCard = ({ book, isOnlyInfo }: BookInfoCardProps) => {
           readOnly
           size="small"
         />
-        {!isOnlyInfo && <BookInfoActions />}
+        {!isOnlyInfo && <BookInfoActions bookId={book.id} />}
       </div>
     </Stack>
   );
 };
 
-export default BookInfoCard;
+export default React.memo(BookInfoCard);

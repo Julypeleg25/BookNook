@@ -1,28 +1,13 @@
-import {
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  CardMedia,
-  Chip,
-  IconButton,
-  Rating,
-  Typography,
-  Stack,
-  Box,
-  Avatar,
-  Link as MuiLink,
-} from "@mui/material";
+import { Card, CardContent, Chip, Typography, Stack, Box } from "@mui/material";
 import type { BookPost } from "../../../models/Book";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { FaRegComment } from "react-icons/fa6";
-import { FiHeart } from "react-icons/fi";
 import BookPostCardActions from "./BookPostCardActions";
 import BookPostCardHeader from "./BookPostCardHeader";
 
 interface BookPostCardProps {
   post: BookPost;
 }
+
+const MAX_DESCRIPTION_LENGTH = 90;
 
 const BookPostCard = ({ post }: BookPostCardProps) => {
   return (
@@ -42,7 +27,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
 
       <CardContent>
         <Typography color="text.secondary">
-          {post.description.slice(0, 90)}…
+          {post.description.slice(0, MAX_DESCRIPTION_LENGTH)}…
         </Typography>
       </CardContent>
 
