@@ -52,7 +52,7 @@ async function saveTokensToUser(
 
 export const googleAuthCallback = async (req: Request, res: Response) => {
   if (req.user) {
-    const user = req.user as IUser;
+    const user = req.user
     const { accessToken, refreshToken } = generateTokens(user);
     await saveTokensToUser(user._id.toString(), accessToken, refreshToken);
     setAuthCookies(res, accessToken, refreshToken);
