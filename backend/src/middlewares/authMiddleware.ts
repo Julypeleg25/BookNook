@@ -30,7 +30,7 @@ export const requireAuth = async (
       process.env.JWT_ACCESS_SECRET!
     ) as JwtDecodedUser;
 
-    const user = await User.findById(decoded.userId).select("_id");
+    const user = await User.findById(decoded.userId).select("_id email name username avatar");
     if (!user) {
       return res.status(401).json({ error: "User not found" });
     }

@@ -17,8 +17,8 @@ export interface IUser extends Document {
   providerId?: string;
   wishlist: mongoose.Types.ObjectId[];
   readlist: mongoose.Types.ObjectId[];
-  refreshToken?: string; // <-- Add this
-  accessToken?: string; // <-- Optional, usually not needed
+  refreshToken?: string; 
+  accessToken?: string; 
   generateJWT: () => string;
   comparePassword: (
     candidatePassword: string,

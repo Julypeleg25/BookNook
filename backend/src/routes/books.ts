@@ -42,7 +42,6 @@ interface GoogleBooksResponse {
   items?: GoogleBooksVolume[];
 }
 
-// New normalized types
 export interface BookSummary {
   id: string;
   title: string;

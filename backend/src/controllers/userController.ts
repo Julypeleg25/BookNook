@@ -1,13 +1,16 @@
 import { Request, Response } from "express";
 import User from "../models/User";
-import Book from "../models/Book";
+import Book, { IBook } from "../models/Book";
 
-export const addToWishlist = async (req: Request, res: Response) => {
+export const addBookToUserList = 
+async (req: Request<{}, {}, { listType: 'wish' | 'read' , book: 
+  IBook}>, res: Response) => {
+    const { listType } = req.body;
+
   try {
-    const { userId } = req.body; 
-    const { googleBookId, title, authors, thumbnail } = req.body.book;
+    const { _id } = req.authenticatedUser!; 
+    const {  googleBookId, title, authors, thumbnail } = req.body.book;
 
-    // 1. "Upsert" the book: Find it by external ID, or create it if missing
     const book = await Book.findOneAndUpdate(
       { googleBookId: googleBookId },
       { 
@@ -23,10 +26,21 @@ export const addToWishlist = async (req: Request, res: Response) => {
       { upsert: true, new: true }
     );
 
-    // 2. Add the book's internal _id to the user's wishlist
-    // $addToSet prevents adding the same book multiple times
+    if (listType === 'read') {
+      const updatedUser = await User.findByIdAndUpdate(
+        _id,
+        { $addToSet: { readlist: book._id } },
+        { new: true }
+      ).populate("readlist");  
+      return res.status(200).json({
+        message: "Book added to read list",
+        readlist: updatedUser?.readlist
+      });}
+
+    if (listType === 'wish') {
+  
     const updatedUser = await User.findByIdAndUpdate(
-      userId,
+       _id,
       { $addToSet: { wishlist: book._id } },
       { new: true }
     ).populate("wishlist");
@@ -35,8 +49,9 @@ export const addToWishlist = async (req: Request, res: Response) => {
       message: "Book added to wishlist",
       wishlist: updatedUser?.wishlist
     });
+  }
 
   } catch (error) {
-    return res.status(500).json({ message: "Error adding to wishlist", error });
+    return res.status(500).json({ message: `Error adding to ${listType} list`, error });
   }
 };

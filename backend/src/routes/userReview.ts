@@ -42,7 +42,6 @@ router.post(
         likes: [],
       });
 
-      // Recompute book rating after creating review
       await recomputeBookRating(bookId);
 
       res.status(201).json(newReview);
