@@ -1,14 +1,16 @@
 import { UserReviewModel } from "../models/UserReview";
 import {BookModel} from "../models/Book";
+import { Types } from "mongoose";
 
 export async function recomputeBookRating(bookId: string) {
+      const bookObjectId = new Types.ObjectId(bookId);
   try {
     // Aggregate ratings from reviews for this bookId
     const result = await UserReviewModel.aggregate([
-      { $match: { book: bookId } },
+      { $match: { book: bookObjectId } },
       {
         $group: {
-          _id: null,
+          _id: '$book',
           totalRating: { $sum: "$rating" },
           count: { $sum: 1 },
         },
@@ -20,7 +22,7 @@ export async function recomputeBookRating(bookId: string) {
     const avgRating = count > 0 ? totalRating / count : 0;
 
     await BookModel.findOneAndUpdate(
-      { _id: bookId },
+      bookObjectId,
       {
         avgRating,
         ratingCount: count,

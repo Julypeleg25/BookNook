@@ -43,7 +43,6 @@ export const addReview = async (
     likes: [],
   });
 
-  // 3️⃣ Recompute book average rating
   await recomputeBookRating(book._id.toString());
 
   return newReview;
@@ -187,7 +186,6 @@ router.patch(
         { new: true }
       );
 
-      // Recompute book rating after updating review
       if (updatedUserReview) {
         await recomputeBookRating(updatedUserReview.book.toString());
       }
@@ -237,7 +235,6 @@ router.delete("/:id", isReviewAuthor, async (req: Request, res: Response) => {
     const review = await UserReviewModel.findByIdAndDelete(req.params.id);
     if (!review) return res.status(404).json({ message: "Review not found" });
 
-    // Recompute book rating after deleting review
     await recomputeBookRating(review.book.toString());
 
     res.json({ message: "Review deleted successfully" });
