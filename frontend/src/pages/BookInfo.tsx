@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import NotFound from "./NotFound";
 import BookInfoHeader from "../components/bookHeaders/BookInfoHeader";
 import { FaTheaterMasks } from "react-icons/fa";
-import { FaLanguage, FaUserPen } from "react-icons/fa6";
+import { FaUserPen } from "react-icons/fa6";
 import { MdMenuBook, MdNumbers } from "react-icons/md";
 import AiBookRecommendation from "../components/post/AiBookRecommendation";
 import { GrLanguage } from "react-icons/gr";

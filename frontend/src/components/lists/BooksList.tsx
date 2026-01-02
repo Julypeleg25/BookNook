@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Grow, Skeleton } from "@mui/material";
+import { Box, Button, Stack, Grow } from "@mui/material";
 import type { Book } from "../../models/Book";
 import BookInfoCard from "../bookCards/BookInfoCard";
 import { useState, useMemo, useRef, useEffect, type ReactNode } from "react";
@@ -31,7 +31,7 @@ const BooksList = ({ booksList, title }: BooksListProps) => {
 
     observer.observe(loaderRef.current);
     return () => observer.disconnect();
-  }, [visibleCount, booksList.length]);
+  }, [visibleCount, booksList.length, isExpanded]);
 
   const visibleBooks = useMemo(() => {
     const count = isExpanded ? booksList.length : visibleCount;
