@@ -220,19 +220,19 @@ router.get("/", async (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-router.get("/:id", async (req: Request, res: Response) => {
+export const getBookById = async (id: string): Promise<GoogleBooksVolume> => {
+  const res = await axios.get<GoogleBooksVolume>(`${GOOGLE_BOOKS_API}/${id}`);
+  return res.data;
+};
+router.get("/:bookId", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { bookId } = req.params;
 
-    const response = await axios.get<GoogleBooksVolume>(
-      `${GOOGLE_BOOKS_API}/${id}`,
-      { params: { key: API_KEY } }
-    );
-
-    const bookDetail = normalizeBookDetail(response.data);
+    const data = await getBookById(bookId);
+    const bookDetail = normalizeBookDetail(data);
 
     // Fetch local rating data
-    const localBook = await Book.findOne({ bookId: id });
+    const localBook = await Book.findOne({ bookId: bookId });
     if (localBook) {
       bookDetail.avgRating = localBook.avgRating;
       bookDetail.ratingCount = localBook.ratingCount;

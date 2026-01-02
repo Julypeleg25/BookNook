@@ -29,10 +29,6 @@ export async function recomputeBookRating(bookId: string) {
       },
       { upsert: true, new: true }
     );
-
-    console.log(
-      `Recomputed rating for book ${bookId}: avg=${avgRating}, count=${count}`
-    );
   } catch (error) {
     console.error(`Error recomputing rating for book ${bookId}:`, error);
   }

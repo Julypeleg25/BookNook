@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import session from "express-session";
 import cors from "cors";
 import authRoutes from "./src/routes/auth";
+import listRouter  from "./src/routes/list";
 import User, { IUser } from "./src/models/User";
 import swaggerUi from "swagger-ui-express";
 import booksRouter from "./src/routes/books";
@@ -73,6 +74,7 @@ app.use("/", authRoutes);
 app.use("/api/books", requireAuth, booksRouter);
 app.use("/userReviews", requireAuth, userReviewsRouter);
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/lists', requireAuth, listRouter);
 
 // Serve uploaded images
 app.use("/uploads", requireAuth, express.static(UPLOADS_FOLDER));
@@ -80,3 +82,4 @@ app.use("/uploads", requireAuth, express.static(UPLOADS_FOLDER));
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+

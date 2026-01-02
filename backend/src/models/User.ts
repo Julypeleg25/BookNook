@@ -15,8 +15,8 @@ export interface IUser extends Document {
   avatar?: string;
   bio?: string;
   providerId?: string;
-  wishlist: mongoose.Types.ObjectId[];
-  readlist: mongoose.Types.ObjectId[];
+  wishlist: string[];
+  readlist:string[];
   refreshToken?: string; 
   accessToken?: string; 
   generateJWT: () => string;
@@ -62,18 +62,12 @@ const userSchema = new Schema<IUser>(
     name: String,
     avatar: String,
     bio: String,
-    wishlist: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Book", // This must match the name in your Book model
-      },
-    ],
-    readlist: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Book",
-      },
-    ],
+    wishlist:  {
+      type: [String]
+    },
+    readlist: {
+      type: [String]
+    },
     // provider-specific id for OAuth (google, github, etc.)
     providerId: {
       type: String,
