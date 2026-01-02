@@ -4,8 +4,10 @@ import multer from "multer";
 import { IUserReview, UserReviewModel } from "../models/UserReview";
 import { isReviewAuthor } from "../middlewares/userReview";
 import { recomputeBookRating } from "../services/bookService";
-import { IBook } from "../models/Book";
+import { BookModel, IBook } from "../models/Book";
 import { IUser } from "../models/User";
+import { getBookByGoogleIdFromGoogle, getGoogleBookByLocalId, getLocalBookByGoogleId } from "./books";
+import { Types } from "mongoose";
 
 const router = Router();
 
@@ -17,40 +19,60 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /**
+ * Adds a review for a book using external API ID
+ */
+export const addReview = async (
+  userId: Types.ObjectId,
+  externalBookId: string, // external API ID
+  rating: number,
+  reviewText?: string,
+  picturePath?: string
+) => {
+  let book = await getLocalBookByGoogleId(externalBookId)
+  if (!book) {
+      book = await BookModel.create({ externalId: externalBookId });
+  }
+
+  const newReview = await UserReviewModel.create({
+    user: userId,
+    book: book._id, 
+    rating,
+    review: reviewText,
+    picturePath,
+    comments: [],
+    likes: [],
+  });
+
+  // 3️⃣ Recompute book average rating
+  await recomputeBookRating(book._id.toString());
+
+  return newReview;
+};
+/**
  * Create a new review with optional picture
  * POST /reviews
  * Body: { bookId, review, rating }
  * File: picture
  */
-router.post(
-  "/",
-  upload.single("picture"),
-  async (req: Request, res: Response) => {
-    try {
-      const { bookId, review, rating } = req.body;
-      const picturePath = req.file
-        ? `/uploads/${req.file.filename}`
-        : undefined;
+router.post("/", upload.single("picture"), async (req: Request, res: Response) => {
+  try {
+    const { bookId, review, rating } = req.body; // bookId = external API ID
+    const picturePath = req.file ? `/uploads/${req.file.filename}` : undefined;
 
-      const newReview = await UserReviewModel.create({
-        user: req.authenticatedUser!._id,
-        book: bookId,
-        review,
-        rating,
-        picturePath,
-        comments: [],
-        likes: [],
-      });
+    const newReview = await addReview(
+      req.authenticatedUser!._id,
+      bookId,
+      Number(rating),
+      review,
+      picturePath
+    );
 
-      await recomputeBookRating(bookId);
-
-      res.status(201).json(newReview);
-    } catch (error: any) {
-      console.error(error);
-      res.status(500).json({ message: "Failed to create review" });
-    }
+    res.status(201).json(newReview);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to create review" });
   }
-);
+});
 
 /**
  * Get all reviews
@@ -61,22 +83,20 @@ router.get("/", async (req: Request, res: Response) => {
     const reviews = await UserReviewModel.find()
       .sort({ createdAt: -1 })
       .populate<{ user: IUser }>({ path: "user", select: "name username avatar" })
-      .populate<{ book: IBook }>({ path: "book", select: "title authors thumbnail" });
 
     const enriched = await Promise.all(
       reviews.map(async (r) => {
         const reviewObj = r.toObject();
         try {
-          const resp = await axios.get(
-            `http://localhost:${process.env.PORT || 3000}/api/books/${
-              reviewObj.book._id.toString()
-            }`
-          );
-          reviewObj.book = resp.data.book;
+
+          const fullBookOfReview = await getGoogleBookByLocalId(reviewObj.book.toString());
+          return {
+            ...reviewObj,
+            book: fullBookOfReview,
+          };
         } catch (e) {
           // ignore book fetch errors
         }
-        return reviewObj;
       })
     );
 
@@ -169,7 +189,7 @@ router.patch(
 
       // Recompute book rating after updating review
       if (updatedUserReview) {
-        await recomputeBookRating(updatedUserReview._id.toString());
+        await recomputeBookRating(updatedUserReview.book.toString());
       }
 
       res.json(updatedUserReview);

@@ -1,8 +1,7 @@
 import express, { Request, Response } from "express";
 import { addBookToUserList } from "../controllers/listController";
-import { getBookById } from "./books";
+import { getBookByGoogleIdFromGoogle } from "./books";
 import { getFullUser } from "../controllers/userController";
-import Book from "../models/Book";
 import User from "../models/User";
 const router = express.Router();
 
@@ -32,7 +31,7 @@ router.get("/wishlist", async (req: Request, res: Response) => {
     const fullBooksOfWishlist = await Promise.all(
       fullUser.wishlist.map(async (bookId) => {
         try{
-            const bookData = await getBookById(bookId.toString());
+            const bookData = await getBookByGoogleIdFromGoogle(bookId.toString());
         return bookData
         }
         catch (error) {
@@ -63,7 +62,7 @@ router.get("/readlist", async (req: Request, res: Response) => {
     const fullBooksOfReadlist = await Promise.all(
       fullUser.readlist.map(async (bookId) => {
         try{
-            const bookData = await getBookById(bookId);
+            const bookData = await getBookByGoogleIdFromGoogle(bookId);
             return bookData
         }
         catch (error) {

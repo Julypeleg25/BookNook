@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/User";
-import Book, { IBook } from "../models/Book";
+import  { IBook } from "../models/Book";
 import { Types } from "mongoose";
 import { BookSummary } from "../routes/books";
 

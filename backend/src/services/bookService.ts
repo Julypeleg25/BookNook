@@ -1,11 +1,11 @@
 import { UserReviewModel } from "../models/UserReview";
-import Book from "../models/Book";
+import {BookModel} from "../models/Book";
 
 export async function recomputeBookRating(bookId: string) {
   try {
     // Aggregate ratings from reviews for this bookId
     const result = await UserReviewModel.aggregate([
-      { $match: { bookId } },
+      { $match: { book: bookId } },
       {
         $group: {
           _id: null,
@@ -19,9 +19,8 @@ export async function recomputeBookRating(bookId: string) {
 
     const avgRating = count > 0 ? totalRating / count : 0;
 
-    // Upsert the Book document
-    await Book.findOneAndUpdate(
-      { bookId },
+    await BookModel.findOneAndUpdate(
+      { _id: bookId },
       {
         avgRating,
         ratingCount: count,

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import axios from "axios";
 import dotenv from "dotenv";
-import Book from "../models/Book";
+import {BookModel} from "../models/Book";
 dotenv.config();
 const router = Router();
 
@@ -220,19 +220,43 @@ router.get("/", async (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-export const getBookById = async (id: string): Promise<GoogleBooksVolume> => {
-  const res = await axios.get<GoogleBooksVolume>(`${GOOGLE_BOOKS_API}/${id}`);
+export const getBookByGoogleIdFromGoogle = async (localId: string): Promise<GoogleBooksVolume> => {
+  const res = await axios.get<GoogleBooksVolume>(`${GOOGLE_BOOKS_API}/${localId}`);
   return res.data;
 };
-router.get("/:bookId", async (req: Request, res: Response) => {
-  try {
-    const { bookId } = req.params;
 
-    const data = await getBookById(bookId);
+export const getLocalBookByGoogleId = async (googleId: string) => {
+  const book = await BookModel.findOne({ externalId: googleId });
+  return book
+}
+
+export const getLocalBookByLocalId = async (localId: string) => {
+  const book = await BookModel.findOne({ _id: localId });
+  return book
+}
+
+export const getGoogleBookByLocalId = async (localId: string) => {
+  try{
+    const localBook = await getLocalBookByLocalId(localId)
+    if(!localBook){
+          throw new Error("book not found");
+    }
+    const googleBook = getBookByGoogleIdFromGoogle(localBook?.externalId)
+    return googleBook
+  } catch(error){
+    throw error
+  }
+
+}
+router.get("/:externalBookId", async (req: Request, res: Response) => {
+  try {
+    const { externalBookId } = req.params;
+
+    const data = await getBookByGoogleIdFromGoogle(externalBookId);
     const bookDetail = normalizeBookDetail(data);
 
     // Fetch local rating data
-    const localBook = await Book.findOne({ bookId: bookId });
+    const localBook = await getLocalBookByGoogleId(externalBookId)
     if (localBook) {
       bookDetail.avgRating = localBook.avgRating;
       bookDetail.ratingCount = localBook.ratingCount;
