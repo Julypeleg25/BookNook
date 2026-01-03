@@ -10,7 +10,7 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
   return (
     <>
       <CardHeader
-        avatar={<Avatar src={post.user.avatarUrl} alt={post.user.name} />}
+        avatar={<Avatar src={post.user.avatar} alt={post.user.name} />}
         title={
           <Typography
             sx={{

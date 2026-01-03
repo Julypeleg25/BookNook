@@ -1,4 +1,5 @@
 import type { GenreOptionsType } from "../components/searchFilters/models/SearchFiltersOptions";
+import type { User } from "./User";
 
 interface Book {
   id: string;
@@ -30,11 +31,4 @@ interface Comment {
   bookPost: BookPost;
 }
 
-interface User {
-  id: string;
-  username: string;
-  name: string;
-  avatarUrl: string;
-}
-
-export type { Book, BookPost, Comment, User };
+export type { Book, BookPost, Comment };

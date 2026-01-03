@@ -6,7 +6,12 @@ import {
   Box,
   Rating,
 } from "@mui/material";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import {
+  Controller,
+  useForm,
+  useWatch,
+  type ControllerRenderProps,
+} from "react-hook-form";
 import PostImageUpload from "../components/common/PostImageUpload";
 import { useParams } from "react-router-dom";
 import { useMemo } from "react";
@@ -79,9 +84,11 @@ const NewPost = () => {
       <Controller
         name="image"
         control={control}
-        render={({ field }) => (
-          <PostImageUpload value={field.value} onChange={field.onChange} />
-        )}
+        render={({
+          field,
+        }: {
+          field: ControllerRenderProps<INewPostInputs, "image">;
+        }) => <PostImageUpload value={field.value} onChange={field.onChange} />}
       />
 
       <Controller
@@ -92,7 +99,11 @@ const NewPost = () => {
           minLength: { value: 10, message: "Minimum 10 characters" },
           maxLength: { value: 1500, message: "Max 1500 characters" },
         }}
-        render={({ field }) => (
+        render={({
+          field,
+        }: {
+          field: ControllerRenderProps<INewPostInputs, "description">;
+        }) => (
           <TextField
             {...field}
             slotProps={{ htmlInput: { maxLength: 1500 } }}
@@ -117,7 +128,11 @@ const NewPost = () => {
         rules={{
           min: { value: 0.5, message: "Rating is required" },
         }}
-        render={({ field }) => (
+        render={({
+          field,
+        }: {
+          field: ControllerRenderProps<INewPostInputs, "rating">;
+        }) => (
           <Box>
             <Typography mb={"1rem"}>Rating</Typography>
             <Rating

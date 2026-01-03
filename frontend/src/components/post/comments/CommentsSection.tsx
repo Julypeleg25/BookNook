@@ -31,13 +31,13 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
         }}
       >
         <Box justifySelf="center" style={{ backgroundColor: "white" }} width="100%">
-          <NewComment ref={newCommentRef} avatarUrl={bookPost.user.avatarUrl} />
+          <NewComment ref={newCommentRef} avatarUrl={bookPost.user.avatar} />
           <Divider style={{ width: "93%", justifySelf: "center", opacity: 0.3 }} />
           <CommentsHeader length={bookPost.comments.length} />
           {bookPost.comments.map((comment) => (
             <Box key={comment.id} style={{ padding: "1rem" }}>
               <Box style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <Avatar src={comment.user.avatarUrl} />
+                <Avatar src={comment.user.avatar} />
                 <div style={{ fontWeight: "bold", fontSize: "1.15rem" }}>{comment.user.username}</div>
                 <div style={{ opacity: 0.7 }}>{timeAgo(comment.createdDate)}</div>
               </Box>
