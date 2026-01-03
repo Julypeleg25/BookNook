@@ -54,9 +54,16 @@ export class UserRepository {
     }
   }
 
-  async update(userId: Types.ObjectId | string, updateData: Partial<IUser>): Promise<IUser | null> {
+  async update(
+    userId: Types.ObjectId | string,
+    updateData: Partial<IUser>
+  ): Promise<IUser | null> {
     try {
-      return await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
+      return await User.findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        { new: true }
+      );
     } catch (error: any) {
       logger.error(`Error updating user ${userId}:`, error);
       if (error.code === 11000) {
@@ -94,12 +101,18 @@ export class UserRepository {
       );
       return updatedUser?.[field] || [];
     } catch (error) {
-      logger.error(`Error adding book to ${listType}list for user ${userId}:`, error);
+      logger.error(
+        `Error adding book to ${listType}list for user ${userId}:`,
+        error
+      );
       throw error;
     }
   }
 
-  async getList(userId: Types.ObjectId | string, listType: "wish" | "read"): Promise<string[]> {
+  async getList(
+    userId: Types.ObjectId | string,
+    listType: "wish" | "read"
+  ): Promise<string[]> {
     try {
       const user = await User.findById(userId);
       const field = listType === "wish" ? "wishlist" : "readlist";
@@ -112,4 +125,3 @@ export class UserRepository {
 }
 
 export const userRepository = new UserRepository();
-

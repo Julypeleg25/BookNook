@@ -7,7 +7,11 @@ import { isImageFile, deleteFile } from "../utils/fileUtils";
 import fs from "fs";
 import path from "path";
 
-export async function getCurrentUser(req: Request, res: Response, next: NextFunction) {
+export async function getCurrentUser(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     res.json({
       id: req.authenticatedUser!._id,
@@ -22,12 +26,17 @@ export async function getCurrentUser(req: Request, res: Response, next: NextFunc
   }
 }
 
-export async function updateUserHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateUserHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const userId = req.authenticatedUser!._id;
     const { name, username } = req.body;
 
-    const updateData: { name?: string; username?: string; avatar?: string } = {};
+    const updateData: { name?: string; username?: string; avatar?: string } =
+      {};
 
     if (name) updateData.name = name;
     if (username) updateData.username = username;
@@ -40,7 +49,11 @@ export async function updateUserHandler(req: Request, res: Response, next: NextF
 
       const oldAvatar = req.authenticatedUser!.avatar;
       if (oldAvatar && oldAvatar.startsWith("/uploads/")) {
-        const oldAvatarPath = path.join(process.cwd(), "uploads", path.basename(oldAvatar));
+        const oldAvatarPath = path.join(
+          process.cwd(),
+          "uploads",
+          path.basename(oldAvatar)
+        );
         if (fs.existsSync(oldAvatarPath)) {
           deleteFile(oldAvatarPath);
         }
@@ -52,7 +65,11 @@ export async function updateUserHandler(req: Request, res: Response, next: NextF
     const { error } = updateUserSchema.validate(updateData);
     if (error) {
       if (req.file) deleteFile(req.file.path);
-      throw new ValidationError(error.details[0].message);
+      throw new ValidationError(
+        error.details && error.details[0]
+          ? error.details[0].message
+          : "error at updating user"
+      );
     }
 
     const updatedUser = await updateUser(userId, updateData);

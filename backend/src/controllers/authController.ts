@@ -17,7 +17,11 @@ import { ValidationError, UnauthorizedError } from "../utils/errors";
 import { logger } from "../utils/logger";
 import { isImageFile, deleteFile } from "../utils/fileUtils";
 
-export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
+export const googleAuthCallback = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     if (req.user) {
       const user = req.user as IUser;
@@ -36,7 +40,11 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
   }
 };
 
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     if (!req.file) {
       throw new ValidationError("Avatar is required");
@@ -48,10 +56,19 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     }
 
     const { name, email, username, password } = req.body;
-    const { error } = registerSchema.validate({ name, email, username, password });
+    const { error } = registerSchema.validate({
+      name,
+      email,
+      username,
+      password,
+    });
     if (error) {
       deleteFile(req.file.path);
-      throw new ValidationError(error.details[0].message);
+      throw new ValidationError(
+        error.details && error.details[0]
+          ? error.details[0].message
+          : "error at registering user"
+      );
     }
 
     const avatarPath = `/uploads/${req.file.filename}`;
@@ -92,12 +109,20 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { username, password } = req.body;
     const user = await getUserByUsername(username);
 
-    if (!user || !user.password || !(await comparePassword(password, user.password))) {
+    if (
+      !user ||
+      !user.password ||
+      !(await comparePassword(password, user.password))
+    ) {
       throw new UnauthorizedError("Invalid credentials");
     }
 
@@ -123,7 +148,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-export const refresh = async (req: Request, res: Response, next: NextFunction) => {
+export const refresh = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { refreshToken } = req.cookies;
     if (!refreshToken) {
@@ -131,7 +160,7 @@ export const refresh = async (req: Request, res: Response, next: NextFunction) =
     }
 
     const { verifyRefreshToken } = await import("../services/authService");
-    const decoded = verifyRefreshToken(refreshToken);
+    const decoded = await verifyRefreshToken(refreshToken);
     const user = await getUserById(decoded.userId);
 
     if (!user || user.refreshToken !== refreshToken) {

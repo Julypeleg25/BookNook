@@ -3,7 +3,11 @@ import { BooksQuery } from "../types/book";
 import { searchBooks, getBookDetails } from "../services/bookService";
 import { logger } from "../utils/logger";
 
-export const searchBooksHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const searchBooksHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const query = req.query as BooksQuery;
     const result = await searchBooks(query);
@@ -14,9 +18,16 @@ export const searchBooksHandler = async (req: Request, res: Response, next: Next
   }
 };
 
-export const getBookByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const getBookByIdHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { externalBookId } = req.params;
+    if (!externalBookId)
+      throw Error(`google book ${externalBookId} doesn't exist`);
+
     const bookDetail = await getBookDetails(externalBookId);
     res.json({ book: bookDetail });
   } catch (error) {

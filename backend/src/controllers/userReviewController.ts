@@ -14,14 +14,22 @@ import { ValidationError } from "../utils/errors";
 import { logger } from "../utils/logger";
 import { isImageFile, deleteFile } from "../utils/fileUtils";
 
-export const createReviewHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const createReviewHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { bookId, review, rating } = req.body;
-    
+
     const { error } = reviewSchema.validate({ bookId, review, rating });
     if (error) {
       if (req.file) deleteFile(req.file.path);
-      throw new ValidationError(error.details[0].message);
+      throw new ValidationError(
+        error.details && error.details[0]
+          ? error.details[0].message
+          : "error at creating user review"
+      );
     }
 
     if (req.file && !isImageFile(req.file.originalname)) {
@@ -50,7 +58,11 @@ export const createReviewHandler = async (req: Request, res: Response, next: Nex
   }
 };
 
-export const getAllReviewsHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllReviewsHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const reviews = await getAllReviews();
 
@@ -66,7 +78,10 @@ export const getAllReviewsHandler = async (req: Request, res: Response, next: Ne
             book: fullBookOfReview,
           };
         } catch (e) {
-          logger.warn(`Error enriching review ${reviewObj._id} with book data:`, e);
+          logger.warn(
+            `Error enriching review ${reviewObj._id} with book data:`,
+            e
+          );
           return reviewObj;
         }
       })
@@ -79,20 +94,33 @@ export const getAllReviewsHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
-export const getReviewsByUserIdHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const getReviewsByUserIdHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { userId } = req.params;
+    if (!userId) throw Error(`user id ${userId} doesn't exist`);
     const reviews = await getReviewsByUserId(userId);
     res.json(reviews);
   } catch (error) {
-    logger.error(`Error fetching reviews for user ${req.params.userId}:`, error);
+    logger.error(
+      `Error fetching reviews for user ${req.params.userId}:`,
+      error
+    );
     next(error);
   }
 };
 
-export const getReviewByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const getReviewByIdHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
+    if (!id) throw Error(`review ${id} doesn't exist`);
     const review = await getReviewById(id);
     res.json(review);
   } catch (error) {
@@ -101,13 +129,21 @@ export const getReviewByIdHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
-export const updateReviewHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const updateReviewHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const { review, rating } = req.body;
-    
-    const updateData: { review?: string; rating?: number; picturePath?: string } = {};
-    
+
+    const updateData: {
+      review?: string;
+      rating?: number;
+      picturePath?: string;
+    } = {};
+
     if (review !== undefined) updateData.review = review;
     if (rating !== undefined) updateData.rating = Number(rating);
     if (req.file) {
@@ -118,6 +154,7 @@ export const updateReviewHandler = async (req: Request, res: Response, next: Nex
       updateData.picturePath = `/uploads/${req.file.filename}`;
     }
 
+    if (!id) throw Error(`review ${id} doesn't exist`);
     const updatedReview = await updateReview(id, updateData);
     res.json(updatedReview);
   } catch (error: any) {
@@ -130,9 +167,14 @@ export const updateReviewHandler = async (req: Request, res: Response, next: Nex
   }
 };
 
-export const likeReviewHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const likeReviewHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
+    if (!id) throw Error(`review ${id} doesn't exist`);
     const likesCount = await likeReview(id, req.authenticatedUser!._id);
     res.json({ likes: likesCount });
   } catch (error) {
@@ -141,9 +183,14 @@ export const likeReviewHandler = async (req: Request, res: Response, next: NextF
   }
 };
 
-export const deleteReviewHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteReviewHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
+    if (!id) throw Error(`review ${id} doesn't exist`);
     await deleteReview(id);
     res.json({ message: "Review deleted successfully" });
   } catch (error) {

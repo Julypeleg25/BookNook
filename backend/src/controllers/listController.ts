@@ -1,18 +1,30 @@
 import { Request, Response, NextFunction } from "express";
-import { addBookToUserList, getUserWishlist, getUserReadlist } from "../services/listService";
+import {
+  addBookToUserList,
+  getUserWishlist,
+  getUserReadlist,
+} from "../services/listService";
 import { getBookByGoogleIdFromGoogle } from "../services/bookService";
 import { getUserById } from "../services/userService";
 import { logger } from "../utils/logger";
 
-export const addBookToList = async (req: Request, res: Response, next: NextFunction) => {
+export const addBookToList = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.authenticatedUser!._id;
     const { bookId } = req.params;
     const { listType } = req.body;
-    
+
     if (!listType || (listType !== "wish" && listType !== "read")) {
-      return res.status(400).json({ error: "Invalid list type. Must be 'wish' or 'read'" });
+      return res
+        .status(400)
+        .json({ error: "Invalid list type. Must be 'wish' or 'read'" });
     }
+
+    if (!bookId) throw Error(`book ${bookId} doesn't exist`);
 
     const updatedList = await addBookToUserList(userId, bookId, listType);
     res.json({ updatedList });
@@ -22,7 +34,11 @@ export const addBookToList = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const getWishlist = async (req: Request, res: Response, next: NextFunction) => {
+export const getWishlist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.authenticatedUser!._id;
     const user = await getUserById(userId);
@@ -46,7 +62,11 @@ export const getWishlist = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const getReadlist = async (req: Request, res: Response, next: NextFunction) => {
+export const getReadlist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.authenticatedUser!._id;
     const user = await getUserById(userId);
