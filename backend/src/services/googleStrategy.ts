@@ -4,10 +4,12 @@ import {
   VerifyCallback,
 } from "passport-google-oauth20";
 import dotenv from "dotenv";
-import User from "../models/User";
+import { userRepository } from "../repositories/userRepository";
+import { logger } from "../utils/logger";
+import { hashPassword } from "../utils/password";
+
 dotenv.config();
 
-// google strategy
 export default new GoogleStrategy(
   {
     clientID: process.env.GOOGLE_CLIENT_ID!,
@@ -15,7 +17,6 @@ export default new GoogleStrategy(
     callbackURL: process.env.GOOGLE_CALLBACK_URL!,
     proxy: true,
   },
-
   async (
     accessToken: string,
     refreshToken: string,
@@ -23,27 +24,34 @@ export default new GoogleStrategy(
     done: VerifyCallback
   ) => {
     try {
-      const oldUser = await User.findOne({ email: profile.emails?.[0].value });
+      const email = profile.emails?.[0].value;
+      if (!email) {
+        return done(new Error("No email found in Google profile"));
+      }
 
+      const oldUser = await userRepository.findByEmail(email);
       if (oldUser) {
         return done(null, oldUser);
       }
-    } catch (err) {
-      console.log(err);
-    }
 
-    try {
-      const newUser = await new User({
+      const existingProviderUser = await userRepository.findByProviderId(profile.id);
+      if (existingProviderUser) {
+        return done(null, existingProviderUser);
+      }
+
+      const newUser = await userRepository.create({
         provider: "google",
         providerId: profile.id,
         username: `user${profile.id}`,
-        email: profile.emails?.[0].value,
-        name: profile.displayName,
-        avatar: profile.photos?.[0].value,
-      }).save();
+        email: email,
+        name: profile.displayName || undefined,
+        avatar: profile.photos?.[0].value || undefined,
+      });
+
       done(null, newUser);
     } catch (err) {
-      console.log(err);
+      logger.error("Error in Google strategy:", err);
+      done(err as Error);
     }
   }
 );

@@ -1,40 +1,71 @@
-import { Request, Response } from "express";
-import User from "../models/User";
-import  { IBook } from "../models/Book";
-import { Types } from "mongoose";
-import { BookSummary } from "../routes/books";
+import { Request, Response, NextFunction } from "express";
+import { addBookToUserList, getUserWishlist, getUserReadlist } from "../services/listService";
+import { getBookByGoogleIdFromGoogle } from "../services/bookService";
+import { getUserById } from "../services/userService";
+import { logger } from "../utils/logger";
 
-export const addBookToUserList = async (
-  userId: Types.ObjectId,
-  bookId: string,
-  listType: 'wish' | 'read'
-): Promise<string[]> => {
+export const addBookToList = async (req: Request, res: Response, next: NextFunction) => {
   try {
-
-    if (listType === 'read') {
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        { $addToSet: { readlist: bookId } },
-        { new: true }
-      )
-
-
-      return updatedUser?.readlist || [];
+    const userId = req.authenticatedUser!._id;
+    const { bookId } = req.params;
+    const { listType } = req.body;
+    
+    if (!listType || (listType !== "wish" && listType !== "read")) {
+      return res.status(400).json({ error: "Invalid list type. Must be 'wish' or 'read'" });
     }
 
-    if (listType === 'wish') {
-        const updatedUser = await User.findByIdAndUpdate(
-          userId,
-          { $addToSet: { wishlist: bookId } },
-          { new: true }
-        )
-
-
-        return updatedUser?.wishlist || [];
-      }
-
-    throw new Error("Invalid list type");
+    const updatedList = await addBookToUserList(userId, bookId, listType);
+    res.json({ updatedList });
   } catch (error) {
-    throw new Error("Failed to add book to list");
+    logger.error("Error adding book to list:", error);
+    next(error);
+  }
+};
+
+export const getWishlist = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.authenticatedUser!._id;
+    const user = await getUserById(userId);
+
+    const fullBooksOfWishlist = await Promise.all(
+      user.wishlist.map(async (bookId) => {
+        try {
+          const bookData = await getBookByGoogleIdFromGoogle(bookId.toString());
+          return bookData;
+        } catch (error) {
+          logger.warn(`Error fetching book ${bookId} for wishlist:`, error);
+          return null;
+        }
+      })
+    );
+
+    res.json(fullBooksOfWishlist.filter(Boolean));
+  } catch (error) {
+    logger.error("Error fetching wishlist:", error);
+    next(error);
+  }
+};
+
+export const getReadlist = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.authenticatedUser!._id;
+    const user = await getUserById(userId);
+
+    const fullBooksOfReadlist = await Promise.all(
+      user.readlist.map(async (bookId) => {
+        try {
+          const bookData = await getBookByGoogleIdFromGoogle(bookId);
+          return bookData;
+        } catch (error) {
+          logger.warn(`Error fetching book ${bookId} for readlist:`, error);
+          return null;
+        }
+      })
+    );
+
+    res.json(fullBooksOfReadlist.filter(Boolean));
+  } catch (error) {
+    logger.error("Error fetching readlist:", error);
+    next(error);
   }
 };

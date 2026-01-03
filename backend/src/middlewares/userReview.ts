@@ -1,13 +1,23 @@
-import { Request, Response, NextFunction } from 'express';
-import { UserReviewModel } from '../models/UserReview';
+import { Request, Response, NextFunction } from "express";
+import { isReviewAuthor } from "../services/userReviewService";
+import { ForbiddenError } from "../utils/errors";
+import { logger } from "../utils/logger";
 
-export async function isReviewAuthor(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const review = await UserReviewModel.findById(id);
-  if (!review) return res.status(404).json({ message: 'Review not found' });
-
-  if (review.user._id.toString() !== req.authenticatedUser!._id.toString()) {
-    return res.status(403).json({ message: 'Not authorized to edit this review' });
+export async function isReviewAuthorMiddleware(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const isAuthor = await isReviewAuthor(id, req.authenticatedUser!._id);
+    
+    if (!isAuthor) {
+      throw new ForbiddenError("Not authorized to edit this review");
+    }
+    
+    next();
+  } catch (error: any) {
+    logger.error("Error checking review author:", error);
+    if (error instanceof ForbiddenError) {
+      return res.status(403).json({ error: error.message });
+    }
+    next(error);
   }
-  next();
 }

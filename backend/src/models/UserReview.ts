@@ -1,8 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import type { IUser } from "./User";
-import { IBook } from "./Book";
 
-// Populated comment with user object
 export interface ReviewComment {
   user: Types.ObjectId;
   comment: string;
@@ -11,9 +8,9 @@ export interface ReviewComment {
 
 export interface IUserReview extends Document {
   user: Types.ObjectId;
-  book: Types.ObjectId; // <-- MongoDB _id of the Book document
+  book: Types.ObjectId;
   review: string;
-  rating: number; // 0-5, increments of 0.5
+  rating: number;
   picturePath?: string;
   comments: ReviewComment[];
   createdAt: Date;
@@ -33,7 +30,7 @@ const ReviewCommentSchema = new Schema<ReviewComment>(
 const UserReviewSchema = new Schema<IUserReview>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    book: { type: Schema.Types.ObjectId, ref: "Book", required: true }, 
+    book: { type: Schema.Types.ObjectId, ref: "Book", required: true },
     review: { type: String, required: true },
     rating: {
       type: Number,

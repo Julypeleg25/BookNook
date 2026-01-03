@@ -1,86 +1,75 @@
 import { Request, Response, NextFunction } from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import User, { JwtDecodedUser } from "../models/User";
 import { IUser } from "../models/User";
-import dotenv from "dotenv";
-dotenv.config();
-// Generate JWT tokens
+import {
+  generateTokens,
+  setAuthCookies,
+  clearAuthCookies,
+} from "../services/authService";
+import {
+  createUser,
+  getUserByUsername,
+  updateUserTokens,
+  getUserById,
+} from "../services/userService";
+import { comparePassword, hashPassword } from "../utils/password";
+import { registerSchema } from "../utils/validation";
+import { ValidationError, UnauthorizedError } from "../utils/errors";
+import { logger } from "../utils/logger";
+import { isImageFile, deleteFile } from "../utils/fileUtils";
 
-function generateTokens(user: IUser) {
-  const accessToken = jwt.sign(
-    { userId: user._id, email: user.email },
-    process.env.JWT_ACCESS_SECRET!,
-    { expiresIn: "15m" }
-  );
-  const refreshToken = jwt.sign(
-    { userId: user._id },
-    process.env.JWT_REFRESH_SECRET!,
-    { expiresIn: "7d" }
-  );
-  return { accessToken, refreshToken };
-}
-
-// Set tokens as HTTP-only cookies
-function setAuthCookies(
-  res: Response,
-  accessToken: string,
-  refreshToken: string
-) {
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
-  });
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-}
-
-// Save tokens to user in DB
-async function saveTokensToUser(
-  id: string,
-  accessToken: string,
-  refreshToken: string
-) {
-  await User.findByIdAndUpdate(id, { accessToken, refreshToken });
-}
-
-export const googleAuthCallback = async (req: Request, res: Response) => {
-  if (req.user) {
-    const user = req.user
-    const { accessToken, refreshToken } = generateTokens(user);
-    await saveTokensToUser(user._id.toString(), accessToken, refreshToken);
-    setAuthCookies(res, accessToken, refreshToken);
-    res.redirect(
-      (process.env.FRONTEND_URL || "http://localhost:5173") + "/dashboard"
-    );
-  } else {
-    res.redirect(`${process.env.FRONTEND_URL}/login`);
+export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (req.user) {
+      const user = req.user as IUser;
+      const { accessToken, refreshToken } = generateTokens(user);
+      await updateUserTokens(String(user._id), accessToken, refreshToken);
+      setAuthCookies(res, accessToken, refreshToken);
+      res.redirect(
+        (process.env.FRONTEND_URL || "http://localhost:5173") + "/dashboard"
+      );
+    } else {
+      res.redirect(`${process.env.FRONTEND_URL}/login`);
+    }
+  } catch (error) {
+    logger.error("Error in Google auth callback:", error);
+    next(error);
   }
 };
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.file) {
+      throw new ValidationError("Avatar is required");
+    }
+
+    if (!isImageFile(req.file.originalname)) {
+      deleteFile(req.file.path);
+      throw new ValidationError("Avatar must be an image file");
+    }
+
     const { name, email, username, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    // Ensure local registrations use provider='local' and do NOT set providerId
-    const user = new User({
+    const { error } = registerSchema.validate({ name, email, username, password });
+    if (error) {
+      deleteFile(req.file.path);
+      throw new ValidationError(error.details[0].message);
+    }
+
+    const avatarPath = `/uploads/${req.file.filename}`;
+    const hashedPassword = await hashPassword(password);
+
+    const user = await createUser({
       name,
       email,
       username,
       provider: "local",
       password: hashedPassword,
+      avatar: avatarPath,
     });
-    await user.save();
-    // After successful registration, generate tokens and set cookies (auto-login)
+
     const { accessToken, refreshToken } = generateTokens(user);
-    await saveTokensToUser(String(user._id), accessToken, refreshToken);
+    await updateUserTokens(String(user._id), accessToken, refreshToken);
     setAuthCookies(res, accessToken, refreshToken);
+
     res.status(201).json({
       message: "User registered successfully",
       user: {
@@ -88,65 +77,69 @@ export const register = async (req: Request, res: Response) => {
         email: user.email,
         name: user.name,
         username: user.username,
+        avatar: user.avatar,
       },
     });
-  } catch (e) {
-    res.status(400).json({ error: e });
+  } catch (error: any) {
+    if (req.file) {
+      deleteFile(req.file.path);
+    }
+    if (error instanceof ValidationError) {
+      return res.status(400).json({ error: error.message });
+    }
+    logger.error("Registration error:", error);
+    next(error);
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (
-      !user ||
-      !user.password ||
-      !(await bcrypt.compare(password, user.password))
-    ) {
-      return res.status(401).json({ error: "Invalid credentials" });
+    const user = await getUserByUsername(username);
+
+    if (!user || !user.password || !(await comparePassword(password, user.password))) {
+      throw new UnauthorizedError("Invalid credentials");
     }
+
     const { accessToken, refreshToken } = generateTokens(user);
-    user.accessToken = accessToken;
-    user.refreshToken = refreshToken;
-    await user.save();
+    await updateUserTokens(String(user._id), accessToken, refreshToken);
     setAuthCookies(res, accessToken, refreshToken);
+
     res.json({
       user: {
         id: user._id,
         email: user.email,
         name: user.name,
         username: user.username,
-        refreshToken: user.refreshToken,
-        accessToken: user.accessToken,
+        avatar: user.avatar,
       },
     });
-  } catch {
-    res.status(500).json({ error: "Login failed" });
+  } catch (error: any) {
+    if (error instanceof UnauthorizedError) {
+      return res.status(401).json({ error: error.message });
+    }
+    logger.error("Login error:", error);
+    next(error);
   }
 };
 
-export const refresh = async (req: Request, res: Response) => {
+export const refresh = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { refreshToken } = req.cookies;
     if (!refreshToken) {
-      return res.status(401).json({ error: "No refresh token" });
+      throw new UnauthorizedError("No refresh token");
     }
 
-    const decoded = jwt.verify(
-      refreshToken,
-      process.env.JWT_REFRESH_SECRET!
-    ) as JwtDecodedUser;
+    const { verifyRefreshToken } = await import("../services/authService");
+    const decoded = verifyRefreshToken(refreshToken);
+    const user = await getUserById(decoded.userId);
 
-    const user = await User.findById(decoded.userId);
     if (!user || user.refreshToken !== refreshToken) {
-      return res.status(401).json({ error: "Invalid refresh token" });
+      throw new UnauthorizedError("Invalid refresh token");
     }
 
-    // Rotate access token
     const { accessToken } = generateTokens(user);
-    user.accessToken = accessToken;
-    await user.save();
+    await updateUserTokens(String(user._id), accessToken, refreshToken);
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
@@ -156,8 +149,12 @@ export const refresh = async (req: Request, res: Response) => {
     });
 
     res.json({ success: true });
-  } catch {
-    res.status(401).json({ error: "Invalid refresh token" });
+  } catch (error: any) {
+    if (error instanceof UnauthorizedError) {
+      return res.status(401).json({ error: error.message });
+    }
+    logger.error("Refresh token error:", error);
+    next(error);
   }
 };
 
@@ -172,17 +169,13 @@ export const logout = async (
     });
 
     if (req.authenticatedUser) {
-      await User.findByIdAndUpdate((req.authenticatedUser._id), {
-        refreshToken: null,
-        accessToken: null,
-      });
+      await updateUserTokens(String(req.authenticatedUser._id), null, null);
     }
 
-    res.clearCookie("accessToken", { path: "/" });
-    res.clearCookie("refreshToken", { path: "/" });
-
+    clearAuthCookies(res);
     return res.status(200).json({ success: true });
   } catch (err) {
+    logger.error("Logout error:", err);
     next(err);
   }
 };

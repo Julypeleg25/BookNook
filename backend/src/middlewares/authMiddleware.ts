@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import User, { IUser, JwtDecodedUser } from "../models/User";
-import dotenv from "dotenv";
-dotenv.config();
-
+import { userRepository } from "../repositories/userRepository";
+import { verifyAccessToken } from "../services/authService";
+import { UnauthorizedError } from "../utils/errors";
+import { logger } from "../utils/logger";
 
 export const requireAuth = async (
   req: Request,
@@ -22,23 +21,23 @@ export const requireAuth = async (
     }
 
     if (!token) {
-      return res.status(401).json({ error: "Unauthorized" });
+      throw new UnauthorizedError("No token provided");
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_ACCESS_SECRET!
-    ) as JwtDecodedUser;
+    const decoded = verifyAccessToken(token);
+    const user = await userRepository.findById(decoded.userId);
 
-    const user = await User.findById(decoded.userId).select("_id email name username avatar");
     if (!user) {
-      return res.status(401).json({ error: "User not found" });
+      throw new UnauthorizedError("User not found");
     }
 
-    req.authenticatedUser = user
-
+    req.authenticatedUser = user;
     next();
-  } catch {
+  } catch (error: any) {
+    logger.error("Authentication error:", error);
+    if (error instanceof UnauthorizedError) {
+      return res.status(401).json({ error: error.message });
+    }
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 };

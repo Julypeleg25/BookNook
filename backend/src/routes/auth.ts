@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import passport from "passport";
 import {
   googleAuthCallback,
@@ -8,22 +8,22 @@ import {
   refresh,
 } from "../controllers/authController";
 import { requireAuth } from "../middlewares/authMiddleware";
-import dotenv from 'dotenv'
-import { IUser } from "../models/User";
-dotenv.config();
-const router = express.Router();
+import { getCurrentUser } from "../controllers/userController";
+import { upload } from "../config/multerConfig";
+import dotenv from "dotenv";
 
+dotenv.config();
+
+const router = express.Router();
 
 router.get("/", (_req, res) => {
   res.send("Auth route is working");
 });
 
-// Local auth
-router.post("/register", register);
+router.post("/register", upload.single("avatar"), register);
 router.post("/login", login);
 router.post("/refresh", refresh);
 
-// Google OAuth
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
@@ -38,15 +38,7 @@ router.get(
   googleAuthCallback
 );
 
-// Protected routes
-router.get("/me", requireAuth, (req: Request, res: Response) => {
-  res.json({
-    id: req.authenticatedUser!._id,
-    email: req.authenticatedUser!.email,
-    name: req.authenticatedUser!.name,
-  });
-});
-
+router.get("/me", requireAuth, getCurrentUser);
 router.get("/logout", logout);
 
 export default router;
