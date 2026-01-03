@@ -1,12 +1,4 @@
-import {
-  CardHeader,
-  CardMedia,
-  Typography,
-  Box,
-  Avatar,
-  Link as MuiLink,
-  Tooltip,
-} from "@mui/material";
+import { CardHeader, CardMedia, Typography, Box, Avatar } from "@mui/material";
 import type { BookPost } from "../../../models/Book";
 import { Link as RouterLink } from "react-router-dom";
 

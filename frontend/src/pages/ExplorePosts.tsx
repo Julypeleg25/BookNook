@@ -18,7 +18,7 @@ const ExplorePosts = () => {
   });
 
   return (
-    <div style={{ padding: "1rem", marginTop: "1.2rem" }}>
+    <Box sx={{ p: "1rem", mt: "1.5rem" }}>
       <SearchBar setIsFiltersModalOpen={setIsFiltersModalOpen} />
       <Box
         display="grid"
@@ -49,7 +49,7 @@ const ExplorePosts = () => {
       >
         <MdAdd size={"1.8rem"} />
       </Fab>
-    </div>
+    </Box>
   );
 };
 export default ExplorePosts;

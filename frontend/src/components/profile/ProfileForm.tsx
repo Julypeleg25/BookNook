@@ -55,7 +55,9 @@ const ProfileForm = ({ onCancel }: Props) => {
       </Box>
 
       <Box display="flex" justifyContent="flex-end" gap={2} mt={4}>
-        <Button onClick={onCancel}>Cancel</Button>
+        <Button onClick={onCancel} color="error">
+          Cancel
+        </Button>
         <Button type="submit" variant="contained" disabled={!isDirty}>
           Save changes
         </Button>

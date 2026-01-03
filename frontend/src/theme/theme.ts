@@ -76,6 +76,7 @@ const theme = createTheme({
   components: {
     MuiButton: {
       defaultProps: {
+        variant: "contained",
         disableElevation: true,
       },
       styleOverrides: {
@@ -83,6 +84,11 @@ const theme = createTheme({
           borderRadius: 10,
           paddingInline: 16,
           paddingBlock: 8,
+        },
+        outlined: {
+          borderWidth: 1,
+          border:"solid",
+          borderColor: "rgba(0, 0, 0, 0.5)"
         },
       },
     },

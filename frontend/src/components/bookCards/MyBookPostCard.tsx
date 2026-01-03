@@ -45,7 +45,7 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => {
           draggable={false}
         />
       </Box>
-      <Tooltip title="View book's details" arrow>
+      <Tooltip title="view book's details" arrow>
         <MuiLink
           component={RouterLink}
           to={`/books/${post.book.id}`}
@@ -77,12 +77,12 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => {
       <Rating size="small" value={post.rating} precision={0.5} readOnly />
 
       <Stack direction="row" spacing="0.4rem">
-        <Tooltip title="Edit post">
+        <Tooltip title="edit post">
           <IconButton size="small">
             <FiEdit />
           </IconButton>
         </Tooltip>
-        <Tooltip title="View post">
+        <Tooltip title="view post">
           <IconButton
             size="small"
             onClick={() => navigate(`/posts/${post.id}`)}

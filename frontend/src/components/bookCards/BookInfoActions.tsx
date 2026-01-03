@@ -14,17 +14,17 @@ const BookInfoActions = ({ bookId }: BookInfoActionsProps) => {
 
   return (
     <div style={{ display: "flex", gap: "1.6rem" }}>
-      <Tooltip title="Add to wish list">
+      <Tooltip title="add to wish list">
         <IconButton size="small">
           <BiBookmark size={"1.2rem"} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Write a review">
+      <Tooltip title="write a review">
         <IconButton size="small" onClick={() => navigate('/post')}>
           <TbPencilPlus size={"1.3rem"} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Add to read list">
+      <Tooltip title="add to read list">
         <IconButton size="small">
           <LuBookCheck size={"1.2rem"} />
         </IconButton>

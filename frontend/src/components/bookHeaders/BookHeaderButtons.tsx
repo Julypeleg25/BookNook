@@ -1,9 +1,8 @@
 import { Button } from "@mui/material";
-import { BiBookAdd, BiBookmarkPlus, BiSolidBookAdd } from "react-icons/bi";
+import { BiBookAdd } from "react-icons/bi";
 import { BsBook } from "react-icons/bs";
 import { LiaBookmark } from "react-icons/lia";
-import { LuBookCheck, LuBookPlus } from "react-icons/lu";
-import { MdBookmarkAdd } from "react-icons/md";
+import { LuBookCheck } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 
 interface BookHeaderProps {
@@ -36,7 +35,7 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
         <Button
           variant="contained"
           color="primary"
-        onClick={() => navigate(`/post`)}
+          onClick={() => navigate(`/post`)}
           startIcon={<BiBookAdd />}
         >
           Write a review
