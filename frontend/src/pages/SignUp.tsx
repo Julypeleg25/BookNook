@@ -16,7 +16,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterRequestDTO } from "@shared/dtos/auth.dto";
 import { useAuth } from "@/hooks/useAuth";
 import { RegisterSchema } from "@shared/schemas/auth.schema";
-import { AuthService } from "@/api/services/authService";
 import env from "@/config/env";
 
 const SignUp = () => {
@@ -28,6 +27,7 @@ const SignUp = () => {
     control,
     formState: { errors },
     reset,
+    setError,
   } = useForm<RegisterRequestDTO>({
     defaultValues: {
       username: "",
@@ -41,14 +41,18 @@ const SignUp = () => {
 
   const handleLogin = () => navigate("/login");
 
-  const registerWithGoogle = async () => {
+  const registerWithGoogle = () => {
     // await AuthService.googleRegister();
     window.location.href = `${env.API_BASE_URL}/google`;
   };
 
   const onSubmit = async (data: RegisterRequestDTO) => {
-    await register(data);
-    reset();
+    try {
+      await register(data);
+      reset();
+    } catch (error) {
+      setError("root", { message: "Invalid username or password" });
+    }
   };
 
   return (
@@ -171,6 +175,15 @@ const SignUp = () => {
                   )}
                 />
               </div>
+              {errors.root && (
+                <Typography
+                  color="error"
+                  textAlign="center"
+                  sx={{ mb: "1rem" }}
+                >
+                  {errors.root.message}
+                </Typography>
+              )}
               <Button
                 style={{
                   width: "18rem",

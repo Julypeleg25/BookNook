@@ -6,10 +6,13 @@ export function errorHandler(
   err: Error | AppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void {
   if (err instanceof AppError) {
-    logger.error(`AppError: ${err.message}`, { statusCode: err.statusCode, path: req.path });
+    logger.error(`AppError: ${err.message}`, {
+      statusCode: err.statusCode,
+      path: req.path,
+    });
     res.status(err.statusCode).json({
       error: err.message,
       statusCode: err.statusCode,
@@ -23,4 +26,3 @@ export function errorHandler(
     statusCode: 500,
   });
 }
-

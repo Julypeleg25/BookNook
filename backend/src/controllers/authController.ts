@@ -18,7 +18,6 @@ import { logger } from "@utils/logger";
 import { isImageFile, deleteFile } from "@utils/fileUtils";
 import { ENV } from "@config/config";
 import { COOKIE } from "@config/constants";
-import { AuthResponseDto } from "@shared/dtos/auth.dto";
 import { HttpStatusCode } from "axios";
 import { UserDto } from "@shared/dtos/user.dto";
 

@@ -13,41 +13,44 @@ import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
-import useUserStore from "@state/useUserStore";
 import { LoginRequestDTO } from "@shared/dtos/auth.dto";
+import { LoginSchema } from "@shared/schemas/auth.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import env from "@/config/env";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
-  const { setUser } = useUserStore();
-
-  const handleLogin = async (data: LoginRequestDTO) => {
-    await login(data);
-    navigate("/posts");
-  };
-
-  const handleSignup = () => navigate("/register");
-
+  const [showPassword, setShowPassword] = useState(false);
   const {
     handleSubmit,
     control,
     formState: { errors },
     reset,
+    setError,
   } = useForm<LoginRequestDTO>({
     defaultValues: {
       username: "",
       password: "",
     },
+    resolver: zodResolver(LoginSchema),
     mode: "onSubmit",
   });
 
-  const onSubmit = (data: LoginRequestDTO) => {
-    // setUser((p)=>{...p,data.username});
-    // setUsername(data.username);
-    //TODO: data from backend
-    handleLogin(data);
-    reset();
+  const handleSignup = () => navigate("/register");
+
+  const onSubmit = async (data: LoginRequestDTO) => {
+    try {
+      await login(data);
+      reset();
+    } catch (error) {
+      setError("root", { message: "Invalid username or password" });
+    }
+  };
+
+  const loginWithGoogle = () => {
+    // await AuthService.googleRegister();
+    window.location.href = `${env.API_BASE_URL}/google`;
   };
 
   return (
@@ -58,6 +61,7 @@ const Login = () => {
             <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
               <Typography variant="h4">Welcome to BookNook</Typography>
               <Button
+                onClick={loginWithGoogle}
                 style={{ width: "23rem", display: "flex" }}
                 variant="outlined"
                 startIcon={<FcGoogle />}
@@ -87,9 +91,6 @@ const Login = () => {
                 <Controller
                   name="username"
                   control={control}
-                  rules={{
-                    required: "Username is required",
-                  }}
                   render={({ field }) => (
                     <TextField
                       {...field}
@@ -114,9 +115,6 @@ const Login = () => {
                 <Controller
                   name="password"
                   control={control}
-                  rules={{
-                    required: "Password is required",
-                  }}
                   render={({ field }) => (
                     <TextField
                       {...field}
@@ -150,6 +148,15 @@ const Login = () => {
                   )}
                 />
               </div>
+              {errors.root && (
+                <Typography
+                  color="error"
+                  textAlign="center"
+                  sx={{ mb: "1rem" }}
+                >
+                  {errors.root.message}
+                </Typography>
+              )}
               <Button
                 style={{
                   width: "18rem",

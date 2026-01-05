@@ -1,38 +1,29 @@
 import {
-  AuthResponseDto,
   LoginRequestDTO,
-  RegisterRequestDTO,
+  RegisterRequestDTO
 } from "@shared/dtos/auth.dto";
 import { endpoints } from "../endpoints";
 import { ApiError } from "../apiError";
 import { axiosClient } from "../axios/axiosClient";
-
-const ACCESS_TOKEN_KEY = "accessToken";
+import { AxiosResponse } from "axios";
+import { UserDto } from "@shared/dtos/user.dto";
 
 export const AuthService = {
-  async login(payload: LoginRequestDTO): Promise<AuthResponseDto> {
+  async login(payload: LoginRequestDTO): Promise<AxiosResponse<UserDto>> {
     try {
-      const res = await axiosClient.post<AuthResponseDto>(
-        endpoints.auth.login,
-        payload
-      );
-      localStorage.setItem(ACCESS_TOKEN_KEY, res.data.accessToken);
+      const res = await axiosClient.post(endpoints.auth.login, payload);
 
-      return res.data;
+      return res;
     } catch (err) {
       throw err as ApiError;
     }
   },
 
-  async register(payload: RegisterRequestDTO): Promise<AuthResponseDto> {
+  async register(payload: RegisterRequestDTO): Promise<AxiosResponse<UserDto>> {
     try {
-      const res = await axiosClient.post<AuthResponseDto>(
-        endpoints.auth.register,
-        payload
-      );
-      localStorage.setItem(ACCESS_TOKEN_KEY, res.data.accessToken);
+      const res = await axiosClient.post(endpoints.auth.register, payload);
 
-      return res.data;
+      return res;
     } catch (err) {
       throw err as ApiError;
     }
@@ -53,7 +44,7 @@ export const AuthService = {
   async googleRegister(): Promise<string> {
     try {
       const res = await axiosClient.get(endpoints.auth.googleRegister);
-      debugger
+      debugger;
 
       return res.data.accessToken;
     } catch (err) {
@@ -62,8 +53,10 @@ export const AuthService = {
   },
 
   logout() {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-
-    return axiosClient.get(endpoints.auth.logout);
+    try {
+      return axiosClient.get(endpoints.auth.logout);
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   },
 };

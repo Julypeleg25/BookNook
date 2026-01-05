@@ -7,21 +7,18 @@ import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
 
 export const useAuth = () => {
   const navigate = useNavigate();
-  const { setIsAuthenticated, setUser, isAuthenticated } = useUserStore();
+  const { setUser, resetUser, isAuthenticated } = useUserStore();
 
   const register = async (payload: RegisterRequestDTO) => {
     try {
       const res = await AuthService.register(payload);
 
-      if (res.accessToken) {
-        setIsAuthenticated(true);
-        setUser(res.user);
+      if (res.status === HttpStatusCode.Created) {
+        setUser(res.data);
+        navigate("/posts");
       }
-
-      return res.accessToken || null;
     } catch (error) {
       handleAuthError(error);
-      return null;
     }
   };
 
@@ -29,34 +26,25 @@ export const useAuth = () => {
     try {
       const res = await AuthService.login(payload);
 
-      if (res.accessToken) {
-        setIsAuthenticated(true);
-        setUser(res.user);
+      if (res.status === HttpStatusCode.Created) {
+        setUser(res.data);
+        navigate("/posts");
+      } else {
+        console.error(`Auth error: ${res.status}`);
       }
-
-      return res.accessToken || null;
     } catch (error) {
       handleAuthError(error);
-      return null;
     }
   };
 
   const logout = async () => {
     try {
-      const res = await AuthService.logout();
-
-      if (res.status === HttpStatusCode.NoContent) {
-        setIsAuthenticated(false);
-        setUser({
-          avatar: "",
-          id: "",
-          name: "",
-          username: "",
-          email: "",
-        });
-      }
+      await AuthService.logout();
     } catch (error) {
       handleAuthError(error);
+    } finally {
+      resetUser();
+      navigate("/login");
     }
   };
 
@@ -76,6 +64,6 @@ export const useAuth = () => {
     register,
     logout,
     isAuthenticated,
-    AuthService
+    AuthService,
   };
 };

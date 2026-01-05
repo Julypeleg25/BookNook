@@ -6,11 +6,15 @@ interface UserStoreProps {
   setUser: (user: UserDto) => void;
   isAuthenticated: boolean;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
+  resetUser: () => void;
 }
 
+const defaultUser = { avatar: "", id: "", name: "", username: "", email: "" };
+
 const useUserStore = create<UserStoreProps>((set) => ({
-  user: { id: "", username: "", name: "", avatar: "", email: "" },
-  setUser: (user) => set({ user }),
+  user: defaultUser,
+  setUser: (user) => set({ user, isAuthenticated: true }),
+  resetUser: () => set({ user: defaultUser, isAuthenticated: false }),
   isAuthenticated: false,
   setIsAuthenticated: (isAuthenticated: boolean) => set({ isAuthenticated }),
 }));
