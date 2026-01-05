@@ -9,7 +9,8 @@ import {
 } from "@controllers/authController";
 import { upload } from "@config/multerConfig";
 import { validateBody } from "@middlewares/validateRequest";
-import { LoginSchema, RegisterSchema } from "@shared/types/auth";
+import { RegisterSchema, LoginSchema } from "@shared/schemas/auth.schema";
+import { ENV } from "@config/config";
 
 const router = express.Router();
 
@@ -30,7 +31,7 @@ router.get(
 router.get(
   "/oauth2/redirect/google",
   passport.authenticate("google", {
-    failureRedirect: `${process.env.FRONTEND_URL}/login`,
+    failureRedirect: `${ENV.FRONTEND_URL}/login`,
     session: false,
   }),
   googleAuthCallback

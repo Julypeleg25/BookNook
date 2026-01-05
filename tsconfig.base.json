@@ -2,8 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["packages/shared/*"],
-      "@shared": ["packages/shared/index.ts"]
+      "@shared/*": ["packages/shared/*"]
     }
   }
 }

@@ -5,7 +5,6 @@ import { logger } from "@utils/logger";
 import { isImageFile, deleteFile } from "@utils/fileUtils";
 import fs from "fs";
 import path from "path";
-import { UpdateUserSchema } from "@shared/types/user";
 
 export async function getCurrentUser(
   req: Request,
@@ -15,7 +14,6 @@ export async function getCurrentUser(
   try {
     res.json({
       id: req.authenticatedUser!._id,
-      email: req.authenticatedUser!.email,
       name: req.authenticatedUser!.name,
       username: req.authenticatedUser!.username,
       avatar: req.authenticatedUser!.avatar,
@@ -78,7 +76,6 @@ export async function updateUserHandler(
       message: "User updated successfully",
       user: {
         id: updatedUser._id,
-        email: updatedUser.email,
         name: updatedUser.name,
         username: updatedUser.username,
         avatar: updatedUser.avatar,

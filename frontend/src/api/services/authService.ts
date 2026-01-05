@@ -1,4 +1,8 @@
-import { LoginRequestDTO, RegisterRequestDTO } from "@shared/types/auth";
+import {
+  AuthResponseDto,
+  LoginRequestDTO,
+  RegisterRequestDTO,
+} from "@shared/dtos/auth.dto";
 import { endpoints } from "../endpoints";
 import { ApiError } from "../apiError";
 import { axiosClient } from "../axios/axiosClient";
@@ -6,9 +10,9 @@ import { axiosClient } from "../axios/axiosClient";
 const ACCESS_TOKEN_KEY = "accessToken";
 
 export const AuthService = {
-  async login(payload: LoginRequestDTO): Promise<AuthResponse> {
+  async login(payload: LoginRequestDTO): Promise<AuthResponseDto> {
     try {
-      const res = await axiosClient.post<AuthResponse>(
+      const res = await axiosClient.post<AuthResponseDto>(
         endpoints.auth.login,
         payload
       );
@@ -20,10 +24,10 @@ export const AuthService = {
     }
   },
 
-  async register(payload: RegisterRequestDTO): Promise<AuthResponse> {
+  async register(payload: RegisterRequestDTO): Promise<AuthResponseDto> {
     try {
-      const res = await axiosClient.post<AuthResponse>(
-        endpoints.auth.login,
+      const res = await axiosClient.post<AuthResponseDto>(
+        endpoints.auth.register,
         payload
       );
       localStorage.setItem(ACCESS_TOKEN_KEY, res.data.accessToken);
@@ -39,6 +43,17 @@ export const AuthService = {
       const res = await axiosClient.post<{ accessToken: string }>(
         endpoints.auth.refresh
       );
+
+      return res.data.accessToken;
+    } catch (err) {
+      throw err as ApiError;
+    }
+  },
+
+  async googleRegister(): Promise<string> {
+    try {
+      const res = await axiosClient.get(endpoints.auth.googleRegister);
+      debugger
 
       return res.data.accessToken;
     } catch (err) {

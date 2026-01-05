@@ -3,19 +3,16 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "esModuleInterop": true,
-    "strict": true,
-    "declaration": true,
+    "rootDir": "src", 
     "outDir": "dist",
-    "baseUrl": ".",
+    "declaration": true,
+    "baseUrl": ".", // This refers to the directory containing tsconfig.json
     "paths": {
-      "@/*": ["./*"] 
+      /* Use ./src/ to tell TS exactly where to look from the baseUrl */
+      "@schemas/*": ["./src/schemas/*"],
+      "@dtos/*": ["./src/dtos/*"],
+      "@shared/*": ["./src/*"]
     }
   },
-  "include": [
-    "index.ts",
-    "types/**/*",
-    "**/*"
-  ],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"]
 }

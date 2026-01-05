@@ -1,8 +1,6 @@
-import passport from "passport";
 import { Strategy as PassportLocalStrategy } from "passport-local";
 import { userRepository } from "@repositories/userRepository";
-import { comparePassword } from "@utils/password";
-import { LoginSchema } from "@shared/types/auth";
+import { comparePassword } from "@utils/hashPassword";
 import { logger } from "@utils/logger";
 
 export default new PassportLocalStrategy(

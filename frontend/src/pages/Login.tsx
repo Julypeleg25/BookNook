@@ -13,8 +13,8 @@ import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
-import type { LoginPayload } from "@api/services/authService";
 import useUserStore from "@state/useUserStore";
+import { LoginRequestDTO } from "@shared/dtos/auth.dto";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const Login = () => {
   const { login } = useAuth();
   const { setUser } = useUserStore();
 
-  const handleLogin = async (data: LoginPayload) => {
+  const handleLogin = async (data: LoginRequestDTO) => {
     await login(data);
     navigate("/posts");
   };
@@ -34,7 +34,7 @@ const Login = () => {
     control,
     formState: { errors },
     reset,
-  } = useForm<LoginPayload>({
+  } = useForm<LoginRequestDTO>({
     defaultValues: {
       username: "",
       password: "",
@@ -42,7 +42,7 @@ const Login = () => {
     mode: "onSubmit",
   });
 
-  const onSubmit = (data: LoginPayload) => {
+  const onSubmit = (data: LoginRequestDTO) => {
     // setUser((p)=>{...p,data.username});
     // setUsername(data.username);
     //TODO: data from backend

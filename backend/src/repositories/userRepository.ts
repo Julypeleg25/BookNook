@@ -43,9 +43,11 @@ export class UserRepository {
   async create(userData: Partial<IUser>): Promise<IUser> {
     try {
       const user = new User(userData);
+
       return await user.save();
     } catch (error: any) {
       logger.error("Error creating user:", error);
+      
       if (error.code === 11000) {
         const field = Object.keys(error.keyPattern)[0];
         throw new Error(`${field} already exists`);

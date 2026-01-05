@@ -5,8 +5,7 @@ import { validateBody } from "@middlewares/validateRequest";
 import { upload } from "@config/multerConfig";
 
 import { getCurrentUser, updateUserHandler } from "@controllers/userController";
-
-import { UpdateUserSchema } from "@shared/types/user";
+import { UpdateUserSchema } from "@shared/schemas/user.schema";
 
 const router = express.Router();
 

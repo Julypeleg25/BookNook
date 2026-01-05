@@ -1,15 +1,16 @@
 export const endpoints = {
   auth: {
-    register: "/auth/register",
+    register: "/register",
     login: "/login",
-    refresh: "/auth/refresh",
+    refresh: "/refresh",
     me: "/auth/me",
-    logout: "/auth/logout",
+    logout: "/logout",
+    googleRegister: "/google",
   },
 
   users: {
     me: "/users/me",
-    updateMe: "/users/me"
+    updateMe: "/users/me",
   },
 
   books: {
@@ -28,6 +29,6 @@ export const endpoints = {
     byId: (reviewId: string) => `/reviews/${reviewId}`,
     byUser: (userId: string) => `/reviews/user/${userId}`,
     like: (reviewId: string) => `/reviews/${reviewId}/like`,
-    create: "/reviews"
+    create: "/reviews",
   },
 } as const;

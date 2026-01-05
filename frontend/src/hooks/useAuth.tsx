@@ -1,17 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import {
-  AuthService,
-  type LoginPayload,
-} from "@api/services/authService";
 import { ApiError } from "@api/apiError";
 import { HttpStatusCode } from "axios";
 import useUserStore from "@/state/useUserStore";
+import { AuthService } from "@/api/services/authService";
+import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
 
 export const useAuth = () => {
   const navigate = useNavigate();
   const { setIsAuthenticated, setUser, isAuthenticated } = useUserStore();
 
-  const register = async (payload: Register) => {
+  const register = async (payload: RegisterRequestDTO) => {
     try {
       const res = await AuthService.register(payload);
 
@@ -27,13 +25,13 @@ export const useAuth = () => {
     }
   };
 
-  const login = async (payload: LoginPayload) => {
+  const login = async (payload: LoginRequestDTO) => {
     try {
-      const res = await AuthService.login(payload); // fixed call
+      const res = await AuthService.login(payload);
 
       if (res.accessToken) {
         setIsAuthenticated(true);
-        setUser(res.user); // save user info
+        setUser(res.user);
       }
 
       return res.accessToken || null;
@@ -54,6 +52,7 @@ export const useAuth = () => {
           id: "",
           name: "",
           username: "",
+          email: "",
         });
       }
     } catch (error) {
@@ -77,5 +76,6 @@ export const useAuth = () => {
     register,
     logout,
     isAuthenticated,
+    AuthService
   };
 };

@@ -1,46 +1,45 @@
+import { ENV } from "@config/config";
 import express from "express";
 import passport from "passport";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import session from "express-session";
 import cors from "cors";
-import authRoutes from "./src/routes/auth";
-import listRouter from "./src/routes/list";
-import User, { IUser } from "./src/models/User";
+import authRoutes from "@routes/auth";
+import listRouter from "@routes/list";
+import User, { IUser } from "@models/User";
 import swaggerUi from "swagger-ui-express";
-import booksRouter from "./src/routes/books";
-import userReviewsRouter from "./src/routes/userReview";
-import userRouter from "./src/routes/user";
-import { swaggerSpec } from "./swagger";
-import { UPLOADS_FOLDER } from "./src/config/multerConfig";
-import googleStrategy from "./src/services/googleStrategy";
-import localLoginStrategy from "./src/services/localStrategy";
+import booksRouter from "@routes/books";
+import userReviewsRouter from "@routes/userReview";
+import userRouter from "@routes/user";
+import { swaggerSpec } from "../swagger";
+import { UPLOADS_FOLDER } from "@config/multerConfig";
+import googleStrategy from "@services/googleStrategy";
+import localLoginStrategy from "@services/localStrategy";
 import cookieParser from "cookie-parser";
-import { requireAuth } from "./src/middlewares/authMiddleware";
-import { errorHandler } from "./src/middlewares/errorHandler";
-
-dotenv.config();
+import { requireAuth } from "@middlewares/authMiddleware";
+import { errorHandler } from "@middlewares/errorHandler";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = ENV.PORT;
+
 app.use(cookieParser());
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: ENV.FRONTEND_URL,
     credentials: true,
   })
 );
 
 mongoose
-  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/booknook")
+  .connect(ENV.MONGODB_URL)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use(express.json());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "your-secret-key",
+    secret: ENV.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
     cookie: { secure: true },

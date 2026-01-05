@@ -17,7 +17,6 @@ import { bookPosts } from "../exampleData";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const { user } = useUserStore();
 
   const postsCount = bookPosts.filter((post) => post.user.id === "u1").length;
 

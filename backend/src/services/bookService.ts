@@ -5,13 +5,14 @@ import {
   GoogleBooksVolume,
   GoogleBooksResponse,
   BooksQuery,
-} from "@types/book";
+} from "@models/ApiBook";
 import { bookRepository } from "@repositories/bookRepository";
 import { NotFoundError } from "@utils/errors";
 import { logger } from "@utils/logger";
+import { ENV } from "@config/config";
 
-const GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes";
-const API_KEY = process.env.GOOGLE_BOOKS_API_KEY as string;
+const GOOGLE_BOOKS_API = ENV.GOOGLE_BOOKS_API_KEY;
+const API_KEY = ENV.GOOGLE_BOOKS_API_KEY;
 
 function normalizeBookSummary(volume: GoogleBooksVolume): BookSummary {
   const info = volume.volumeInfo;
@@ -99,7 +100,10 @@ export async function getBookByGoogleIdFromGoogle(
     );
     return response.data;
   } catch (error) {
-    logger.error(`Error fetching book ${googleId} from Google Books API:`, error);
+    logger.error(
+      `Error fetching book ${googleId} from Google Books API:`,
+      error
+    );
     throw new NotFoundError("Book not found in Google Books");
   }
 }
@@ -112,7 +116,9 @@ export async function getLocalBookByLocalId(localId: string) {
   return await bookRepository.findById(localId);
 }
 
-export async function getGoogleBookByLocalId(localId: string): Promise<GoogleBooksVolume> {
+export async function getGoogleBookByLocalId(
+  localId: string
+): Promise<GoogleBooksVolume> {
   const localBook = await bookRepository.findById(localId);
   if (!localBook) {
     throw new NotFoundError("Book not found");

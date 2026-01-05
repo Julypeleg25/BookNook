@@ -12,34 +12,42 @@ import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-interface ISignUpForm {
-  username: string;
-  password: string;
-  name: string;
-}
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RegisterRequestDTO } from "@shared/dtos/auth.dto";
+import { useAuth } from "@/hooks/useAuth";
+import { RegisterSchema } from "@shared/schemas/auth.schema";
+import { AuthService } from "@/api/services/authService";
+import env from "@/config/env";
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const {
     handleSubmit,
     control,
     formState: { errors },
     reset,
-  } = useForm<ISignUpForm>({
+  } = useForm<RegisterRequestDTO>({
     defaultValues: {
       username: "",
       password: "",
       name: "",
+      email: "",
     },
+    resolver: zodResolver(RegisterSchema),
     mode: "onSubmit",
   });
 
   const handleLogin = () => navigate("/login");
 
-  const onSubmit = (data: ISignUpForm) => {
-    console.log("Form data:", data);
+  const registerWithGoogle = async () => {
+    // await AuthService.googleRegister();
+    window.location.href = `${env.API_BASE_URL}/google`;
+  };
+
+  const onSubmit = async (data: RegisterRequestDTO) => {
+    await register(data);
     reset();
   };
 
@@ -51,6 +59,7 @@ const SignUp = () => {
             <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
               <Typography variant="h4">Sign up now</Typography>
               <Button
+                onClick={registerWithGoogle}
                 style={{ width: "23rem", display: "flex" }}
                 variant="outlined"
                 startIcon={<FcGoogle />}
@@ -82,8 +91,6 @@ const SignUp = () => {
                   control={control}
                   rules={{
                     required: "Username is required",
-                    minLength: { value: 3, message: "Minimum 3 characters" },
-                    maxLength: { value: 14, message: "Maximum 14 characters" },
                   }}
                   render={({ field }) => (
                     <TextField
@@ -107,11 +114,6 @@ const SignUp = () => {
                 <Controller
                   name="name"
                   control={control}
-                  rules={{
-                    required: "Name is required",
-                    minLength: { value: 3, message: "Minimum 3 characters" },
-                    maxLength: { value: 14, message: "Maximum 14 characters" },
-                  }}
                   render={({ field }) => (
                     <TextField
                       {...field}
@@ -136,16 +138,6 @@ const SignUp = () => {
                 <Controller
                   name="password"
                   control={control}
-                  rules={{
-                    required: "Password is required",
-                    minLength: { value: 6, message: "Minimum 6 characters" },
-                    maxLength: { value: 20, message: "Maximum 20 characters" },
-                    pattern: {
-                      value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
-                      message:
-                        "Password must contain at least one letter and one number",
-                    },
-                  }}
                   render={({ field }) => (
                     <TextField
                       {...field}

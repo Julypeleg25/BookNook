@@ -19,8 +19,8 @@
       "@auth/*": ["src/auth/*"],
       "@pages/*": ["src/pages/*"],
       "@assets/*": ["src/assets/*"],
-      "@shared/*": ["../packages/shared/*"],
-      "@shared": ["../packages/shared/index.ts"]
+      "@shared/*": ["../packages/shared/src/*"],
+      "@shared": ["../packages/shared/src/index.ts"]
     },
     "strict": true,
     "esModuleInterop": true,
@@ -29,7 +29,7 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "../packages/shared/**/*"],
+  "include": ["src", "../packages/shared/src/**/*"],
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
