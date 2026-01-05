@@ -1,9 +1,9 @@
 import { Types } from "mongoose";
-import { IUser } from "../models/User";
-import { userRepository } from "../repositories/userRepository";
-import { hashPassword } from "../utils/password";
-import { NotFoundError, ConflictError, ValidationError } from "../utils/errors";
-import { logger } from "../utils/logger";
+import { IUser } from "@models/User";
+import { userRepository } from "@repositories/userRepository";
+import { hashPassword } from "@utils/password";
+import { NotFoundError, ConflictError, ValidationError } from "@utils/errors";
+import { logger } from "@utils/logger";
 
 export async function getUserById(userId: Types.ObjectId | string): Promise<IUser> {
   const user = await userRepository.findById(userId);

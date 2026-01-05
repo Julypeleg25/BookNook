@@ -1,6 +1,6 @@
+import Select from "@/components/common/Select";
 import { Chip } from "@mui/material";
 import { TbArrowsSort } from "react-icons/tb";
-import Select from "../../common/Select";
 
 interface CommentsHeaderProps {
   length: number;

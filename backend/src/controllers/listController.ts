@@ -3,10 +3,10 @@ import {
   addBookToUserList,
   getUserWishlist,
   getUserReadlist,
-} from "../services/listService";
-import { getBookByGoogleIdFromGoogle } from "../services/bookService";
-import { getUserById } from "../services/userService";
-import { logger } from "../utils/logger";
+} from "@services/listService";
+import { getBookByGoogleIdFromGoogle } from "@services/bookService";
+import { getUserById } from "@services/userService";
+import { logger } from "@utils/logger";
 
 export const addBookToList = async (
   req: Request,

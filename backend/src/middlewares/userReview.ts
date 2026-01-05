@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { isReviewAuthor } from "../services/userReviewService";
-import { ForbiddenError } from "../utils/errors";
-import { logger } from "../utils/logger";
+import { isReviewAuthor } from "@services/userReviewService";
+import { ForbiddenError } from "@utils/errors";
+import { logger } from "@utils/logger";
 
 export async function isReviewAuthorMiddleware(req: Request, res: Response, next: NextFunction) {
   try {

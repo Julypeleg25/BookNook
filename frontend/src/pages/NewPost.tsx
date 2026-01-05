@@ -12,11 +12,11 @@ import {
   useWatch,
   type ControllerRenderProps,
 } from "react-hook-form";
-import PostImageUpload from "../components/common/PostImageUpload";
+import PostImageUpload from "@components/common/PostImageUpload";
 import { useParams } from "react-router-dom";
 import { useMemo } from "react";
 import { bookPosts } from "../exampleData";
-import useNav from "../hooks/useNav";
+import useNav from "@hooks/useNav";
 
 interface INewPostInputs {
   description: string;

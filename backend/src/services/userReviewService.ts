@@ -1,10 +1,10 @@
 import { Types } from "mongoose";
-import { IUserReview } from "../models/UserReview";
-import { userReviewRepository } from "../repositories/userReviewRepository";
+import { IUserReview } from "@models/UserReview";
+import { userReviewRepository } from "@repositories/userReviewRepository";
 import { getOrCreateLocalBook } from "./bookService";
 import { recomputeBookRating } from "./ratingService";
-import { NotFoundError, ForbiddenError, ValidationError } from "../utils/errors";
-import { logger } from "../utils/logger";
+import { NotFoundError, ForbiddenError, ValidationError } from "@utils/errors";
+import { logger } from "@utils/logger";
 
 export async function createReview(
   userId: Types.ObjectId,

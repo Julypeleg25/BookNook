@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { searchBooksHandler, getBookByIdHandler } from "../controllers/bookController";
+import { searchBooksHandler, getBookByIdHandler } from "@controllers/bookController";
 
 const router = Router();
 

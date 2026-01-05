@@ -8,16 +8,16 @@ import {
   Stack,
 } from "@mui/material";
 import { useState } from "react";
-import useUserStore from "../state/useUserStore";
-import ProfileForm from "../components/profile/ProfileForm";
-import ProfileView from "../components/profile/ProfileView";
+import useUserStore from "@state/useUserStore";
+import ProfileForm from "@components/profile/ProfileForm";
+import ProfileView from "@components/profile/ProfileView";
 import { MdEdit } from "react-icons/md";
-import MyPostsSection from "../components/profile/MyPostsSection";
+import MyPostsSection from "@components/profile/MyPostsSection";
 import { bookPosts } from "../exampleData";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const { name, username, avatar } = useUserStore();
+  const { user } = useUserStore();
 
   const postsCount = bookPosts.filter((post) => post.user.id === "u1").length;
 
@@ -65,7 +65,7 @@ const Profile = () => {
           </Box>
 
           {!isEditing ? (
-            <ProfileView name={name} username={username} avatar={avatar} />
+            <ProfileView />
           ) : (
             <ProfileForm onCancel={() => setIsEditing(false)} />
           )}

@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import type { BookPost } from "../../models/Book";
+import type { BookPost } from "@models/Book";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import { useState } from "react";

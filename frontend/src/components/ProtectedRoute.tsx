@@ -1,25 +1,25 @@
+import useUserStore from "@/state/useUserStore";
 import { useEffect, useState, type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useUserStore } from "../stores/userStore";
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, fetchUser } = useUserStore();
+  const { user } = useUserStore();
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      await fetchUser();
-      setLoading(false);
-    };
-    checkAuth();
-  }, [fetchUser]);
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     await fetchUser();
+  //     setLoading(false);
+  //   };
+  //   checkAuth();
+  // }, [fetchUser]);
 
   if (loading) {
-    return <div>Loading...</div>; // Or a proper loading component
+    return <div>Loading...</div>;
   }
 
   if (!user ) {

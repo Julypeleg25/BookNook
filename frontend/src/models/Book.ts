@@ -1,4 +1,4 @@
-import type { GenreOptionsType } from "../components/searchFilters/models/SearchFiltersOptions";
+import type { GenreOptionsType } from "@components/searchFilters/models/SearchFiltersOptions";
 import type { User } from "./User";
 
 interface Book {

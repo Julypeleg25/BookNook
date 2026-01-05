@@ -1,6 +1,6 @@
 import { Box, Chip, Divider, Paper, Typography } from "@mui/material";
-import type { Book } from "../../models/Book";
-import { formatDate } from "../../utils/dateUtils";
+import type { Book } from "@models/Book";
+import { formatDate } from "@utils/dateUtils";
 
 interface BookInfoSectionProps {
   book: Book;

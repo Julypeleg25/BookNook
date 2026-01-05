@@ -1,18 +1,19 @@
+import env from "@/config/env";
+import useUserStore from "@/state/useUserStore";
 import { Button, Typography, Box } from "@mui/material";
-import { useUserStore } from "../stores/userStore";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const { user, logout } = useUserStore();
+  const { user } = useUserStore();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await fetch("http://localhost:3000/logout", {
-      credentials: "include",
-    });
-    logout();
-    navigate("/login");
-  };
+  // const handleLogout = async () => {
+  //   await fetch(`${env.API_BASE_URL}/logout`, {
+  //     credentials: "include",
+  //   });
+  //   logout();
+  //   navigate("/login");
+  // };
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" mt={4}>
@@ -20,13 +21,13 @@ const Dashboard = () => {
       {user && (
         <Box mt={2}>
           <Typography>User ID: {user.id}</Typography>
-          <Typography>Email: {user.email}</Typography>
+          {/* <Typography>Email: {user.email}</Typography> */}
         </Box>
       )}
       <Button
         variant="contained"
         color="secondary"
-        onClick={handleLogout}
+        // onClick={handleLogout}
         sx={{ mt: 2 }}
       >
         Logout

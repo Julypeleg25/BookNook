@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { userRepository } from "../repositories/userRepository";
-import { verifyAccessToken } from "../services/authService";
-import { UnauthorizedError } from "../utils/errors";
-import { logger } from "../utils/logger";
+import { userRepository } from "@repositories/userRepository";
+import { verifyAccessToken } from "@services/authService";
+import { UnauthorizedError } from "@utils/errors";
+import { logger } from "@utils/logger";
 
 export const requireAuth = async (
   req: Request,

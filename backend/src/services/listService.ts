@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
-import { userRepository } from "../repositories/userRepository";
-import { NotFoundError } from "../utils/errors";
-import { logger } from "../utils/logger";
+import { userRepository } from "@repositories/userRepository";
+import { NotFoundError } from "@utils/errors";
+import { logger } from "@utils/logger";
 
 export async function addBookToUserList(
   userId: Types.ObjectId | string,

@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { getUserById, updateUser } from "../services/userService";
-import { updateUserSchema } from "../utils/validation";
-import { ValidationError, NotFoundError } from "../utils/errors";
-import { logger } from "../utils/logger";
-import { isImageFile, deleteFile } from "../utils/fileUtils";
+import { updateUser } from "@services/userService";
+import { ValidationError } from "@utils/errors";
+import { logger } from "@utils/logger";
+import { isImageFile, deleteFile } from "@utils/fileUtils";
 import fs from "fs";
 import path from "path";
+import { UpdateUserSchema } from "@shared/types/user";
 
 export async function getCurrentUser(
   req: Request,
@@ -62,15 +62,15 @@ export async function updateUserHandler(
       updateData.avatar = `/uploads/${req.file.filename}`;
     }
 
-    const { error } = updateUserSchema.validate(updateData);
-    if (error) {
-      if (req.file) deleteFile(req.file.path);
-      throw new ValidationError(
-        error.details && error.details[0]
-          ? error.details[0].message
-          : "error at updating user"
-      );
-    }
+    // const { error } = updateUserSchema.validate(updateData);
+    // if (error) {
+    //   if (req.file) deleteFile(req.file.path);
+    //   throw new ValidationError(
+    //     error.details && error.details[0]
+    //       ? error.details[0].message
+    //       : "error at updating user"
+    //   );
+    // }
 
     const updatedUser = await updateUser(userId, updateData);
 

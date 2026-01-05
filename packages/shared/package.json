@@ -1,0 +1,17 @@
+{
+  "name": "@booknook/shared",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./types/*": "./types/*.ts"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

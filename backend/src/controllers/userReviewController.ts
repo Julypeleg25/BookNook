@@ -7,12 +7,11 @@ import {
   updateReview,
   deleteReview,
   likeReview,
-} from "../services/userReviewService";
-import { getGoogleBookByLocalId } from "../services/bookService";
-import { reviewSchema } from "../utils/validation";
-import { ValidationError } from "../utils/errors";
-import { logger } from "../utils/logger";
-import { isImageFile, deleteFile } from "../utils/fileUtils";
+} from "@services/userReviewService";
+import { getGoogleBookByLocalId } from "@services/bookService";
+import { ValidationError } from "@utils/errors";
+import { logger } from "@utils/logger";
+import { isImageFile, deleteFile } from "@utils/fileUtils";
 
 export const createReviewHandler = async (
   req: Request,
@@ -22,15 +21,15 @@ export const createReviewHandler = async (
   try {
     const { bookId, review, rating } = req.body;
 
-    const { error } = reviewSchema.validate({ bookId, review, rating });
-    if (error) {
-      if (req.file) deleteFile(req.file.path);
-      throw new ValidationError(
-        error.details && error.details[0]
-          ? error.details[0].message
-          : "error at creating user review"
-      );
-    }
+    // const { error } = reviewSchema.validate({ bookId, review, rating });
+    // if (error) {
+    //   if (req.file) deleteFile(req.file.path);
+    //   throw new ValidationError(
+    //     error.details && error.details[0]
+    //       ? error.details[0].message
+    //       : "error at creating user review"
+    //   );
+    // }
 
     if (req.file && !isImageFile(req.file.originalname)) {
       deleteFile(req.file.path);

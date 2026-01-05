@@ -3,7 +3,7 @@ import {
   addBookToList,
   getWishlist,
   getReadlist,
-} from "../controllers/listController";
+} from "@controllers/listController";
 
 const router = express.Router();
 

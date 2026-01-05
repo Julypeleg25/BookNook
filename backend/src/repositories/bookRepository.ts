@@ -1,6 +1,6 @@
-import { BookModel, IBook } from "../models/Book";
+import { BookModel, IBook } from "@models/Book";
 import { Types } from "mongoose";
-import { logger } from "../utils/logger";
+import { logger } from "@utils/logger";
 
 export class BookRepository {
   async findByExternalId(externalId: string): Promise<IBook | null> {

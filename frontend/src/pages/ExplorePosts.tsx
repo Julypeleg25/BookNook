@@ -1,13 +1,13 @@
 import { Box, Fab } from "@mui/material";
-import BookPostCard from "../components/bookCards/post/BookPostCard";
+import BookPostCard from "@components/bookCards/post/BookPostCard";
 import { bookPosts } from "../exampleData";
-import type { BookPost } from "../models/Book";
+import type { BookPost } from "@models/Book";
 import { useState } from "react";
-import SearchFiltersModal from "../components/searchFilters/SearchFiltersModal";
-import SearchBar from "../components/searchFilters/SearchBar";
+import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
+import SearchBar from "@components/searchFilters/SearchBar";
 import { MdAdd } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { useInfiniteLoader } from "../hooks/useInfiniteLoader";
+import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
 
 const ExplorePosts = () => {
   const navigate = useNavigate();

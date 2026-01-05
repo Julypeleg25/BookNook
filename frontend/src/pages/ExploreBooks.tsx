@@ -1,11 +1,11 @@
 import { Box, Fab } from "@mui/material";
 import { books } from "../exampleData";
-import SearchFiltersModal from "../components/searchFilters/SearchFiltersModal";
-import SearchBar from "../components/searchFilters/SearchBar";
-import BookInfoCard from "../components/bookCards/BookInfoCard";
+import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
+import SearchBar from "@components/searchFilters/SearchBar";
+import BookInfoCard from "@components/bookCards/BookInfoCard";
 import { MdAdd } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { useInfiniteLoader } from "../hooks/useInfiniteLoader";
+import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
 import { useState } from "react";
 
 const ExploreBooks = () => {

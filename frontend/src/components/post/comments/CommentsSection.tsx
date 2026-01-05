@@ -1,7 +1,7 @@
 import { Avatar, Box, Divider } from "@mui/material";
 import { forwardRef, useRef, useImperativeHandle } from "react";
-import { timeAgo } from "../../../utils/dateUtils";
-import type { BookPost } from "../../../models/Book";
+import { timeAgo } from "@utils/dateUtils";
+import type { BookPost } from "@models/Book";
 import NewComment, { type NewCommentRef } from "./NewComment";
 import CommentsHeader from "./CommentsHeader";
 

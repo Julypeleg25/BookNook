@@ -1,5 +1,5 @@
 import { Card, CardContent, Chip, Typography, Stack, Box } from "@mui/material";
-import type { BookPost } from "../../../models/Book";
+import type { BookPost } from "@models/Book";
 import BookPostCardActions from "./BookPostCardActions";
 import BookPostCardHeader from "./BookPostCardHeader";
 

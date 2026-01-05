@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import loginIcon from "../assets/login-icon.png";
+import loginIcon from "@assets/login-icon.png";
 import { FcGoogle } from "react-icons/fc";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";

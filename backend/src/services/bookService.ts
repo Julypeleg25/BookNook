@@ -5,10 +5,10 @@ import {
   GoogleBooksVolume,
   GoogleBooksResponse,
   BooksQuery,
-} from "../types/book";
-import { bookRepository } from "../repositories/bookRepository";
-import { NotFoundError } from "../utils/errors";
-import { logger } from "../utils/logger";
+} from "@types/book";
+import { bookRepository } from "@repositories/bookRepository";
+import { NotFoundError } from "@utils/errors";
+import { logger } from "@utils/logger";
 
 const GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes";
 const API_KEY = process.env.GOOGLE_BOOKS_API_KEY as string;

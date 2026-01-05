@@ -1,11 +1,8 @@
 import { Response } from "express";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import { IUser, JwtDecodedUser } from "../models/User";
-import { logger } from "../utils/logger";
-import { UnauthorizedError } from "../utils/errors";
-
-dotenv.config();
+import { IUser, JwtDecodedUser } from "@models/User";
+import { logger } from "@utils/logger";
+import { UnauthorizedError } from "@utils/errors";
 
 export function generateTokens(user: IUser): { accessToken: string; refreshToken: string } {
   try {

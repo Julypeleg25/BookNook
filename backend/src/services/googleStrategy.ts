@@ -1,14 +1,10 @@
-import passport, { Profile } from "passport";
+import { Profile } from "passport";
 import {
   Strategy as GoogleStrategy,
   VerifyCallback,
 } from "passport-google-oauth20";
-import dotenv from "dotenv";
-import { userRepository } from "../repositories/userRepository";
-import { logger } from "../utils/logger";
-import { hashPassword } from "../utils/password";
-
-dotenv.config();
+import { userRepository } from "@repositories/userRepository";
+import { logger } from "@utils/logger";
 
 export default new GoogleStrategy(
   {
@@ -34,7 +30,9 @@ export default new GoogleStrategy(
         return done(null, oldUser);
       }
 
-      const existingProviderUser = await userRepository.findByProviderId(profile.id);
+      const existingProviderUser = await userRepository.findByProviderId(
+        profile.id
+      );
       if (existingProviderUser) {
         return done(null, existingProviderUser);
       }

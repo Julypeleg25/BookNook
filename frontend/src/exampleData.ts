@@ -1,6 +1,7 @@
-import { GenreOptions, languageMenuItems } from "./components/searchFilters/models/SearchFiltersOptions";
-import type { User, Book, BookPost, Comment } from "./models/Book";
+import { GenreOptions, languageMenuItems } from "@components/searchFilters/models/SearchFiltersOptions";
+import type { Book, BookPost, Comment } from "@models/Book";
 import { faker } from "@faker-js/faker";
+import type { User } from "@models/User";
 
 const randomItems = <T>(arr: T[], min = 1, max = 3): T[] => {
   const count = Math.floor(Math.random() * (max - min + 1)) + min;

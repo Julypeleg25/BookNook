@@ -1,7 +1,7 @@
 import { Box, Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useSnackbar } from "notistack";
-import useUserStore from "../../state/useUserStore";
+import useUserStore from "@state/useUserStore";
 import AvatarField from "./AvatarField";
 import NameField from "./NameField";
 import UsernameField from "./UsernameField";
@@ -17,8 +17,7 @@ interface IProfileInputs {
 }
 
 const ProfileForm = ({ onCancel }: Props) => {
-  const { name, username, avatar, setName, setUsername, setAvatar } =
-    useUserStore();
+  const { user } = useUserStore();
   const { enqueueSnackbar } = useSnackbar();
 
   const {
@@ -27,18 +26,22 @@ const ProfileForm = ({ onCancel }: Props) => {
     reset,
     formState: { isDirty, dirtyFields },
   } = useForm<IProfileInputs>({
-    defaultValues: { name, username, avatar },
+    defaultValues: {
+      name: user.name,
+      username: user.username,
+      avatar: user.avatar,
+    },
   });
 
   const onSubmit = (data: IProfileInputs) => {
     if (!isDirty) return;
 
-    if (dirtyFields.name) setName(data.name);
-    if (dirtyFields.username) setUsername(data.username);
+    // if (dirtyFields.name) setName(data.name);
+    // if (dirtyFields.username) setUsername(data.username);
 
-    if (dirtyFields.avatar && data.avatar instanceof File) {
-      setAvatar(URL.createObjectURL(data.avatar));
-    }
+    // if (dirtyFields.avatar && data.avatar instanceof File) {
+    //   setAvatar(URL.createObjectURL(data.avatar));
+    // }
 
     enqueueSnackbar("Profile updated successfully!", { variant: "success" });
     reset(data);

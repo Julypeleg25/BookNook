@@ -1,5 +1,5 @@
 import { CardHeader, CardMedia, Typography, Box, Avatar } from "@mui/material";
-import type { BookPost } from "../../../models/Book";
+import type { BookPost } from "@models/Book";
 import { Link as RouterLink } from "react-router-dom";
 
 interface BookPostCardProps {

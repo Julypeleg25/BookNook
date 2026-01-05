@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { BooksQuery } from "../types/book";
-import { searchBooks, getBookDetails } from "../services/bookService";
-import { logger } from "../utils/logger";
+import { BooksQuery } from "@types/book";
+import { searchBooks, getBookDetails } from "@services/bookService";
+import { logger } from "@utils/logger";
 
 export const searchBooksHandler = async (
   req: Request,

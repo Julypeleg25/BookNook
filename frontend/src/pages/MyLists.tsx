@@ -1,5 +1,5 @@
 import { bookPosts } from "../exampleData";
-import BooksList from "../components/lists/BooksList";
+import BooksList from "@components/lists/BooksList";
 import { Stack } from "@mui/material";
 import { BsBookmark } from "react-icons/bs";
 import { LuBookCheck } from "react-icons/lu";

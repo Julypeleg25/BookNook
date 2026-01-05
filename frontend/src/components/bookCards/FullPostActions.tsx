@@ -26,7 +26,7 @@ const FullPostActions = ({
       </Button>
       <Button
         component={Link}
-        to={`/post/${postId}`}
+        to={`/post/edit/${postId}`}
         size="small"
         variant="outlined"
         startIcon={<FiEdit />}

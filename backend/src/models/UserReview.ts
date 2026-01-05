@@ -21,7 +21,7 @@ export interface IUserReview extends Document {
 const ReviewCommentSchema = new Schema<ReviewComment>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    comment: { type: String, required: true },
+    comment: { type: String, required: true, minLength: 1, maxLength: 200 },
     createdAt: { type: Date, default: Date.now },
   },
   { _id: true }
@@ -31,7 +31,7 @@ const UserReviewSchema = new Schema<IUserReview>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     book: { type: Schema.Types.ObjectId, ref: "Book", required: true },
-    review: { type: String, required: true },
+    review: { type: String, required: true, minLength: 5, maxlength: 1500 },
     rating: {
       type: Number,
       required: true,

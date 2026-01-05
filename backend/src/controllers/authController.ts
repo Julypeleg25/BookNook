@@ -1,21 +1,21 @@
 import { Request, Response, NextFunction } from "express";
-import { IUser } from "../models/User";
+import { IUser } from "@models/User";
 import {
   generateTokens,
   setAuthCookies,
   clearAuthCookies,
-} from "../services/authService";
+} from "@services/authService";
 import {
   createUser,
   getUserByUsername,
   updateUserTokens,
   getUserById,
-} from "../services/userService";
-import { comparePassword, hashPassword } from "../utils/password";
-import { registerSchema } from "../utils/validation";
-import { ValidationError, UnauthorizedError } from "../utils/errors";
-import { logger } from "../utils/logger";
-import { isImageFile, deleteFile } from "../utils/fileUtils";
+} from "@services/userService";
+import { comparePassword, hashPassword } from "@utils/password";
+import { ValidationError, UnauthorizedError } from "@utils/errors";
+import { logger } from "@utils/logger";
+import { isImageFile, deleteFile } from "@utils/fileUtils";
+import { RegisterSchema } from "@shared/types/auth";
 
 export const googleAuthCallback = async (
   req: Request,
@@ -56,20 +56,20 @@ export const register = async (
     }
 
     const { name, email, username, password } = req.body;
-    const { error } = registerSchema.validate({
-      name,
-      email,
-      username,
-      password,
-    });
-    if (error) {
-      deleteFile(req.file.path);
-      throw new ValidationError(
-        error.details && error.details[0]
-          ? error.details[0].message
-          : "error at registering user"
-      );
-    }
+    // const { error } = registerSchema.validate({
+    //   name,
+    //   email,
+    //   username,
+    //   password,
+    // });
+    // if (error) {
+    //   deleteFile(req.file.path);
+    //   throw new ValidationError(
+    //     error.details && error.details[0]
+    //       ? error.details[0].message
+    //       : "error at registering user"
+    //   );
+    // }
 
     const avatarPath = `/uploads/${req.file.filename}`;
     const hashedPassword = await hashPassword(password);
@@ -155,11 +155,12 @@ export const refresh = async (
 ) => {
   try {
     const { refreshToken } = req.cookies;
+
     if (!refreshToken) {
       throw new UnauthorizedError("No refresh token");
     }
 
-    const { verifyRefreshToken } = await import("../services/authService");
+    const { verifyRefreshToken } = await import("@services/authService");
     const decoded = await verifyRefreshToken(refreshToken);
     const user = await getUserById(decoded.userId);
 

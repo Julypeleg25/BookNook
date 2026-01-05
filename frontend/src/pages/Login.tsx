@@ -6,41 +6,35 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import loginIcon from "../assets/login-icon.png";
+import loginIcon from "@assets/login-icon.png";
 import { FcGoogle } from "react-icons/fc";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import useUserStore from "../state/useUserStore";
-
-interface ILoginForm {
-  username: string;
-  password: string;
-}
+import { useAuth } from "@hooks/useAuth";
+import type { LoginPayload } from "@api/services/authService";
+import useUserStore from "@state/useUserStore";
 
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
-  const { setUsername, setName } = useUserStore();
+  const { setUser } = useUserStore();
 
-  const handleLogin = () => {
-    login();
+  const handleLogin = async (data: LoginPayload) => {
+    await login(data);
     navigate("/posts");
   };
 
-  const handleSignup = () => {
-    navigate("/register");
-  };
+  const handleSignup = () => navigate("/register");
 
   const {
     handleSubmit,
     control,
     formState: { errors },
     reset,
-  } = useForm<ILoginForm>({
+  } = useForm<LoginPayload>({
     defaultValues: {
       username: "",
       password: "",
@@ -48,11 +42,11 @@ const Login = () => {
     mode: "onSubmit",
   });
 
-  const onSubmit = (data: ILoginForm) => {
-    setName(data.username);
-    setUsername(data.username);
+  const onSubmit = (data: LoginPayload) => {
+    // setUser((p)=>{...p,data.username});
+    // setUsername(data.username);
     //TODO: data from backend
-    handleLogin();
+    handleLogin(data);
     reset();
   };
 

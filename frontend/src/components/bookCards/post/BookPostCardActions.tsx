@@ -4,7 +4,7 @@ import {
     Typography,
     Stack
 } from "@mui/material";
-import type { BookPost } from "../../../models/Book";
+import type { BookPost } from "@models/Book";
 import { useNavigate } from "react-router-dom";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";

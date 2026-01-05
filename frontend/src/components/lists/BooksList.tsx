@@ -1,9 +1,9 @@
 import { Box, Button, Stack } from "@mui/material";
-import type { Book } from "../../models/Book";
-import BookInfoCard from "../bookCards/BookInfoCard";
+import type { Book } from "@models/Book";
 import { useState, useMemo, type ReactNode } from "react";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa6";
-import { useInfiniteLoader } from "../../hooks/useInfiniteLoader";
+import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
+import BookInfoCard from "../bookCards/BookInfoCard";
 
 interface BooksListProps {
   booksList: Book[];

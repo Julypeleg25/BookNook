@@ -1,39 +1,30 @@
 {
   "compilerOptions": {
-    /* Language & Environment */
     "target": "ES2022",
     "lib": ["ES2022"],
     "module": "es2022",
     "moduleResolution": "bundler",
-
-    /* Output */
+    "rootDir": "../",
     "outDir": "dist",
-    "rootDir": "src",
     "sourceMap": true,
-    "declaration": false,
-
-    /* Strictness */
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noUncheckedIndexedAccess": true,
-    "useUnknownInCatchVariables": true,
-
-    /* Interop */
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-
-    /* Build Performance */
-    "skipLibCheck": true,
-    "incremental": true,
-
-    /* Node / Runtime */
-    "types": ["node"],
-
-    /* Safety */
-    "noFallthroughCasesInSwitch": true
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@controllers/*": ["src/controllers/*"],
+      "@routes/*": ["src/routes/*"],
+      "@middlewares/*": ["src/middlewares/*"],
+      "@services/*": ["src/services/*"],
+      "@repositories/*": ["src/repositories/*"],
+      "@models/*": ["src/models/*"],
+      "@utils/*": ["src/utils/*"],
+      "@config/*": ["src/config/*"],
+      "@shared/types/*": ["../packages/shared/types/*"],
+      "@shared/*": ["../packages/shared/*"]
+    }
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "include": ["src", "../packages/shared/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

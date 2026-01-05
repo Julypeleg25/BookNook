@@ -1,7 +1,7 @@
-import { UserReviewModel, IUserReview } from "../models/UserReview";
+import { UserReviewModel, IUserReview } from "@models/UserReview";
 import { Types } from "mongoose";
-import { IUser } from "../models/User";
-import { logger } from "../utils/logger";
+import { IUser } from "@models/User";
+import { logger } from "@utils/logger";
 
 export class UserReviewRepository {
   async create(reviewData: {

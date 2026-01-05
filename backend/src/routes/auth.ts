@@ -6,22 +6,20 @@ import {
   register,
   login,
   refresh,
-} from "../controllers/authController";
-import { requireAuth } from "../middlewares/authMiddleware";
-import { getCurrentUser } from "../controllers/userController";
-import { upload } from "../config/multerConfig";
-import dotenv from "dotenv";
-
-dotenv.config();
+} from "@controllers/authController";
+import { upload } from "@config/multerConfig";
+import { validateBody } from "@middlewares/validateRequest";
+import { LoginSchema, RegisterSchema } from "@shared/types/auth";
 
 const router = express.Router();
 
-router.get("/", (_req, res) => {
-  res.send("Auth route is working");
-});
-
-router.post("/register", upload.single("avatar"), register);
-router.post("/login", login);
+router.post(
+  "/register",
+  upload.single("avatar"),
+  validateBody(RegisterSchema),
+  register
+);
+router.post("/login", validateBody(LoginSchema), login);
 router.post("/refresh", refresh);
 
 router.get(
@@ -38,7 +36,6 @@ router.get(
   googleAuthCallback
 );
 
-router.get("/me", requireAuth, getCurrentUser);
 router.get("/logout", logout);
 
 export default router;

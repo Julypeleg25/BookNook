@@ -1,10 +1,10 @@
 import { IconButton, Rating, Tooltip, Typography } from "@mui/material";
 import { FaCalendar, FaUser } from "react-icons/fa6";
-import { formatDate } from "../../utils/dateUtils";
-import type { BookPost } from "../../models/Book";
+import { formatDate } from "@utils/dateUtils";
+import type { BookPost } from "@models/Book";
 import BookHeader from "./BookHeaderButtons";
 import { BiArrowBack } from "react-icons/bi";
-import useNav from "../../hooks/useNav";
+import useNav from "@hooks/useNav";
 
 interface BookPostHeaderProps {
   bookPost: BookPost;

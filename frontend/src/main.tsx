@@ -3,10 +3,10 @@ import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import "./index.css";
-import App from "./App.tsx";
-import theme from "./theme/theme.ts";
 import { BrowserRouter } from "react-router-dom";
-import ScrollToTop from "./router/ScrollToTop.tsx";
+import App from "./App";
+import ScrollToTop from "./router/ScrollToTop";
+import theme from "./theme/theme";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -1,7 +1,7 @@
-import User, { IUser } from "../models/User";
+import User, { IUser } from "@models/User";
 import { Types } from "mongoose";
-import { NotFoundError } from "../utils/errors";
-import { logger } from "../utils/logger";
+import { NotFoundError } from "@utils/errors";
+import { logger } from "@utils/logger";
 
 export class UserRepository {
   async findById(userId: Types.ObjectId | string): Promise<IUser | null> {

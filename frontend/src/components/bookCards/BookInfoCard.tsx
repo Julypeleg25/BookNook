@@ -1,6 +1,6 @@
 import { Box, Typography, Stack, Rating } from "@mui/material";
-import type { Book } from "../../models/Book";
-import { formatDate } from "../../utils/dateUtils";
+import type { Book } from "@models/Book";
+import { formatDate } from "@utils/dateUtils";
 import { Link as RouterLink } from "react-router-dom";
 import BookInfoActions from "./BookInfoActions";
 import React from "react";

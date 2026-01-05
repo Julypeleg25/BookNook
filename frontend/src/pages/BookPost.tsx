@@ -4,10 +4,10 @@ import { useMemo, useEffect, useRef } from "react";
 import { Box, Typography } from "@mui/material";
 import CommentsSection, {
   type CommentsSectionRef,
-} from "../components/post/comments/CommentsSection";
-import BookPostHeader from "../components/bookHeaders/BookPostHeader";
-import BookInfoSection from "../components/post/BookInfoSection";
-import AiBookRecommendation from "../components/post/AiBookRecommendation";
+} from "@components/post/comments/CommentsSection";
+import BookPostHeader from "@components/bookHeaders/BookPostHeader";
+import BookInfoSection from "@components/post/BookInfoSection";
+import AiBookRecommendation from "@components/post/AiBookRecommendation";
 import NotFound from "./NotFound";
 
 const AI_RESPONSE =
