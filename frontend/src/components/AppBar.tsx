@@ -8,10 +8,11 @@ import {
   Typography,
 } from "@mui/material";
 import bookNookLogo from "@assets/booknook.png";
-import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "@hooks/useAuth";
+import { NavLink } from "react-router-dom";
 import useUserStore from "@state/useUserStore";
 import { getTimeOfDay } from "@utils/dateUtils";
+import ProfileMenu from "./profile/ProfileMenu";
+import { useState } from "react";
 
 const navItemSx = {
   position: "relative",
@@ -43,48 +44,57 @@ const navItemSx = {
 
 const AppBar = () => {
   const { user } = useUserStore();
-  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const onMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <MuiAppBar position="sticky" style={{ top: 0, width: "100%" }}>
       <Toolbar style={{ height: "4.5rem", display: "flex", width: "100%" }}>
         <Box display="flex" alignItems="center" flexGrow={1}>
           <img src={bookNookLogo} alt="BookNook" style={{ height: "2.5rem" }} />
-            <div
-              style={{
-                marginLeft: "6rem",
-                display: "flex",
-                gap: "2rem",
-                alignSelf: "end",
-              }}
-            >
-              <Typography component={NavLink} to="/posts" sx={navItemSx}>
-                Posts
-              </Typography>
-              <Typography component={NavLink} to="/books" sx={navItemSx}>
-                Books
-              </Typography>
-              <Typography component={NavLink} to="/lists" sx={navItemSx}>
-                My Lists
-              </Typography>
+          <div
+            style={{
+              marginLeft: "6rem",
+              display: "flex",
+              gap: "2rem",
+              alignSelf: "end",
+            }}
+          >
+            <Typography component={NavLink} to="/posts" sx={navItemSx}>
+              Posts
+            </Typography>
+            <Typography component={NavLink} to="/books" sx={navItemSx}>
+              Books
+            </Typography>
+            <Typography component={NavLink} to="/lists" sx={navItemSx}>
+              My Lists
+            </Typography>
 
-              <Typography component={NavLink} to="/myPosts" sx={navItemSx}>
-                My Posts
-              </Typography>
-            </div>
-        </Box>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            Good {getTimeOfDay()}, {user.username}
-            <Tooltip title="Profile Page">
-              <IconButton onClick={() => navigate("/profile")} color="inherit">
-                <Avatar
-                  sx={{ width: "3rem", height: "3rem" }}
-                  src={user.avatar}
-                />
-              </IconButton>
-            </Tooltip>
+            <Typography component={NavLink} to="/myPosts" sx={navItemSx}>
+              My Posts
+            </Typography>
           </div>
+        </Box>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          Good {getTimeOfDay()}, {user.username}
+          <Tooltip title="Profile Page">
+            <IconButton onClick={onMenuOpen} color="inherit">
+              <Avatar
+                sx={{ width: "3rem", height: "3rem" }}
+                src={user.avatar}
+              />
+            </IconButton>
+          </Tooltip>
+        </div>
       </Toolbar>
+      <ProfileMenu anchorEl={anchorEl} onClose={handleClose} />
     </MuiAppBar>
   );
 };
