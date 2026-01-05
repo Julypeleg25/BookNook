@@ -21,26 +21,6 @@ import { COOKIE } from "@config/constants";
 import { HttpStatusCode } from "axios";
 import { UserDto } from "@shared/dtos/user.dto";
 
-export const googleAuthCallback = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    if (!req.user) return res.redirect(`${ENV.FRONTEND_URL}/login`);
-
-    const user = req.user as IUser;
-    const { accessToken, refreshToken } = generateTokens(user);
-
-    await updateUserTokens(String(user._id), accessToken, refreshToken);
-    setAuthCookies(res, accessToken, refreshToken);
-
-    res.redirect(ENV.FRONTEND_URL);
-  } catch (error) {
-    logger.error("Google Auth Callback Error:", error);
-    next(error);
-  }
-};
 
 export const register = async (
   req: Request,
@@ -86,49 +66,64 @@ export const register = async (
   }
 };
 
-export const login = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+// controllers/authController.ts
+
+export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { username, password } = req.body;
-    const user = await getUserByUsername(username);
+    if (!req.user) return res.redirect(`${ENV.FRONTEND_URL}/login`);
 
-    if (
-      !user ||
-      !user.password ||
-      !(await comparePassword(password, user.password))
-    ) {
-      throw new UnauthorizedError("Invalid credentials");
-    }
-
+    const user = req.user as IUser;
     const { accessToken, refreshToken } = generateTokens(user);
-    await updateUserTokens(String(user._id), accessToken, refreshToken);
-    setAuthCookies(res, accessToken, refreshToken);
 
-    res.json({
-      user: {
-        id: user._id.toString(),
-        name: user.name,
-        username: user.username,
-        avatar: user.avatar,
-        email: user.email,
-      } as UserDto,
+    await updateUserTokens(String(user._id), accessToken, refreshToken);
+
+    // Set Refresh Token Cookie (Long lived)
+    res.cookie(COOKIE.REFRESH, refreshToken, {
+      httpOnly: true,
+      secure: ENV.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
+    // Set Access Token Cookie (Short lived) 
+    // This is temporary so the frontend can "pick it up" on the first load
+    res.cookie(COOKIE.ACCESS, accessToken, {
+      httpOnly: true,
+      secure: ENV.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.redirect(`${ENV.FRONTEND_URL}/dashboard`);
   } catch (error) {
     next(error);
   }
 };
 
-export const refresh = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { username, password } = req.body;
+    const user = await getUserByUsername(username);
+
+    if (!user || !user.password || !(await comparePassword(password, user.password))) {
+      throw new UnauthorizedError("Invalid credentials");
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user);
+    await updateUserTokens(String(user._id), accessToken, refreshToken);
+
+    // No tokens in JSON! Only in Cookies.
+    setAuthCookies(res, accessToken, refreshToken);
+
+    res.json({
+      user: { id: user._id, username: user.username, email: user.email }
+    });
+  } catch (error) { next(error); }
+};
+
+export const refresh = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const refreshToken = req.cookies[COOKIE.REFRESH];
-
     if (!refreshToken) throw new UnauthorizedError("No refresh token");
 
     const decoded = await verifyRefreshToken(refreshToken);
@@ -139,16 +134,9 @@ export const refresh = async (
     }
 
     const { accessToken } = generateTokens(user);
-    await updateUserTokens(String(user._id), accessToken, refreshToken);
-
-    res.cookie(COOKIE.ACCESS, accessToken, {
-      httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.json({ success: true });
+    
+    // Return fresh access token to be stored in Frontend State (JS Memory)
+    res.json({ accessToken });
   } catch (error) {
     next(error);
   }

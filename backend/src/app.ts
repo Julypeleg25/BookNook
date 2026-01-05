@@ -16,7 +16,7 @@ import { UPLOADS_FOLDER } from "@config/multerConfig";
 import googleStrategy from "@services/googleStrategy";
 import localLoginStrategy from "@services/localStrategy";
 import cookieParser from "cookie-parser";
-import { requireAuth } from "@middlewares/authMiddleware";
+import { authenticate } from "@middlewares/authMiddleware";
 import { errorHandler } from "@middlewares/errorHandler";
 
 const app = express();
@@ -65,13 +65,13 @@ passport.deserializeUser(async (id: string, done) => {
 });
 
 app.use("/", authRoutes);
-app.use("/api/books", requireAuth, booksRouter);
-app.use("/userReviews", requireAuth, userReviewsRouter);
+app.use("/api/books", authenticate, booksRouter);
+app.use("/userReviews", authenticate, userReviewsRouter);
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use("/api/lists", requireAuth, listRouter);
+app.use("/api/lists", authenticate, listRouter);
 app.use("/api/users", userRouter);
 
-app.use("/uploads", requireAuth, express.static(UPLOADS_FOLDER));
+app.use("/uploads", authenticate, express.static(UPLOADS_FOLDER));
 
 app.use(errorHandler);
 

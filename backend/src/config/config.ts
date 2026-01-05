@@ -15,11 +15,11 @@ export const ENV = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "",
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
   GOOGLE_CALLBACK_URL:
-    process.env.GOOGLE_CLIENT_ID ||
+    process.env.GOOGLE_CALLBACK_URL ||
     "http://localhost:3000/oauth2/redirect/google",
-  SESSION_SECRET: process.env.GOOGLE_CLIENT_ID || "your-session-secret",
-  JWT_ACCESS_SECRET: process.env.GOOGLE_CLIENT_ID || "your-access-secret",
-  JWT_REFRESH_SECRET: process.env.GOOGLE_CLIENT_ID || "your-refresh-secret",
+  SESSION_SECRET: process.env.SESSION_SECRET || "your-session-secret",
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || "your-access-secret",
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "your-refresh-secret",
   GOOGLE_BOOKS_API_KEY: "",
   GOOGLE_BOOKS_API:
     process.env.GOOGLE_BOOKS_API ||

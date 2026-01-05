@@ -1,6 +1,6 @@
 import express from "express";
 
-import { requireAuth } from "@middlewares/authMiddleware";
+import { authenticate } from "@middlewares/authMiddleware";
 import { validateBody } from "@middlewares/validateRequest";
 import { upload } from "@config/multerConfig";
 
@@ -9,11 +9,11 @@ import { UpdateUserSchema } from "@shared/schemas/user.schema";
 
 const router = express.Router();
 
-router.get("/me", requireAuth, getCurrentUser);
+router.get("/me", authenticate, getCurrentUser);
 
 router.patch(
   "/me",
-  requireAuth,
+  authenticate,
   upload.single("avatar"),
   validateBody(UpdateUserSchema),
   updateUserHandler

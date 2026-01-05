@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/app.ts",
+    "dev": "nodemon --watch src --ext ts,js,json --exec tsx src/app.ts",
     "build": "tsc && tsc-alias",
     "start": "node dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -33,7 +33,8 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

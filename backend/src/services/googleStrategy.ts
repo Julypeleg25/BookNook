@@ -7,6 +7,7 @@ import { userRepository } from "../repositories/userRepository";
 import { logger } from "../utils/logger";
 import { ENV } from "@config/config";
 
+// googleStrategy.ts
 export default new GoogleStrategy(
   {
     clientID: ENV.GOOGLE_CLIENT_ID,
@@ -14,44 +15,41 @@ export default new GoogleStrategy(
     callbackURL: ENV.GOOGLE_CALLBACK_URL,
     proxy: true,
   },
-  async (
-    _accessToken: string,
-    _refreshToken: string,
-    profile: Profile,
-    done: VerifyCallback
-  ) => {
+  async (_accessToken, _refreshToken, profile, done) => {
     try {
       const email = profile.emails?.[0].value;
-      if (!email) {
-        return done(new Error("No email found in Google profile"));
+      if (!email) return done(new Error("No email found in Google profile"));
+
+      // 1. First, check by providerId (Google ID)
+      let user = await userRepository.findByProviderId(profile.id);
+
+      // 2. If not found, check by email (in case they registered locally before)
+      if (!user) {
+        user = await userRepository.findByEmail(email);
+        
+        // 3. If found by email, link the Google ID to this account
+        if (user) {
+          user.provider = "google";
+          user.providerId = profile.id;
+          await user.save();
+        }
       }
 
-      let user = await userRepository.findByEmail(email);
-
-      if (user) {
-        return done(null, user);
+      // 4. If still no user, create a brand new one
+      if (!user) {
+        const baseUsername = email.split("@")[0].substring(0, 10);
+        user = await userRepository.create({
+          provider: "google",
+          providerId: profile.id,
+          username: `${baseUsername}${Math.floor(Math.random() * 1000)}`,
+          email: email,
+          name: profile.displayName,
+          avatar: profile.photos?.[0].value,
+        });
       }
 
-      const existingProviderUser = await userRepository.findByProviderId(profile.id);
-      if (existingProviderUser) {
-        return done(null, existingProviderUser);
-      }
-
-      const baseUsername = email.split("@")[0].substring(0, 10);
-      const uniqueSuffix = Math.floor(Math.random() * 1000);
-      
-      const newUser = await userRepository.create({
-        provider: "google",
-        providerId: profile.id,
-        username: `${baseUsername}${uniqueSuffix}`,
-        email: email,
-        name: profile.displayName,
-        avatar: profile.photos?.[0].value,
-      });
-
-      return done(null, newUser);
+      return done(null, user);
     } catch (err) {
-      logger.error("Error in Google strategy:", err);
       return done(err as Error);
     }
   }

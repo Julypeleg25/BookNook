@@ -8,7 +8,7 @@ import { ENV } from "@config/config";
 export function generateTokens(user: IUser): { accessToken: string; refreshToken: string } {
   try {
     const accessToken = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id} ,
       ENV.JWT_ACCESS_SECRET!,
       { expiresIn: "15m" }
     );
