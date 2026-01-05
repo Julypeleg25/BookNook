@@ -9,8 +9,8 @@ export const endpoints = {
   },
 
   users: {
-    me: "/users/me",
-    updateMe: "/users/me",
+    me: "/api/users/me",
+    updateMe: "/api/users/me",
   },
 
   books: {

@@ -9,6 +9,5 @@ export const UpdateUserSchema = z.object({
     .max(20)
     .regex(/^[a-zA-Z0-9_]+$/)
     .optional(),
-  email: z.email().trim(),
   avatar: z.string().optional(),
 });

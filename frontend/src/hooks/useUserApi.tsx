@@ -4,47 +4,22 @@ import { HttpStatusCode } from "axios";
 import useUserStore from "@/state/useUserStore";
 import { AuthService } from "@/api/services/authService";
 import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
+import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
+import { userService } from "@/api/services/userService";
 
-export const useAuth = () => {
+export const useUserApi = () => {
   const navigate = useNavigate();
   const { setUser, resetUser, isAuthenticated } = useUserStore();
 
-  const register = async (payload: RegisterRequestDTO) => {
+  const updateUser = async (payload: UpdateUserRequestDTO) => {
     try {
-      const res = await AuthService.register(payload);
+      const res = await userService.updateCurrentUser(payload);
 
-      if (res.status === HttpStatusCode.Created) {
+      if (res.status === HttpStatusCode.Ok) {
         setUser(res.data.user);
-        navigate("/posts");
       }
     } catch (error) {
       handleAuthError(error);
-    }
-  };
-
-  const login = async (payload: LoginRequestDTO) => {
-    try {
-      const res = await AuthService.login(payload);
-
-      if (res.status === HttpStatusCode.Created) {
-        setUser(res.data.user);
-        navigate("/posts");
-      } else {
-        console.error(`Auth error: ${res.status}`);
-      }
-    } catch (error) {
-      handleAuthError(error);
-    }
-  };
-
-  const logout = async () => {
-    try {
-      await AuthService.logout();
-    } catch (error) {
-      handleAuthError(error);
-    } finally {
-      resetUser();
-      navigate("/login");
     }
   };
 
@@ -62,10 +37,6 @@ export const useAuth = () => {
   };
 
   return {
-    login,
-    register,
-    logout,
-    isAuthenticated,
-    AuthService,
+    updateUser,
   };
 };

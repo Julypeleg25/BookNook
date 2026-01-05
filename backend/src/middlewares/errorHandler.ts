@@ -6,7 +6,7 @@ export function errorHandler(
   err: Error | AppError,
   req: Request,
   res: Response,
-  _next: NextFunction
+  next: NextFunction
 ): void {
   if (err instanceof AppError) {
     logger.error(`AppError: ${err.message}`, {

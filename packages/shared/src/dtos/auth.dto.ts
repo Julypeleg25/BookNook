@@ -7,5 +7,5 @@ export type RegisterRequestDTO = z.infer<typeof RegisterSchema>;
 
 export interface AuthResponseDto {
   user: UserDto;
-  accessToken: string;
+  message: string;
 }

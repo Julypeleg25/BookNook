@@ -1,4 +1,5 @@
 import {
+  AuthResponseDto,
   LoginRequestDTO,
   RegisterRequestDTO
 } from "@shared/dtos/auth.dto";
@@ -6,10 +7,9 @@ import { endpoints } from "../endpoints";
 import { ApiError } from "../apiError";
 import { axiosClient } from "../axios/axiosClient";
 import { AxiosResponse } from "axios";
-import { UserDto } from "@shared/dtos/user.dto";
 
 export const AuthService = {
-  async login(payload: LoginRequestDTO): Promise<AxiosResponse<UserDto>> {
+  async login(payload: LoginRequestDTO): Promise<AxiosResponse<AuthResponseDto>> {
     try {
       const res = await axiosClient.post(endpoints.auth.login, payload);
 
@@ -19,7 +19,7 @@ export const AuthService = {
     }
   },
 
-  async register(payload: RegisterRequestDTO): Promise<AxiosResponse<UserDto>> {
+  async register(payload: RegisterRequestDTO): Promise<AxiosResponse<AuthResponseDto>> {
     try {
       const res = await axiosClient.post(endpoints.auth.register, payload);
 
@@ -44,7 +44,6 @@ export const AuthService = {
   async googleRegister(): Promise<string> {
     try {
       const res = await axiosClient.get(endpoints.auth.googleRegister);
-      debugger;
 
       return res.data.accessToken;
     } catch (err) {

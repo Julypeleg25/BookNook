@@ -4,6 +4,7 @@ import { userRepository } from "@repositories/userRepository";
 import { hashPassword } from "@utils/hashPassword";
 import { NotFoundError, ConflictError, ValidationError } from "@utils/errors";
 import { logger } from "@utils/logger";
+import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
 
 export async function getUserById(
   userId: Types.ObjectId | string
@@ -68,11 +69,7 @@ export async function createUser(userData: {
 
 export async function updateUser(
   userId: Types.ObjectId | string,
-  updateData: {
-    name?: string;
-    username?: string;
-    avatar?: string;
-  }
+  updateData: UpdateUserRequestDTO
 ): Promise<IUser> {
   try {
     if (updateData.username) {

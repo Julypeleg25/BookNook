@@ -1,30 +1,47 @@
 import path from "path";
-import fs from "fs";
+import fs from "fs/promises";
 import { logger } from "./logger";
+import { UPLOADS_FOLDER } from "@config/multerConfig";
 
-export function getFileExtension(filename: string): string {
-  return path.extname(filename);
-}
+const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
-export function generateUniqueFilename(originalName: string): string {
-  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-  const ext = getFileExtension(originalName);
-  return `${uniqueSuffix}${ext}`;
-}
+export const getFileExtension = (filename: string): string => {
+  return path.extname(filename).toLowerCase();
+};
 
-export function deleteFile(filePath: string): void {
+export const isImageFile = (filename: string): boolean => {
+  return validExtensions.includes(getFileExtension(filename));
+};
+
+export const generateUniqueFilename = (originalName: string): string => {
+  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+  return `${uniqueSuffix}${getFileExtension(originalName)}`;
+};
+
+export const deleteFile = async (filePath: string): Promise<void> => {
+  if (!filePath) return;
+
+  const absolutePath = path.isAbsolute(filePath)
+    ? filePath
+    : path.join(process.cwd(), filePath);
+
   try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    await fs.access(absolutePath);
+    await fs.unlink(absolutePath);
+  } catch (error: any) {
+    if (error.code !== "ENOENT") {
+      logger.error(`Error deleting file at ${absolutePath}:`, error);
     }
-  } catch (error) {
-    logger.error(`Error deleting file ${filePath}:`, error);
   }
-}
+};
 
-export function isImageFile(filename: string): boolean {
-  const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-  const ext = getFileExtension(filename).toLowerCase();
-  return validExtensions.includes(ext);
-}
+export const deleteOldAvatar = async (
+  avatarUrl: string | undefined
+): Promise<void> => {
+  if (!avatarUrl || !avatarUrl.startsWith(`/${UPLOADS_FOLDER}/`)) return;
 
+  const fileName = path.basename(avatarUrl);
+  const fullPath = path.join(UPLOADS_FOLDER, fileName);
+
+  await deleteFile(fullPath);
+};
