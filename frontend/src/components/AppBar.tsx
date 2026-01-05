@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import bookNookLogo from "@assets/booknook.png";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import useUserStore from "@state/useUserStore";
 import { getTimeOfDay } from "@utils/dateUtils";
 import ProfileMenu from "./profile/ProfileMenu";
@@ -43,22 +43,25 @@ const navItemSx = {
 };
 
 const AppBar = () => {
+  const navigate = useNavigate();
   const { user } = useUserStore();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const onMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const onMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) =>
     setAnchorEl(event.currentTarget);
-  };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const handleClose = () => setAnchorEl(null);
 
   return (
     <MuiAppBar position="sticky" style={{ top: 0, width: "100%" }}>
       <Toolbar style={{ height: "4.5rem", display: "flex", width: "100%" }}>
         <Box display="flex" alignItems="center" flexGrow={1}>
-          <img src={bookNookLogo} alt="BookNook" style={{ height: "2.5rem" }} />
+          <img
+            onClick={() => navigate("/posts")}
+            src={bookNookLogo}
+            alt="BookNook"
+            style={{ cursor: "pointer", height: "2.5rem" }}
+          />
           <div
             style={{
               marginLeft: "6rem",
