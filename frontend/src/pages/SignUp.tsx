@@ -2,30 +2,27 @@ import {
   Box,
   Button,
   Divider,
-  IconButton,
-  TextField,
   Typography,
   Stack,
-  InputAdornment,
   CircularProgress,
 } from "@mui/material";
 import loginIcon from "@assets/login-icon.png";
-import { FcGoogle } from "react-icons/fc";
-import { Controller, useForm } from "react-hook-form";
-import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterRequestDTO } from "@shared/dtos/auth.dto";
-import { useAuth } from "@/hooks/useAuth";
 import { RegisterSchema } from "@shared/schemas/auth.schema";
+import { useAuth } from "@/hooks/auth/useAuth";
 import env from "@/config/env";
+import useAuthForm from "@/hooks/auth/useAuthForm";
+import AuthTextField from "@/components/auth/AuthTextField";
+import PasswordField from "@/components/auth/PasswordField";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { showPassword, togglePassword, loading, setLoading } = useAuthForm();
 
   const {
     handleSubmit,
@@ -36,12 +33,10 @@ const SignUp = () => {
   } = useForm<RegisterRequestDTO>({
     defaultValues: {
       username: "",
-      password: "",
-      name: "",
       email: "",
+      password: "",
     },
     resolver: zodResolver(RegisterSchema),
-    mode: "onSubmit",
   });
 
   const onSubmit = async (data: RegisterRequestDTO) => {
@@ -51,16 +46,11 @@ const SignUp = () => {
       reset();
     } catch (error: any) {
       setError("root", {
-        message: error.details.error || "Invalid details, try again",
+        message: error?.details?.error || "Invalid details, try again",
       });
     } finally {
       setLoading(false);
     }
-  };
-
-  const registerWithGoogle = () => {
-    //TODO:make it work
-    window.location.href = `${env.API_BASE_URL}/google`;
   };
 
   return (
@@ -79,103 +69,49 @@ const SignUp = () => {
           spacing="1.5rem"
           sx={{ width: "100%", maxWidth: "23rem" }}
         >
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
+          <Typography variant="h4" fontWeight={700}>
             Sign up now
           </Typography>
 
-          <Button
-            fullWidth
-            variant="outlined"
-            size="large"
-            onClick={registerWithGoogle}
-            startIcon={<FcGoogle />}
-            sx={{ textTransform: "none", borderRadius: "0.5rem" }}
-          >
-            Sign up with Google
-          </Button>
+          <GoogleAuthButton
+            text="Sign up with Google"
+            onClick={() =>
+              (window.location.href = `${env.API_BASE_URL}/google`)
+            }
+          />
 
-          <Divider sx={{ my: "1rem" }}>
+          <Divider>
             <Typography variant="body2" color="text.secondary">
               or
             </Typography>
           </Divider>
 
-          <Stack spacing="1rem">
-            {[
-              {
-                name: "username",
-                label: "Username",
-                placeholder: "Choose a username",
-              },
-              {
-                name: "name",
-                label: "Full Name",
-                placeholder: "Enter your name",
-              },
-              { name: "email", label: "Email", placeholder: "you@example.com" },
-            ].map((input) => (
-              <Box key={input.name}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ mb: "0.5rem", fontWeight: 600 }}
-                >
-                  {input.label}
-                </Typography>
-                <Controller
-                  name={input.name as any}
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      variant="outlined"
-                      placeholder={input.placeholder}
-                      error={!!(errors as any)[input.name]}
-                      helperText={(errors as any)[input.name]?.message}
-                    />
-                  )}
-                />
-              </Box>
-            ))}
+          <AuthTextField
+            name="username"
+            label="Username"
+            placeholder="Choose a username"
+            control={control}
+            errors={errors}
+          />
 
-            <Box>
-              <Typography
-                variant="subtitle2"
-                sx={{ mb: "0.5rem", fontWeight: 600 }}
-              >
-                Password
-              </Typography>
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
-                    error={!!errors.password}
-                    helperText={errors.password?.message}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                          >
-                            {showPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            </Box>
-          </Stack>
+          <AuthTextField
+            name="email"
+            label="Email"
+            placeholder="you@example.com"
+            control={control}
+            errors={errors}
+          />
+
+          <PasswordField
+            control={control}
+            errors={errors}
+            showPassword={showPassword}
+            togglePassword={togglePassword}
+            placeholder="Create a password"
+          />
 
           {errors.root && (
-            <Typography color="error" variant="body2" textAlign="center">
+            <Typography color="error" textAlign="center">
               {errors.root.message}
             </Typography>
           )}
@@ -189,7 +125,7 @@ const SignUp = () => {
               py: "0.8rem",
               borderRadius: "0.5rem",
               textTransform: "none",
-              fontWeight: "bold",
+              fontWeight: 700,
             }}
           >
             {loading ? (
@@ -198,48 +134,40 @@ const SignUp = () => {
               "Sign up"
             )}
           </Button>
-
-          <Typography
-            variant="body2"
-            sx={{
-              display: "flex",
-              gap: "0.5rem",
-              alignItems: "center",
-              justifyContent: "center",
-              mt: "1.5rem",
-            }}
-          >
-            Already have an account?
-            <Box
-              component="span"
-              onClick={() => navigate("/login")}
-              sx={{
-                color: "primary.main",
-                textDecoration: "underline",
-                cursor: "pointer",
-                fontWeight: 700,
-              }}
-            >
-              Log in
-            </Box>
-          </Typography>
         </Stack>
       </Box>
-      <Box
+
+     <Box
         sx={{
           flex: 1,
-          display: { xs: "none", md: "flex" },
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
+          display: { xs: "none", md: "grid" },
+          justifyItems: "center",
+          gap: "1.5rem",
         }}
       >
         <Box
           component="img"
           src={loginIcon}
-          alt="Login Illustration"
-          sx={{ width: "100%", maxWidth: "30rem", height: "auto" }}
+          alt="Sign up Illustration"
+          sx={{ width: "60%", maxWidth: "25rem", height: "auto" }}
         />
+
+        <Typography variant="body2" color="text.secondary">
+          Already have an account?
+          <Box
+            component="span"
+            onClick={() => navigate("/login")}
+            sx={{
+              ml: "0.3rem",
+              color: "primary.main",
+              cursor: "pointer",
+              fontWeight: 700,
+              "&:hover": { textDecoration: "underline" },
+            }}
+          >
+            Log in
+          </Box>
+        </Typography>
       </Box>
     </Box>
   );

@@ -2,26 +2,28 @@ import {
   Box,
   Button,
   Divider,
-  IconButton,
-  TextField,
   Typography,
+  Stack,
+  CircularProgress,
 } from "@mui/material";
 import loginIcon from "@assets/login-icon.png";
-import { FcGoogle } from "react-icons/fc";
-import { Controller, useForm } from "react-hook-form";
-import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@hooks/useAuth";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginRequestDTO } from "@shared/dtos/auth.dto";
 import { LoginSchema } from "@shared/schemas/auth.schema";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/hooks/auth/useAuth";
 import env from "@/config/env";
+import useAuthForm from "@/hooks/auth/useAuthForm";
+import AuthTextField from "@/components/auth/AuthTextField";
+import PasswordField from "@/components/auth/PasswordField";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
+  const { showPassword, togglePassword, loading, setLoading } = useAuthForm();
+
   const {
     handleSubmit,
     control,
@@ -29,182 +31,134 @@ const Login = () => {
     reset,
     setError,
   } = useForm<LoginRequestDTO>({
-    defaultValues: {
-      username: "",
-      password: "",
-    },
+    defaultValues: { username: "", password: "" },
     resolver: zodResolver(LoginSchema),
-    mode: "onSubmit",
   });
 
-  const handleSignup = () => navigate("/register");
-
   const onSubmit = async (data: LoginRequestDTO) => {
+    setLoading(true);
     try {
       await login(data);
       reset();
-    } catch (error) {
-      setError("root", { message: "Invalid username or password" });
+    } catch {
+      setError("root", { message: "Invalid credentials. Please try again." });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const loginWithGoogle = () => {
-    // await AuthService.googleRegister();
-    window.location.href = `${env.API_BASE_URL}/google`;
-  };
-
   return (
-    <Box display="flex" marginTop={"5rem"} marginLeft={"4rem"}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Box flex={1} display="flex" marginLeft={"8rem"}>
-          <div>
-            <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
-              <Typography variant="h4">Welcome to BookNook</Typography>
-              <Button
-                onClick={loginWithGoogle}
-                style={{ width: "23rem", display: "flex" }}
-                variant="outlined"
-                startIcon={<FcGoogle />}
-              >
-                Log in with Google
-              </Button>
-              <Divider>or</Divider>
-            </div>
-            <div
-              style={{
-                gap: "1rem",
-                marginTop: "1rem",
-                marginBottom: "1rem",
-                justifySelf: "start",
-              }}
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        alignItems: "center",
+        px: "4rem",
+      }}
+    >
+      <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+        <Stack
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          spacing="1.5rem"
+          sx={{ width: "100%", maxWidth: "24rem" }}
+        >
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: "0.5rem" }}>
+              Welcome back
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Please enter your details to sign in.
+            </Typography>
+          </Box>
+
+          <GoogleAuthButton
+            text="Log in with Google"
+            onClick={() =>
+              (window.location.href = `${env.API_BASE_URL}/google`)
+            }
+          />
+
+          <Divider>
+            <Typography
+              variant="caption"
+              color="text.disabled"
+              sx={{ fontWeight: 700 }}
             >
-              <div
-                style={{
-                  gap: "1rem",
-                  marginTop: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <Typography style={{ justifySelf: "start" }}>
-                  Username
-                </Typography>
-                <Controller
-                  name="username"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      helperText={errors.username?.message}
-                      error={!!errors.username}
-                      style={{ width: "23rem" }}
-                      placeholder="Enter your username"
-                    />
-                  )}
-                />
-              </div>
-              <div
-                style={{
-                  gap: "1rem",
-                  marginTop: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <Typography style={{ justifySelf: "start" }}>
-                  Password
-                </Typography>
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      type={showPassword ? "text" : "password"}
-                      helperText={errors.password?.message}
-                      error={!!errors.password}
-                      style={{ width: "23rem" }}
-                      placeholder="Enter your password"
-                      slotProps={{
-                        input: {
-                          endAdornment: (
-                            <IconButton
-                              onClick={() => setShowPassword((prev) => !prev)}
-                              edge="end"
-                              sx={{
-                                outline: "none",
-                                border: "none",
-                                "&:focus": { outline: "none" },
-                              }}
-                            >
-                              {showPassword ? (
-                                <BsEyeSlashFill />
-                              ) : (
-                                <BsEyeFill />
-                              )}
-                            </IconButton>
-                          ),
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </div>
-              {errors.root && (
-                <Typography
-                  color="error"
-                  textAlign="center"
-                  sx={{ mb: "1rem" }}
-                >
-                  {errors.root.message}
-                </Typography>
-              )}
-              <Button
-                style={{
-                  width: "18rem",
-                  marginTop: "2rem",
-                  justifySelf: "center",
-                  display: "flex",
-                }}
-                variant="outlined"
-                type="submit"
-              >
-                Log in
-              </Button>
-            </div>
-          </div>
-        </Box>
-      </form>
-      <Box
-        flex={1}
-        marginRight={"2em"}
-        marginTop={"1rem"}
-        justifyItems={"center"}
-        display={"grid"}
-      >
-        <img src={loginIcon} style={{ width: "50%", height: "90%" }} />
-        <Box>
-          <Typography
-            variant="body2"
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              alignItems: "center",
-              justifyContent: "center",
+              OR
+            </Typography>
+          </Divider>
+
+          <AuthTextField
+            name="username"
+            label="Username or Email"
+            placeholder="Enter your username or email"
+            control={control}
+            errors={errors}
+          />
+
+          <PasswordField
+            control={control}
+            errors={errors}
+            showPassword={showPassword}
+            togglePassword={togglePassword}
+          />
+
+          {errors.root && (
+            <Typography color="error" variant="body2" textAlign="center">
+              {errors.root.message}
+            </Typography>
+          )}
+
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            disabled={loading}
+            sx={{
+              py: "0.8rem",
+              borderRadius: "0.75rem",
+              textTransform: "none",
+              fontWeight: 700,
+              boxShadow: "none",
+              "&:hover": { boxShadow: "none" },
             }}
           >
-            Don't have an account?
-          </Typography>
+            {loading ? <CircularProgress /> : "Log in"}
+          </Button>
+        </Stack>
+      </Box>
+      <Box
+        sx={{
+          flex: 1,
+          display: { xs: "none", md: "grid" },
+          justifyItems: "center",
+          gap: "1.5rem",
+        }}
+      >
+        <Box
+          component="img"
+          src={loginIcon}
+          alt="Login Illustration"
+          sx={{ width: "60%", maxWidth: "25rem", height: "auto" }}
+        />
 
-          <div
-            onClick={handleSignup}
-            style={{
-              color: "blue",
-              textDecoration: "underline",
+        <Typography variant="body2" color="text.secondary">
+          Don't have an account?
+          <Box
+            component="span"
+            onClick={() => navigate("/register")}
+            sx={{
+              ml: "0.3rem",
+              color: "primary.main",
               cursor: "pointer",
+              fontWeight: 700,
+              "&:hover": { textDecoration: "underline" },
             }}
           >
             Sign up
-          </div>
-        </Box>
+          </Box>
+        </Typography>
       </Box>
     </Box>
   );
