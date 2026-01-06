@@ -12,25 +12,21 @@ const users: User[] = [
   {
     id: "u1",
     username: "julydev",
-    name: "July Cohen",
     avatar: "https://i.pravatar.cc/150?img=12",
   },
   {
     id: "u2",
     username: "booklover",
-    name: "Emma Stone",
     avatar: "https://i.pravatar.cc/150?img=32",
   },
   {
     id: "u3",
     username: "reading_addict",
-    name: "Daniel Green",
     avatar: "https://i.pravatar.cc/150?img=45",
   },
   {
     id: "u4",
     username: "nightreader",
-    name: "Sophia Lee",
     avatar: "https://i.pravatar.cc/150?img=56",
   },
 ];

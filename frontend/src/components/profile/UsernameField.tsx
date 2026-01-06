@@ -1,7 +1,7 @@
 import { Controller, type Control } from "react-hook-form";
 import { TextField } from "@mui/material";
 
-export default function UsernameField({ control }: { control: Control<any> }) {
+const UsernameField = ({ control }: { control: Control<any> })=> {
   return (
     <Controller
       name="username"
@@ -18,3 +18,5 @@ export default function UsernameField({ control }: { control: Control<any> }) {
     />
   );
 }
+
+export default UsernameField;

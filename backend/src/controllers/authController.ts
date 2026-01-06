@@ -53,12 +53,11 @@ export const register = async (
       throw new ValidationError("Avatar must be an image file");
     }
 
-    const { name, email, username, password } = req.body;
+    const {email, username, password } = req.body;
     const avatarPath = req.file ? `/uploads/${req.file.filename}` : undefined;
     const hashedPassword = await hashPassword(password);
 
     const user = await createUser({
-      name,
       username,
       email,
       provider: "local",
@@ -74,7 +73,6 @@ export const register = async (
       message: "User registered successfully",
       user: {
         id: user._id.toString(),
-        name: user.name,
         username: user.username,
         avatar: user.avatar,
         email: user.email,
@@ -110,7 +108,6 @@ export const login = async (
     res.json({
       user: {
         id: user._id.toString(),
-        name: user.name,
         username: user.username,
         avatar: user.avatar,
         email: user.email,

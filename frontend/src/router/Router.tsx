@@ -11,7 +11,7 @@ import NewPost from "@pages/NewPost";
 import MyLists from "@pages/MyLists";
 import Profile from "@pages/Profile";
 import NotFound from "@pages/NotFound";
-import { useAuth } from "@hooks/useAuth";
+import { useAuth } from "@/hooks/auth/useAuth";
 import AppLayout from "./AppLayout";
 import PublicLayout from "./layout/PublicLayout";
 

@@ -3,17 +3,16 @@ import { useForm } from "react-hook-form";
 import { useSnackbar } from "notistack";
 import useUserStore from "@state/useUserStore";
 import AvatarField from "./AvatarField";
-import NameField from "./NameField";
 import UsernameField from "./UsernameField";
 import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
 import { useState } from "react";
-import { useUserApi } from "@/hooks/useUserApi";
+import { useUserApi } from "@/hooks/api/useUserApi";
 
-interface Props {
+interface ProfileFormProps {
   onCancel: () => void;
 }
 
-const ProfileForm = ({ onCancel }: Props) => {
+const ProfileForm = ({ onCancel }: ProfileFormProps) => {
   const { user } = useUserStore();
   const { enqueueSnackbar } = useSnackbar();
   const { updateUser } = useUserApi();
@@ -22,12 +21,10 @@ const ProfileForm = ({ onCancel }: Props) => {
   const {
     handleSubmit,
     control,
-    reset,
     setError,
     formState: { isDirty, errors },
   } = useForm<UpdateUserRequestDTO>({
     defaultValues: {
-      name: user.name,
       username: user.username,
       avatar: user.avatar,
     },
@@ -53,12 +50,9 @@ const ProfileForm = ({ onCancel }: Props) => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <AvatarField control={control} />
 
-      <Box display="flex" gap={2} mt={3}>
-        <NameField control={control} />
-        <UsernameField control={control} />
-      </Box>
+      <UsernameField control={control} />
 
-      <Box display="flex" justifyContent="flex-end" gap={2} mt={4}>
+      <Box display="flex" justifyContent="flex-end" gap={"1rem"} mt={"1rem"}>
         <Button onClick={onCancel} color="error">
           Cancel
         </Button>

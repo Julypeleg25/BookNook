@@ -45,7 +45,6 @@ export default new GoogleStrategy(
         providerId: profile.id,
         username: `${baseUsername}${uniqueSuffix}`,
         email: email,
-        name: profile.displayName,
         avatar: profile.photos?.[0].value,
       });
 

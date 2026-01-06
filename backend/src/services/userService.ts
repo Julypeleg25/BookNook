@@ -29,7 +29,6 @@ export async function getUserByProviderId(
 }
 
 export async function createUser(userData: {
-  name: string;
   email: string;
   username: string;
   password?: string;

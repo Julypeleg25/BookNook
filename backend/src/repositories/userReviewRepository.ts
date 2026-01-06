@@ -36,7 +36,7 @@ export class UserReviewRepository {
     try {
       return await UserReviewModel.findById(reviewId).populate<{ user: IUser }>({
         path: "user",
-        select: "name username avatar bio",
+        select: "username avatar bio",
       });
     } catch (error) {
       logger.error(`Error finding review ${reviewId} with user:`, error);
@@ -48,7 +48,7 @@ export class UserReviewRepository {
     try {
       return await UserReviewModel.find()
         .sort({ createdAt: -1 })
-        .populate<{ user: IUser }>({ path: "user", select: "name username avatar" });
+        .populate<{ user: IUser }>({ path: "user", select: "username avatar" });
     } catch (error) {
       logger.error("Error finding all reviews:", error);
       throw error;
@@ -59,7 +59,7 @@ export class UserReviewRepository {
     try {
       return await UserReviewModel.find({ user: userId })
         .sort({ createdAt: -1 })
-        .populate<{ user: IUser }>({ path: "user", select: "name username avatar" });
+        .populate<{ user: IUser }>({ path: "user", select: "username avatar" });
     } catch (error) {
       logger.error(`Error finding reviews by userId ${userId}:`, error);
       throw error;

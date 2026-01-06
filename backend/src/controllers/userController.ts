@@ -14,7 +14,6 @@ export async function getCurrentUser(
   try {
     res.json({
       id: req.authenticatedUser!._id,
-      name: req.authenticatedUser!.name,
       username: req.authenticatedUser!.username,
       avatar: req.authenticatedUser!.avatar,
     });
@@ -30,10 +29,9 @@ export async function updateUserHandler(
 ) {
   try {
     const userId = req.authenticatedUser!._id;
-    const { name, username } = req.body;
+    const { username } = req.body;
     const updateData: any = {};
 
-    if (name) updateData.name = name;
     if (username) updateData.username = username;
 
     if (req.file) {
@@ -52,7 +50,6 @@ export async function updateUserHandler(
         message: "User updated successfully",
         user: {
           id: updatedUser._id,
-          name: updatedUser.name,
           username: updatedUser.username,
           avatar: updatedUser.avatar,
           email: updatedUser.email,

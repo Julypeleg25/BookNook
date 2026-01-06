@@ -6,7 +6,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { HiOutlineUser, HiOutlineLogout } from "react-icons/hi";
 
 interface ProfileMenuProps {

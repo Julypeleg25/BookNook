@@ -9,7 +9,7 @@ interface UserStoreProps {
   resetUser: () => void;
 }
 
-const defaultUser = { avatar: "", id: "", name: "", username: "", email: "" };
+const defaultUser = { avatar: "", id: "", username: "", email: "" } as UserDto;
 
 const useUserStore = create<UserStoreProps>((set) => ({
   user: defaultUser,
