@@ -7,20 +7,28 @@ import {
   Typography,
 } from "@mui/material";
 import loginIcon from "@assets/login-icon.png";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import { GoogleCredentialResponse } from "@react-oauth/google";
+
 import { FcGoogle } from "react-icons/fc";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
-import { LoginRequestDTO } from "@shared/dtos/auth.dto";
+import { AuthResponseDto, LoginRequestDTO } from "@shared/dtos/auth.dto";
 import { LoginSchema } from "@shared/schemas/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import env from "@/config/env";
+import { AxiosError, AxiosResponse } from "axios";
+import { axiosClient } from "@/api/axios/axiosClient";
+import useUserStore from "@/state/useUserStore";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const {setUser} = useUserStore()
+  const [loginError, setLoginError] = useState<string>('')
   const [showPassword, setShowPassword] = useState(false);
   const {
     handleSubmit,
@@ -48,6 +56,32 @@ const Login = () => {
     }
   };
 
+    const handleGoogleSuccess = async (
+    credentialResponse: GoogleCredentialResponse
+  ) => {
+    try {
+      const response = await axiosClient.post( `${env.API_BASE_URL}/google`, {
+        token: credentialResponse.credential,
+      }) as AxiosResponse<AuthResponseDto>;
+
+      const {user, accessToken} = response.data
+
+      // todo clean the user , auth hooks, too many
+      setUser(user)
+      // todo accesstoken in hook
+      localStorage.setItem("accessToken", accessToken)
+
+      navigate("/posts");
+    } catch (err) {
+      const error = err as AxiosError;
+      setLoginError(error.response?.statusText|| "Google login failed");
+    }
+  };
+
+  const handleGoogleFailure = () => {
+    setLoginError("Google login failed");
+  };
+
   const loginWithGoogle = () => {
     // await AuthService.googleRegister();
     window.location.href = `${env.API_BASE_URL}/google`;
@@ -60,14 +94,11 @@ const Login = () => {
           <div>
             <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
               <Typography variant="h4">Welcome to BookNook</Typography>
-              <Button
-                onClick={loginWithGoogle}
-                style={{ width: "23rem", display: "flex" }}
-                variant="outlined"
-                startIcon={<FcGoogle />}
-              >
-                Log in with Google
-              </Button>
+              <GoogleLogin
+                  shape="circle"
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleFailure}
+                />
               <Divider>or</Divider>
             </div>
             <div

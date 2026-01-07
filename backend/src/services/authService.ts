@@ -24,17 +24,18 @@ export function generateTokens(user: IUser): { accessToken: string; refreshToken
   }
 }
 
+// todo only store refresh
 export function setAuthCookies(
   res: Response,
   accessToken: string,
   refreshToken: string
 ): void {
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: ENV.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
-  });
+  // res.cookie("accessToken", accessToken, {
+  //   httpOnly: true,
+  //   secure: ENV.NODE_ENV === "production",
+  //   sameSite: "lax",
+  //   maxAge: 15 * 60 * 1000,
+  // });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: ENV.NODE_ENV === "production",

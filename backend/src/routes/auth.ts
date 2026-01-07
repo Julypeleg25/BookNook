@@ -23,7 +23,7 @@ router.post(
 router.post("/login", validateBody(LoginSchema), login);
 router.post("/refresh", refresh);
 
-router.get(
+router.post(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );

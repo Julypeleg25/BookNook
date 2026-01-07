@@ -1,3 +1,4 @@
+import { UserDto } from '@shared/dtos/user.dto';
 import { z } from "zod";
 
 export const RegisterSchema = z.object({

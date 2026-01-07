@@ -20,6 +20,7 @@ import { ENV } from "@config/config";
 import { COOKIE } from "@config/constants";
 import { HttpStatusCode } from "axios";
 import { UserDto } from "@shared/dtos/user.dto";
+import { AuthResponseDto } from "@shared/index";
 
 
 export const register = async (
@@ -51,15 +52,15 @@ export const register = async (
     setAuthCookies(res, accessToken, refreshToken);
 
     res.status(HttpStatusCode.Created).json({
-      message: "User registered successfully",
       user: {
         id: user._id.toString(),
         name: user.name,
         username: user.username,
         avatar: user.avatar,
         email: user.email,
-      } as UserDto,
-    });
+      } ,
+      accessToken
+    } as AuthResponseDto);
   } catch (error) {
     if (req.file) deleteFile(req.file.path);
     next(error);
@@ -78,23 +79,18 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
     await updateUserTokens(String(user._id), accessToken, refreshToken);
 
     // Set Refresh Token Cookie (Long lived)
-    res.cookie(COOKIE.REFRESH, refreshToken, {
-      httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setAuthCookies(res, accessToken, refreshToken)
 
-    // Set Access Token Cookie (Short lived) 
-    // This is temporary so the frontend can "pick it up" on the first load
-    res.cookie(COOKIE.ACCESS, accessToken, {
-      httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.redirect(`${ENV.FRONTEND_URL}/dashboard`);
+   res.json({
+      user: {
+      id: user._id.toString(),
+      name: user.name,
+      username: user.username,
+      avatar: user.avatar,
+      email: user.email,
+      },
+      accessToken
+      }  as AuthResponseDto);
   } catch (error) {
     next(error);
   }
@@ -112,11 +108,12 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const { accessToken, refreshToken } = generateTokens(user);
     await updateUserTokens(String(user._id), accessToken, refreshToken);
 
-    // No tokens in JSON! Only in Cookies.
+    // Store refresh token in httpOnly cookie and return accessToken in JSON
     setAuthCookies(res, accessToken, refreshToken);
 
     res.json({
-      user: { id: user._id, username: user.username, email: user.email }
+      user: { id: user._id, username: user.username, email: user.email },
+      accessToken,
     });
   } catch (error) { next(error); }
 };

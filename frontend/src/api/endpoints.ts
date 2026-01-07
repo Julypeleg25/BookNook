@@ -1,7 +1,7 @@
 export const endpoints = {
   auth: {
     register: "/register",
-    login: "/login",
+    login: "/oauth2/redirect/google",//todo change back
     refresh: "/refresh",
     me: "/auth/me",
     logout: "/logout",
