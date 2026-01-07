@@ -3,7 +3,7 @@ export const endpoints = {
     register: "/register",
     login: "/oauth2/redirect/google",//todo change back
     refresh: "/refresh",
-    me: "/auth/me",
+    me: "/api/users/me",
     logout: "/logout",
     googleRegister: "/google",
   },

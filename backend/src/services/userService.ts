@@ -9,7 +9,9 @@ import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
 export async function getUserById(
   userId: Types.ObjectId | string
 ): Promise<IUser> {
+  console.log(userId)
   const user = await userRepository.findById(userId);
+  console.log("userrrrr", user)
   if (!user) {
     throw new NotFoundError("User not found");
   }

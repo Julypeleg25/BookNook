@@ -1,5 +1,5 @@
 import { Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { VerifyCallback } from "jsonwebtoken";
 import { IUser, JwtDecodedUser } from "@models/User";
 import { logger } from "@utils/logger";
 import { UnauthorizedError } from "@utils/errors";
@@ -8,12 +8,12 @@ import { ENV } from "@config/config";
 export function generateTokens(user: IUser): { accessToken: string; refreshToken: string } {
   try {
     const accessToken = jwt.sign(
-      { userId: user._id} ,
+      {  _id: user._id} ,
       ENV.JWT_ACCESS_SECRET!,
       { expiresIn: "15m" }
     );
     const refreshToken = jwt.sign(
-      { userId: user._id },
+      {  _id: user._id },
       ENV.JWT_REFRESH_SECRET!,
       { expiresIn: "7d" }
     );
@@ -49,9 +49,9 @@ export function clearAuthCookies(res: Response): void {
   res.clearCookie("refreshToken", { path: "/" });
 }
 
-export async function verifyRefreshToken(token: string): Promise<JwtDecodedUser> {
+export async function verifyRefreshToken(token: string): Promise<{_id: string}> {//todo type better{ _id: '6946995e00032e109176ab2e', iat: 1767820672, exp: 1768425472 }
   try {
-    return jwt.verify(token, ENV.JWT_REFRESH_SECRET!) as JwtDecodedUser;
+    return jwt.verify(token, ENV.JWT_REFRESH_SECRET!) as {_id: string};
   } catch (error) {
     logger.error("Error verifying refresh token:", error);
     throw new UnauthorizedError("Invalid refresh token");

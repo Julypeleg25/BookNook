@@ -7,7 +7,7 @@ import {
   verifyRefreshToken,
 } from "@services/authService";
 import { OAuth2Client } from "google-auth-library";
-
+import {generateUsernameFromEmail} from '../utils/userUtils'
 import {
   createUser,
   getUserByUsername,
@@ -127,7 +127,7 @@ export const refresh = async (req: Request, res: Response, next: NextFunction) =
     if (!refreshToken) throw new UnauthorizedError("No refresh token");
 
     const decoded = await verifyRefreshToken(refreshToken);
-    const user = await getUserById(decoded.userId);
+    const user = await getUserById(decoded._id);
 
     if (!user || user.refreshToken !== refreshToken) {
       throw new UnauthorizedError("Invalid refresh token");
@@ -147,6 +147,8 @@ export const refresh = async (req: Request, res: Response, next: NextFunction) =
 const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
 export const generateTokensFromGoogleAuth = async (req: Request, res: Response) => {
   try {
+    // await User.deleteOne({email: "2003yam@gmail.com"})
+    // return;
     const { token } = req.body;
 
     const ticket = await client.verifyIdToken({
@@ -155,13 +157,13 @@ export const generateTokensFromGoogleAuth = async (req: Request, res: Response) 
     });
 
     const { email, name, sub, picture } = ticket.getPayload()!;
-
     let user = await User.findOne({ email });
     if (!user) {
-      user = new User({ username: name, email, googleId: sub, profileImage: picture });
+      user = new User({ email, username: generateUsernameFromEmail(email), googleId: sub, avatar: picture , provider: "google"});
       await user.save();
     }
 
+    // todo - one jwt sign 
     const accessToken = jwt.sign(
       { _id: user._id },
       process.env.JWT_ACCESS_SECRET!,
@@ -174,9 +176,16 @@ export const generateTokensFromGoogleAuth = async (req: Request, res: Response) 
     );
 
     await updateUserTokens(user._id.toString(), accessToken, refreshToken)
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: ENV.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    const userResponse :  AuthResponseDto =  { accessToken, user: {id :user._id.toString(), ...user} }
 
-    res.json({ accessToken, refreshToken, username: name, id: user._id, email: user.email,
-      avatar: user.avatar })
+    res.json( userResponse
+      )
     return;
   } catch (error) {
     console.error("Error during Google authentication:", error);
@@ -207,3 +216,4 @@ export const logout = async (
     next(err);
   }
 };
+

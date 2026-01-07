@@ -6,7 +6,7 @@ import { logger } from "@utils/logger";
 export class UserRepository {
   async findById(userId: Types.ObjectId | string): Promise<IUser | null> {
     try {
-      return await User.findById(userId);
+      return await User.findById(new Types.ObjectId(userId));
     } catch (error) {
       logger.error(`Error finding user by ID ${userId}:`, error);
       throw error;

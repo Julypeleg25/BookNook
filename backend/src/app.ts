@@ -35,7 +35,21 @@ mongoose
   .connect(ENV.MONGODB_URL)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
-
+mongoose.connection.on('open', async () => {
+  try {
+    // This ensures we are looking at the 'booknook' database specifically
+    const db = mongoose.connection.useDb('booknook'); 
+    await db.collection('users').dropIndex('googleId_1');
+    
+    console.log('✅ Success: providerId_1 index dropped.');
+  } catch (error: any) {
+    if (error.codeName === 'IndexNotFound') {
+      console.log('ℹ️ Index already dropped, nothing to do.');
+    } else {
+      console.error('❌ Error dropping index:', error.message);
+    }
+  }
+});
 app.use(express.json());
 app.use(
   session({

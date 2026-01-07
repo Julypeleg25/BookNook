@@ -7,6 +7,8 @@ import jwt, { JwtPayload, VerifyErrors } from'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { COOKIE } from "@config/constants";
 import { ENV } from "@config/config";
+import { getUserById } from "@services/userService";
+import User from "@models/User";
 
 export interface AccessTokenPayload extends JwtPayload{
   userId: string;
@@ -16,16 +18,35 @@ export interface AuthenticatedRequest extends Request {
   user?: string;
 }
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
-  const token = req.cookies[COOKIE.ACCESS];
+  const authHeader = req.headers.authorization;
 
-  if (!token) {
+  // 2. Check if header exists and starts with 'Bearer '
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No token provided or invalid format" });
+  }
+
+  // 3. Take the 'Bearer ' out (split by space and take the second part)
+  const accessToken = authHeader.split(" ")[1];
+  console.log('hiiiiiiiiiiiii', accessToken)
+
+  if (!accessToken) {
     return res.status(401).json({ message: "No session found" });
   }
 
-  jwt.verify(token, ENV.JWT_ACCESS_SECRET, (err: VerifyErrors, decoded: AccessTokenPayload) => {
+  jwt.verify(accessToken, ENV.JWT_ACCESS_SECRET, async  (err: VerifyErrors, decoded: AccessTokenPayload) => {
     // todo fix these types ^
     if (err) return res.status(401).json({ message: "Session expired" });
-    req.user = decoded.userId;
+
+    try{
+      console.log(decoded)
+   const fullAuthenticatedUser = await getUserById(decoded._id)
+    console.log(fullAuthenticatedUser)
+    const {_id: id, name , username , avatar, email } = fullAuthenticatedUser
+    req.authenticatedUser = {id, name , username, avatar, email }
     next();
+    }catch(error){
+      throw error //todo what to do error in middleware
+    }
+ 
   });
 };

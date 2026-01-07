@@ -24,9 +24,11 @@ export interface JwtDecodedUser {
 
 const userSchema = new Schema<IUser>(
   {
-    provider: {
+  provider: {
       type: String,
       required: true,
+      enum: ['local', 'google'], // Good practice to restrict values
+      default: 'local'
     },
     username: {
       type: String,
@@ -47,24 +49,18 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       trim: true,
+      // REMOVE required: true if it was there, or keep it optional
+      // Google users will not have a password
       minlength: 6,
       maxlength: 60,
     },
     name: String,
     avatar: String,
     bio: String,
-    wishlist: {
-      type: [String],
-      default: [],
-    },
-    readlist: {
-      type: [String],
-      default: [],
-    },
     providerId: {
       type: String,
       unique: true,
-      sparse: true,
+      sparse: true, // IMPORTANT: Allows multiple 'null' values for local users
     },
     refreshToken: {
       type: String,

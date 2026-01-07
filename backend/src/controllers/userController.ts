@@ -12,11 +12,13 @@ export async function getCurrentUser(
   next: NextFunction
 ) {
   try {
+    console.log(req.authenticatedUser)
     res.json({
       id: req.authenticatedUser!._id,
       name: req.authenticatedUser!.name,
       username: req.authenticatedUser!.username,
       avatar: req.authenticatedUser!.avatar,
+      email: req.authenticatedUser?.email
     });
   } catch (error) {
     logger.error("Error getting current user:", error);

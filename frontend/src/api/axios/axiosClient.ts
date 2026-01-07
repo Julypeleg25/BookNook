@@ -36,6 +36,7 @@ const handleUnauthorizedRequests = (error?: Error, token?: string) => {
 axiosClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem("accessToken");
+    console.log('gfgfgfgf')
     if (token && config.headers) {
       config.headers.Authorization = addBearerToken(token);
     }
