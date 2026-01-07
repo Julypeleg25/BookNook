@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import { IUser } from "@models/User";
+import User, { IUser } from "@models/User";
 import {
   generateTokens,
   setAuthCookies,
   clearAuthCookies,
   verifyRefreshToken,
 } from "@services/authService";
+import { OAuth2Client } from "google-auth-library";
+
 import {
   createUser,
   getUserByUsername,
@@ -21,6 +23,7 @@ import { COOKIE } from "@config/constants";
 import { HttpStatusCode } from "axios";
 import { UserDto } from "@shared/dtos/user.dto";
 import { AuthResponseDto } from "@shared/index";
+import jwt from "jsonwebtoken"
 
 
 export const register = async (
@@ -138,6 +141,50 @@ export const refresh = async (req: Request, res: Response, next: NextFunction) =
     next(error);
   }
 };
+
+
+
+const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
+export const generateTokensFromGoogleAuth = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: ENV.GOOGLE_CLIENT_ID,
+    });
+
+    const { email, name, sub, picture } = ticket.getPayload()!;
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({ username: name, email, googleId: sub, profileImage: picture });
+      await user.save();
+    }
+
+    const accessToken = jwt.sign(
+      { _id: user._id },
+      process.env.JWT_ACCESS_SECRET!,
+      { expiresIn: '15m' }
+    );
+    const refreshToken = jwt.sign(
+      { _id: user._id },
+      process.env.JWT_REFRESH_SECRET!,
+      {expiresIn: '7d'}
+    );
+
+    await updateUserTokens(user._id.toString(), accessToken, refreshToken)
+
+    res.json({ accessToken, refreshToken, username: name, id: user._id, email: user.email,
+      avatar: user.avatar })
+    return;
+  } catch (error) {
+    console.error("Error during Google authentication:", error);
+    res
+      .status(401)
+      .json({ error: "Invalid Google token", details: error.message });
+    return;
+  }}
 
 export const logout = async (
   req: Request,

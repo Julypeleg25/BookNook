@@ -22,7 +22,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     return res.status(401).json({ message: "No session found" });
   }
 
-  jwt.verify(token, ENV.ACCESS_TOKEN_SECRET, (err: VerifyErrors, decoded: AccessTokenPayload) => {
+  jwt.verify(token, ENV.JWT_ACCESS_SECRET, (err: VerifyErrors, decoded: AccessTokenPayload) => {
     // todo fix these types ^
     if (err) return res.status(401).json({ message: "Session expired" });
     req.user = decoded.userId;

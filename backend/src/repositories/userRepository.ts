@@ -76,13 +76,41 @@ export class UserRepository {
     }
   }
 
-  async updateTokens(
+ 
+
+    async updateRefreshToken(
+    userId: Types.ObjectId | string,
+    refreshToken: string | null
+  ): Promise<void> {
+    try {
+      await User.findByIdAndUpdate(userId, {  refreshToken });
+    } catch (error) {
+      logger.error(`Error updating refreshToken for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+      async updateAccessToken(
+    userId: Types.ObjectId | string,
+    accessToken: string | null
+  ): Promise<void> {
+    try {
+      await User.findByIdAndUpdate(userId, {  accessToken });
+    } catch (error) {
+      logger.error(`Error updating accessToken for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+   async updateTokens(
     userId: Types.ObjectId | string,
     accessToken: string | null,
     refreshToken: string | null
   ): Promise<void> {
     try {
-      await User.findByIdAndUpdate(userId, { accessToken, refreshToken });
+      await this.updateAccessToken(userId, accessToken)
+      await this.updateRefreshToken(userId, refreshToken)
+      
     } catch (error) {
       logger.error(`Error updating tokens for user ${userId}:`, error);
       throw error;

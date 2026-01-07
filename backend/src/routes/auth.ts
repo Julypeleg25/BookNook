@@ -6,6 +6,7 @@ import {
   register,
   login,
   refresh,
+  generateTokensFromGoogleAuth,
 } from "@controllers/authController";
 import { upload } from "@config/multerConfig";
 import { validateBody } from "@middlewares/validateRequest";
@@ -23,10 +24,7 @@ router.post(
 router.post("/login", validateBody(LoginSchema), login);
 router.post("/refresh", refresh);
 
-router.post(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+router.post("/google", generateTokensFromGoogleAuth);
 
 router.get(
   "/oauth2/redirect/google",
