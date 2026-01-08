@@ -12,6 +12,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 import useUserStore from "@state/useUserStore";
 import { getTimeOfDay } from "@utils/dateUtils";
+import { useEffect } from "react";
 
 const navItemSx = {
   position: "relative",
@@ -43,6 +44,9 @@ const navItemSx = {
 
 const AppBar = () => {
   const { user } = useUserStore();
+  useEffect(() => {
+    console.log('appbar',user, user.avatar)
+  },[user])
   const navigate = useNavigate();
 
   return (
@@ -79,7 +83,7 @@ const AppBar = () => {
               <IconButton onClick={() => navigate("/profile")} color="inherit">
                 <Avatar
                   sx={{ width: "3rem", height: "3rem" }}
-                  src={user.avatar}
+                  src={'https://lh3.googleusercontent.com/a/ACg8ocJc9wZw2U1dWHf7dOI7IvU8FQs7jjabYSxCDtnw7obLF-pxic0=s96-c'}
                 />
               </IconButton>
             </Tooltip>

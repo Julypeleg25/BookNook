@@ -28,6 +28,7 @@ const Dashboard = () => {
         variant="contained"
         color="secondary"
         // onClick={handleLogout}
+        // todo logout - on back, clear tokens, and naavigate to login
         sx={{ mt: 2 }}
       >
         Logout

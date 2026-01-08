@@ -6,6 +6,7 @@ import axios, {
 import env from "@/config/env";
 import { mapAxiosError } from "../apiError";
 import { AuthService } from "../services/authService";
+import { tokenService } from "../services/tokenService";
 
 const API_TIMEOUT = 15_000;
 
@@ -25,26 +26,31 @@ const addBearerToken = (token: string) => `Bearer ${token}`;
 let isRefreshing = false;
 let unauthorizedRequestsQueue: UnauthorizedRequestQueueItem[] = [];
 
-const handleUnauthorizedRequests = (error?: Error, token?: string) => {
-  unauthorizedRequestsQueue.forEach((queueItem) => {
-    if (error) queueItem.reject(error);
-    else if (token) queueItem.resolve(token);
+const resolveQueuedRequests = (error?: Error, token?: string) => {
+  unauthorizedRequestsQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else if (token) resolve(token);
   });
   unauthorizedRequestsQueue = [];
 };
 
+/* =========================
+   REQUEST INTERCEPTOR
+========================= */
 axiosClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("accessToken");
-    console.log('gfgfgfgf')
+    const token = tokenService.getAccess();
     if (token && config.headers) {
       config.headers.Authorization = addBearerToken(token);
     }
     return config;
   },
-  (error: AxiosError) => Promise.reject(error)
+  (error) => Promise.reject(error)
 );
 
+/* =========================
+   RESPONSE INTERCEPTOR
+========================= */
 axiosClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -60,8 +66,8 @@ axiosClient.interceptors.response.use(
         return new Promise<string>((resolve, reject) => {
           unauthorizedRequestsQueue.push({ resolve, reject });
         }).then((token) => {
-          if (originalRequest.headers)
-            originalRequest.headers.Authorization = addBearerToken(token);
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = addBearerToken(token);
           return axiosClient(originalRequest);
         });
       }
@@ -70,20 +76,22 @@ axiosClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const newToken: string = await AuthService.refreshToken();
-        localStorage.setItem("accessToken", newToken);
+        const newToken = await AuthService.refreshToken();
+        tokenService.setAccess(newToken);
+
+        resolveQueuedRequests(undefined, newToken);
 
         originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = addBearerToken(newToken);
-        handleUnauthorizedRequests(undefined, newToken);
 
         return axiosClient(originalRequest);
       } catch (err) {
+        tokenService.clear(); 
         const typedError =
           err instanceof Error ? err : new Error("Token refresh failed");
-        handleUnauthorizedRequests(typedError);
 
-        return Promise.reject(typedError);
+        resolveQueuedRequests(typedError);
+        throw typedError;
       } finally {
         isRefreshing = false;
       }

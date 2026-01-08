@@ -5,111 +5,53 @@ import useUserStore from "@/state/useUserStore";
 import { AuthService } from "@/api/services/authService";
 import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
 import { isTokenValid } from "@/utils/authUtils";
+import useTokens from "./useTokens";
+import { tokenService } from "@/api/services/tokenService";
 
 export const useAuth = () => {
   const navigate = useNavigate();
-  const { setUser, resetUser, isAuthenticated , user} = useUserStore();
-
-const syncUser = async () => {
-  let token = localStorage.getItem("accessToken");
-
-  // 1. If token is invalid/expired, try to refresh
-  if (!isTokenValid(token)) {
-    
-      try {
-        console.log("Access token expired, attempting refresh...");
-        const accessToken = await AuthService.refreshToken();
-        
-        localStorage.setItem("accessToken", accessToken);
-      } catch (refreshError) {
-        console.error("Refresh failed, logging out");
-        handleAuthCleanup();
-        return;
-      }
-    } else {
-      handleAuthCleanup();
-      return;
-    }
-
-  // 2. Now that we have a valid token (either original or new), fetch the user profile
-  if (!user.id) {
-    try {
-      const currentUser = await AuthService.getCurrentUser();
-      console.log('setUser', currentUser)
-      setUser(currentUser);
-      navigate('/posts')
-    } catch (error) {
-      handleAuthCleanup();
-    }
-  }
-
-}
-
-// Helper to keep code clean
-const handleAuthCleanup = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-};
-  const register = async (payload: RegisterRequestDTO) => {
-    try {
-      const res = await AuthService.register(payload);
-
-      if (res.status === HttpStatusCode.Created) {
-        setUser(res.data.user);
-        localStorage.setItem("accessToken", res.data.accessToken)
-        navigate("/posts");
-      }
-    } catch (error) {
-      handleAuthError(error);
-    }
-  };
+  const { setUser, resetUser } = useUserStore();
+  const { setAccessToken, clearTokens } = useTokens();
 
   const login = async (payload: LoginRequestDTO) => {
-    try {
-      const res = await AuthService.login(payload);
+    const res = await AuthService.login(payload);
 
-      if (res.status === HttpStatusCode.Created) {
-        setUser(res.data.user);
-        localStorage.setItem("accessToken", res.data.accessToken)
-        navigate("/posts");
-      } else {
-        console.error(`Auth error: ${res.status}`);
-      }
-    } catch (error) {
-      handleAuthError(error);
-    }
+    setAccessToken(res.data.accessToken);
+    setUser(res.data.user);
+    navigate("/posts");
+  };
+
+  const register = async (payload: RegisterRequestDTO) => {
+    const res = await AuthService.register(payload);
+
+    setAccessToken(res.data.accessToken);
+    setUser(res.data.user);
+    navigate("/posts");
   };
 
   const logout = async () => {
     try {
       await AuthService.logout();
-    } catch (error) {
-      handleAuthError(error);
     } finally {
+      clearTokens();
       resetUser();
       navigate("/login");
     }
   };
 
-  const handleAuthError = (error: unknown) => {
-    if (error instanceof ApiError) {
-      console.error(`Auth error: ${error.message}`);
-      if (error.status === HttpStatusCode.Unauthorized) {
-        navigate("/login");
-      }
-    } else {
-      console.error("Unexpected error", error);
+  const syncUser = async () => {
+    const token = tokenService.getAccess();
+    console.log('gfgfgfg')
+    if (!token) return resetUser();
+
+    try {
+      const user = await AuthService.getCurrentUser();
+      setUser(user);
+    } catch {
+      clearTokens();
+      resetUser();
     }
-
-    throw error;
   };
 
-  return {
-    login,
-    register,
-    logout,
-    isAuthenticated,
-    AuthService,
-    syncUser
-  };
+  return { login, register, logout, syncUser };
 };

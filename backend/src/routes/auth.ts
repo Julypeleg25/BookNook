@@ -24,7 +24,7 @@ router.post(
 router.post("/login", validateBody(LoginSchema), login);
 router.post("/refresh", refresh);
 
-router.post("/google", generateTokensFromGoogleAuth);
+router.post("/google", upload.single("avatar"), generateTokensFromGoogleAuth);
 
 router.get(
   "/oauth2/redirect/google",

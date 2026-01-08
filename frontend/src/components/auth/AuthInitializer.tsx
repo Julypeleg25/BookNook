@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@hooks/useAuth";
 
 export const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
-  const { syncUser, AuthService  } = useAuth();
+  const { syncUser  } = useAuth();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

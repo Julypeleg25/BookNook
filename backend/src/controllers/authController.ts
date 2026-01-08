@@ -156,7 +156,7 @@ const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
 export const generateTokensFromGoogleAuth = async (req: Request, res: Response) => {
   try {
     // await User.deleteOne({email: "2003yam@gmail.com"})
-    // return;
+    // return; todo delete 
     const { token } = req.body;
 
     const ticket = await client.verifyIdToken({
@@ -175,7 +175,7 @@ export const generateTokensFromGoogleAuth = async (req: Request, res: Response) 
     const accessToken = jwt.sign(
       { _id: user._id },
       process.env.JWT_ACCESS_SECRET!,
-      { expiresIn: '15m' }
+      { expiresIn: '1m' }
     );
     const refreshToken = jwt.sign(
       { _id: user._id },
@@ -190,7 +190,8 @@ export const generateTokensFromGoogleAuth = async (req: Request, res: Response) 
         sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-    const userResponse :  AuthResponseDto =  { accessToken, user: {id :user._id.toString(), ...user} }
+    const userResponse :  AuthResponseDto =  { accessToken, user: {id :user._id.toString(), 
+      avatar: user.avatar, email:user.email, username: user.username} }
 
     res.json( userResponse
       )
