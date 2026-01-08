@@ -35,7 +35,9 @@ const syncUser = async () => {
   if (!user.id) {
     try {
       const currentUser = await AuthService.getCurrentUser();
+      console.log('setUser', currentUser)
       setUser(currentUser);
+      navigate('/posts')
     } catch (error) {
       handleAuthCleanup();
     }

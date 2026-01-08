@@ -27,7 +27,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
   // 3. Take the 'Bearer ' out (split by space and take the second part)
   const accessToken = authHeader.split(" ")[1];
-  console.log('hiiiiiiiiiiiii', accessToken)
 
   if (!accessToken) {
     return res.status(401).json({ message: "No session found" });
@@ -38,9 +37,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     if (err) return res.status(401).json({ message: "Session expired" });
 
     try{
-      console.log(decoded)
    const fullAuthenticatedUser = await getUserById(decoded._id)
-    console.log(fullAuthenticatedUser)
     const {_id: id, name , username , avatar, email } = fullAuthenticatedUser
     req.authenticatedUser = {id, name , username, avatar, email }
     next();

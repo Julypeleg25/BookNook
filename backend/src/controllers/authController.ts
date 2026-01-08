@@ -123,19 +123,27 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
 export const refresh = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const refreshToken = req.cookies[COOKIE.REFRESH];
-    if (!refreshToken) throw new UnauthorizedError("No refresh token");
+    const oldRefreshToken = req.cookies[COOKIE.REFRESH];
+    if (!oldRefreshToken) throw new UnauthorizedError("No refresh token");
 
-    const decoded = await verifyRefreshToken(refreshToken);
+    const decoded = await verifyRefreshToken(oldRefreshToken);
     const user = await getUserById(decoded._id);
 
-    if (!user || user.refreshToken !== refreshToken) {
+    if (!user || user.refreshToken !== oldRefreshToken) {
       throw new UnauthorizedError("Invalid refresh token");
     }
 
-    const { accessToken } = generateTokens(user);
+    const { accessToken, refreshToken } = generateTokens(user);
     
     // Return fresh access token to be stored in Frontend State (JS Memory)
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: ENV.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+
+      updateUserTokens(decoded._id.toString(), accessToken, refreshToken)
     res.json({ accessToken });
   } catch (error) {
     next(error);

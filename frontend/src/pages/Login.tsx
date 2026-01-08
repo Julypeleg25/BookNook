@@ -65,7 +65,6 @@ const Login = () => {
       }) as AxiosResponse<AuthResponseDto>;
 
       const {user, accessToken} = response.data
-      console.log(response)
 
       // todo clean the user , auth hooks, too many
       setUser(user)
