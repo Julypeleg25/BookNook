@@ -1,10 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { ApiError } from "@api/apiError";
-import { HttpStatusCode } from "axios";
 import useUserStore from "@/state/useUserStore";
 import { AuthService } from "@/api/services/authService";
 import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
-import { isTokenValid } from "@/utils/authUtils";
 import useTokens from "./useTokens";
 import { tokenService } from "@/api/services/tokenService";
 
@@ -41,9 +38,12 @@ export const useAuth = () => {
 
   const syncUser = async () => {
     const token = tokenService.getAccess();
-    console.log('gfgfgfg')
-    if (!token) return resetUser();
 
+    if (!token) {
+      resetUser();      
+      navigate("/login"); 
+      return;
+    }
     try {
       const user = await AuthService.getCurrentUser();
       setUser(user);

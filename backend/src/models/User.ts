@@ -2,19 +2,20 @@ import mongoose, { Document, Model } from "mongoose";
 
 const { Schema } = mongoose;
 
+// todo IUSER, USERDTO user model.. too many
 export interface IUser extends Document {
   provider: string;
   username: string;
   email: string;
   password?: string;
-  name?: string;
-  avatar?: string;
+  avatar: string;
   bio?: string;
   providerId?: string;
   wishlist: string[];
   readlist: string[];
   refreshToken?: string;
   accessToken?: string;
+  googleId?: string;   
 }
 
 export interface JwtDecodedUser {
@@ -54,8 +55,8 @@ const userSchema = new Schema<IUser>(
       minlength: 6,
       maxlength: 60,
     },
-    name: String,
-    avatar: String,
+    googleId: { type: String, unique: true, sparse: true }, 
+    avatar: {type: String, required: true},
     bio: String,
     providerId: {
       type: String,

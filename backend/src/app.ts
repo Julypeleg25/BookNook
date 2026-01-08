@@ -1,6 +1,5 @@
 import { ENV } from "@config/config";
 import express from "express";
-import passport from "passport";
 import mongoose from "mongoose";
 import session from "express-session";
 import cors from "cors";
@@ -59,25 +58,6 @@ app.use(
     cookie: { secure: true },
   })
 );
-app.use(passport.initialize());
-app.use(passport.session());
-passport.use(localLoginStrategy);
-passport.use(googleStrategy);
-
-passport.serializeUser(function (user, done) {
-  const userObj = user as IUser;
-  done(null, userObj._id);
-});
-
-passport.deserializeUser(async (id: string, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
 app.use("/", authRoutes);
 app.use("/api/books", authenticate, booksRouter);
 app.use("/userReviews", authenticate, userReviewsRouter);
