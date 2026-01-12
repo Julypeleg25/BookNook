@@ -1,5 +1,5 @@
 import { Response } from "express";
-import jwt, { VerifyCallback } from "jsonwebtoken";
+import jwt, { JwtPayload, VerifyCallback } from "jsonwebtoken";
 import { IUser, JwtDecodedUser } from "@models/User";
 import { logger } from "@utils/logger";
 import { UnauthorizedError } from "@utils/errors";
@@ -10,7 +10,7 @@ export function generateTokens(user: IUser): { accessToken: string; refreshToken
     const accessToken = jwt.sign(
       {  _id: user._id} ,
       ENV.JWT_ACCESS_SECRET!,
-      { expiresIn: "15m" }
+      { expiresIn: "1m" }
     );
     const refreshToken = jwt.sign(
       {  _id: user._id },
@@ -24,18 +24,10 @@ export function generateTokens(user: IUser): { accessToken: string; refreshToken
   }
 }
 
-// todo only store refresh
 export function setAuthCookies(
   res: Response,
-  accessToken: string,
   refreshToken: string
 ): void {
-  // res.cookie("accessToken", accessToken, {
-  //   httpOnly: true,
-  //   secure: ENV.NODE_ENV === "production",
-  //   sameSite: "lax",
-  //   maxAge: 15 * 60 * 1000,
-  // });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: ENV.NODE_ENV === "production",
@@ -49,9 +41,16 @@ export function clearAuthCookies(res: Response): void {
   res.clearCookie("refreshToken", { path: "/" });
 }
 
-export async function verifyRefreshToken(token: string): Promise<{_id: string}> {//todo type better{ _id: '6946995e00032e109176ab2e', iat: 1767820672, exp: 1768425472 }
-  try {
-    return jwt.verify(token, ENV.JWT_REFRESH_SECRET!) as {_id: string};
+export async function verifyRefreshToken(token: string): Promise<JwtPayload> 
+{  try {
+    const decoded = jwt.verify(token, ENV.JWT_REFRESH_SECRET!)
+    
+    if (typeof decoded === "string") {
+      throw new UnauthorizedError("Invalid refresh token payload");
+    }
+
+    return decoded
+
   } catch (error) {
     logger.error("Error verifying refresh token:", error);
     throw new UnauthorizedError("Invalid refresh token");

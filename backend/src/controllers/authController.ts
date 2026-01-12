@@ -52,7 +52,7 @@ export const register = async (
 
     const { accessToken, refreshToken } = generateTokens(user);
     await updateUserTokens(String(user._id), accessToken, refreshToken);
-    setAuthCookies(res, accessToken, refreshToken);
+    setAuthCookies(res, refreshToken);
 
     res.status(HttpStatusCode.Created).json(sanitizeUser(user));
   } catch (error) {
@@ -73,7 +73,7 @@ export const login = async (req: Request, res: Response) => {
   const { accessToken, refreshToken } = generateTokens(user);
   await updateUserTokens(user._id.toString(), accessToken, refreshToken);
 
-  res.cookie("refreshToken", refreshToken, { httpOnly: true });
+  setAuthCookies(res, refreshToken)
   res.json({
     accessToken,
     user: sanitizeUser(user),
@@ -94,15 +94,9 @@ export const refresh = async (req: Request, res: Response, next: NextFunction) =
 
     const { accessToken, refreshToken } = generateTokens(user);
     
-    // Return fresh access token to be stored in Frontend State (JS Memory)
-    res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: ENV.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      })
+    setAuthCookies(res, refreshToken)
 
-      updateUserTokens(decoded._id.toString(), accessToken, refreshToken)
+    updateUserTokens(decoded._id.toString(), accessToken, refreshToken)
     res.json({ accessToken });
   } catch (error) {
     next(error);
@@ -136,9 +130,8 @@ export const googleAuthenticate = async (req: Request, res: Response) => {
   }
 
   const { accessToken, refreshToken } = generateTokens(user);
-  await updateUserTokens(user._id.toString(), accessToken, refreshToken);
 
-  res.cookie("refreshToken", refreshToken, { httpOnly: true });
+  setAuthCookies(res, refreshToken)
   res.json({
     accessToken,
     user: sanitizeUser(user),
@@ -155,11 +148,6 @@ export const logout = async (
     req.logout((err) => {
       if (err) logger.error("Passport logout error:", err);
     });
-
-    const userId = (req.user as IUser)?._id || req.authenticatedUser?.id;
-    if (userId) {
-      await updateUserTokens(String(userId), null, null);
-    }
 
     clearAuthCookies(res);
     res.status(200).json({ success: true });

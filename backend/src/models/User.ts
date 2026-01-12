@@ -71,6 +71,20 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: null,
     },
+    
+    wishlist: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Book",
+      },
+    ],
+
+    readlist: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Book",
+      },
+    ],
   },
   { timestamps: true }
 );
