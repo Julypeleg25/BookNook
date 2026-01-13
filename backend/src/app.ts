@@ -12,8 +12,6 @@ import userReviewsRouter from "@routes/userReview";
 import userRouter from "@routes/user";
 import { swaggerSpec } from "../swagger";
 import { UPLOADS_FOLDER } from "@config/multerConfig";
-import googleStrategy from "@services/googleStrategy";
-import localLoginStrategy from "@services/localStrategy";
 import cookieParser from "cookie-parser";
 import { authenticate } from "@middlewares/authMiddleware";
 import { errorHandler } from "@middlewares/errorHandler";

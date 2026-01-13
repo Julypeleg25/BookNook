@@ -7,6 +7,7 @@ import env from "@/config/env";
 import { mapAxiosError } from "../apiError";
 import { AuthService } from "../services/authService";
 import { tokenService } from "../services/tokenService";
+import useUserStore from "@/state/useUserStore";
 
 const API_TIMEOUT = 15_000;
 
@@ -86,12 +87,12 @@ axiosClient.interceptors.response.use(
 
         return axiosClient(originalRequest);
       } catch (err) {
-        tokenService.clear(); 
+        tokenService.clear();
+        console.log("fffffffffffffffffffffffff");
         const typedError =
           err instanceof Error ? err : new Error("Token refresh failed");
-
         resolveQueuedRequests(typedError);
-        throw typedError;
+        useUserStore.getState().resetUser();
       } finally {
         isRefreshing = false;
       }

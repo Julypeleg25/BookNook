@@ -7,7 +7,7 @@ import {
   verifyRefreshToken,
 } from "@services/authService";
 import { OAuth2Client } from "google-auth-library";
-import {generateUsernameFromEmail, sanitizeUser} from '../utils/userUtils'
+import { generateUsernameFromEmail, sanitizeUser } from "../utils/userUtils";
 import {
   createUser,
   getUserByUsername,
@@ -23,8 +23,7 @@ import { COOKIE } from "@config/constants";
 import { HttpStatusCode } from "axios";
 import { UserDto } from "@shared/dtos/user.dto";
 import { AuthResponseDto } from "@shared/index";
-import jwt from "jsonwebtoken"
-
+import jwt from "jsonwebtoken";
 
 export const register = async (
   req: Request,
@@ -61,7 +60,6 @@ export const register = async (
   }
 };
 
-
 export const login = async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
@@ -73,14 +71,18 @@ export const login = async (req: Request, res: Response) => {
   const { accessToken, refreshToken } = generateTokens(user);
   await updateUserTokens(user._id.toString(), accessToken, refreshToken);
 
-  setAuthCookies(res, refreshToken)
+  setAuthCookies(res, refreshToken);
   res.json({
     accessToken,
     user: sanitizeUser(user),
   });
 };
 
-export const refresh = async (req: Request, res: Response, next: NextFunction) => {
+export const refresh = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const oldRefreshToken = req.cookies[COOKIE.REFRESH];
     if (!oldRefreshToken) throw new UnauthorizedError("No refresh token");
@@ -93,17 +95,15 @@ export const refresh = async (req: Request, res: Response, next: NextFunction) =
     }
 
     const { accessToken, refreshToken } = generateTokens(user);
-    
-    setAuthCookies(res, refreshToken)
 
-    updateUserTokens(decoded._id.toString(), accessToken, refreshToken)
+    setAuthCookies(res, refreshToken);
+
+    updateUserTokens(decoded._id.toString(), accessToken, refreshToken);
     res.json({ accessToken });
   } catch (error) {
     next(error);
   }
 };
-
-
 
 const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
 export const googleAuthenticate = async (req: Request, res: Response) => {
@@ -131,13 +131,12 @@ export const googleAuthenticate = async (req: Request, res: Response) => {
 
   const { accessToken, refreshToken } = generateTokens(user);
 
-  setAuthCookies(res, refreshToken)
+  setAuthCookies(res, refreshToken);
   res.json({
     accessToken,
     user: sanitizeUser(user),
   });
 };
-
 
 export const logout = async (
   req: Request,
@@ -155,4 +154,3 @@ export const logout = async (
     next(err);
   }
 };
-

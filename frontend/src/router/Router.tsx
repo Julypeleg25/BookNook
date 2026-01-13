@@ -12,18 +12,18 @@ import Profile from "@pages/Profile";
 import NotFound from "@pages/NotFound";
 import AppLayout from "./AppLayout";
 import PublicLayout from "./layout/PublicLayout";
-import ProtectedRoute from "./ProtectedRoute";
 import useUserStore from "@/state/useUserStore";
 import { useEffect } from "react";
 
 const Router = () => {
   const ProtectedRoute = () => {
-  const { isAuthenticated ,user} = useUserStore();
-  useEffect(() => {
-    console.log(user, "Gfddfdf")
-  },[user])
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-};
+    const { isAuthenticated, user } = useUserStore();
+    console.log(isAuthenticated);
+    useEffect(() => {
+      console.log(user, "Gfddfdf");
+    }, [user]);
+    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  };
 
   return (
     <Routes>
