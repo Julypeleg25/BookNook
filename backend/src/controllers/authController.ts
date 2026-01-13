@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import { IUser } from "@models/User";
+import User, { IUser } from "@models/User";
 import {
   generateTokens,
   setAuthCookies,
   clearAuthCookies,
   verifyRefreshToken,
 } from "@services/authService";
+import { OAuth2Client } from "google-auth-library";
+import { generateUsernameFromEmail, sanitizeUser } from "../utils/userUtils";
 import {
   createUser,
   getUserByUsername,
@@ -21,7 +23,7 @@ import { COOKIE } from "@config/constants";
 import { HttpStatusCode } from "axios";
 import { UserDto } from "@shared/dtos/user.dto";
 import { AuthResponseDto } from "@shared/index";
-
+import jwt from "jsonwebtoken";
 
 export const register = async (
   req: Request,
@@ -49,94 +51,91 @@ export const register = async (
 
     const { accessToken, refreshToken } = generateTokens(user);
     await updateUserTokens(String(user._id), accessToken, refreshToken);
-    setAuthCookies(res, accessToken, refreshToken);
+    setAuthCookies(res, refreshToken);
 
-    res.status(HttpStatusCode.Created).json({
-      user: {
-        id: user._id.toString(),
-        name: user.name,
-        username: user.username,
-        avatar: user.avatar,
-        email: user.email,
-      } ,
-      accessToken
-    } as AuthResponseDto);
+    res.status(HttpStatusCode.Created).json(sanitizeUser(user));
   } catch (error) {
     if (req.file) deleteFile(req.file.path);
     next(error);
   }
 };
 
-// controllers/authController.ts
+export const login = async (req: Request, res: Response) => {
+  const { username, password } = req.body;
 
-export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    if (!req.user) return res.redirect(`${ENV.FRONTEND_URL}/login`);
-
-    const user = req.user as IUser;
-    const { accessToken, refreshToken } = generateTokens(user);
-
-    await updateUserTokens(String(user._id), accessToken, refreshToken);
-
-    // Set Refresh Token Cookie (Long lived)
-    setAuthCookies(res, accessToken, refreshToken)
-
-   res.json({
-      user: {
-      id: user._id.toString(),
-      name: user.name,
-      username: user.username,
-      avatar: user.avatar,
-      email: user.email,
-      },
-      accessToken
-      }  as AuthResponseDto);
-  } catch (error) {
-    next(error);
+  const user = await getUserByUsername(username);
+  if (!user || !(await comparePassword(password, user.password!))) {
+    return res.status(401).json({ message: "Invalid credentials" });
   }
+
+  const { accessToken, refreshToken } = generateTokens(user);
+  await updateUserTokens(user._id.toString(), accessToken, refreshToken);
+
+  setAuthCookies(res, refreshToken);
+  res.json({
+    accessToken,
+    user: sanitizeUser(user),
+  });
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const refresh = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { username, password } = req.body;
-    const user = await getUserByUsername(username);
+    const oldRefreshToken = req.cookies[COOKIE.REFRESH];
+    if (!oldRefreshToken) throw new UnauthorizedError("No refresh token");
 
-    if (!user || !user.password || !(await comparePassword(password, user.password))) {
-      throw new UnauthorizedError("Invalid credentials");
-    }
+    const decoded = await verifyRefreshToken(oldRefreshToken);
+    const user = await getUserById(decoded._id);
 
-    const { accessToken, refreshToken } = generateTokens(user);
-    await updateUserTokens(String(user._id), accessToken, refreshToken);
-
-    // Store refresh token in httpOnly cookie and return accessToken in JSON
-    setAuthCookies(res, accessToken, refreshToken);
-
-    res.json({
-      user: { id: user._id, username: user.username, email: user.email },
-      accessToken,
-    });
-  } catch (error) { next(error); }
-};
-
-export const refresh = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const refreshToken = req.cookies[COOKIE.REFRESH];
-    if (!refreshToken) throw new UnauthorizedError("No refresh token");
-
-    const decoded = await verifyRefreshToken(refreshToken);
-    const user = await getUserById(decoded.userId);
-
-    if (!user || user.refreshToken !== refreshToken) {
+    if (!user || user.refreshToken !== oldRefreshToken) {
       throw new UnauthorizedError("Invalid refresh token");
     }
 
-    const { accessToken } = generateTokens(user);
-    
-    // Return fresh access token to be stored in Frontend State (JS Memory)
+    const { accessToken, refreshToken } = generateTokens(user);
+
+    setAuthCookies(res, refreshToken);
+
+    updateUserTokens(decoded._id.toString(), accessToken, refreshToken);
     res.json({ accessToken });
   } catch (error) {
     next(error);
   }
+};
+
+const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
+export const googleAuthenticate = async (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  const ticket = await client.verifyIdToken({
+    idToken: token,
+    audience: ENV.GOOGLE_CLIENT_ID,
+  });
+
+  const { email, sub, picture } = ticket.getPayload()!;
+  if (!email) return res.status(401).json({ message: "No email" });
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    user = await User.create({
+      email,
+      username: generateUsernameFromEmail(email),
+      googleId: sub,
+      avatar: picture,
+      provider: "google",
+    });
+  }
+
+  const { accessToken, refreshToken } = generateTokens(user);
+
+  setAuthCookies(res, refreshToken);
+  res.json({
+    accessToken,
+    user: sanitizeUser(user),
+  });
 };
 
 export const logout = async (
@@ -148,11 +147,6 @@ export const logout = async (
     req.logout((err) => {
       if (err) logger.error("Passport logout error:", err);
     });
-
-    const userId = (req.user as IUser)?._id || req.authenticatedUser?._id;
-    if (userId) {
-      await updateUserTokens(String(userId), null, null);
-    }
 
     clearAuthCookies(res);
     res.status(200).json({ success: true });

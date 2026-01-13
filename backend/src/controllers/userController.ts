@@ -6,23 +6,10 @@ import { isImageFile, deleteFile, deleteOldAvatar } from "@utils/fileUtils";
 import { UPLOADS_FOLDER } from "@config/multerConfig";
 import { HttpStatusCode } from "axios";
 
-export async function getCurrentUser(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    res.json({
-      id: req.authenticatedUser!._id,
-      name: req.authenticatedUser!.name,
-      username: req.authenticatedUser!.username,
-      avatar: req.authenticatedUser!.avatar,
-    });
-  } catch (error) {
-    logger.error("Error getting current user:", error);
-    next(error);
-  }
-}
+export const getCurrentUser = (req: Request, res: Response) => {
+  res.json(req.authenticatedUser);
+};
+
 export async function updateUserHandler(
   req: Request,
   res: Response,

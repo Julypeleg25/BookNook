@@ -7,25 +7,35 @@ import jwt, { JwtPayload, VerifyErrors } from'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { COOKIE } from "@config/constants";
 import { ENV } from "@config/config";
+import { getUserById } from "@services/userService";
+import User from "@models/User";
+import { sanitizeUser } from "@utils/userUtils";
 
-export interface AccessTokenPayload extends JwtPayload{
-  userId: string;
-}
-
-export interface AuthenticatedRequest extends Request {
-  user?: string;
+declare global {
+  namespace Express {
+    interface Request {
+      authenticatedUser?: {
+        id: string;
+        username: string;
+        avatar?: string;
+        email?: string;
+      }
+    }
+  }
 }
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
-  const token = req.cookies[COOKIE.ACCESS];
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "No token" });
 
-  if (!token) {
-    return res.status(401).json({ message: "No session found" });
-  }
+    const decoded = jwt.verify(token, ENV.JWT_ACCESS_SECRET) as jwt.JwtPayload;
+    const user = await getUserById(decoded._id);
 
-  jwt.verify(token, ENV.ACCESS_TOKEN_SECRET, (err: VerifyErrors, decoded: AccessTokenPayload) => {
-    // todo fix these types ^
-    if (err) return res.status(401).json({ message: "Session expired" });
-    req.user = decoded.userId;
+    if (!user) return res.status(401).json({ message: "User not found" });
+
+    req.authenticatedUser = sanitizeUser(user);
     next();
-  });
+  } catch {
+    res.status(401).json({ message: "Unauthorized" });
+  }
 };

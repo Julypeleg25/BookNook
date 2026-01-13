@@ -1,5 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import ProtectedRoute from "./ProtectedRoute";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Login from "@pages/Login";
 import SignUp from "@pages/SignUp";
 import ExploreBooks from "@pages/ExploreBooks";
@@ -11,56 +10,57 @@ import NewPost from "@pages/NewPost";
 import MyLists from "@pages/MyLists";
 import Profile from "@pages/Profile";
 import NotFound from "@pages/NotFound";
-import { useAuth } from "@hooks/useAuth";
 import AppLayout from "./AppLayout";
 import PublicLayout from "./layout/PublicLayout";
+import useUserStore from "@/state/useUserStore";
+import { useEffect } from "react";
 
 const Router = () => {
-  const { isAuthenticated } = useAuth();
+  const ProtectedRoute = () => {
+    const { isAuthenticated, user } = useUserStore();
+    console.log(isAuthenticated);
+    useEffect(() => {
+      console.log(user, "Gfddfdf");
+    }, [user]);
+    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  };
 
   return (
     <Routes>
+      {/* Public routes */}
       <Route element={<PublicLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<SignUp />} />
       </Route>
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <AppLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/posts">
-          <Route index element={<ExplorePosts />} />
-          <Route path=":id" element={<BookPost />} />
-        </Route>
+      {/* Protected routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route path="/posts">
+            <Route index element={<ExplorePosts />} />
+            <Route path=":id" element={<BookPost />} />
+          </Route>
 
-        <Route path="/books">
-          <Route index element={<ExploreBooks />} />
-          <Route path=":id" element={<BookInfo />} />
-        </Route>
+          <Route path="/books">
+            <Route index element={<ExploreBooks />} />
+            <Route path=":id" element={<BookInfo />} />
+          </Route>
 
-        <Route path="/post">
-          <Route index element={<NewPost />} />
-          <Route path="edit/:id" element={<NewPost />} />
-        </Route>
+          <Route path="/post">
+            <Route index element={<NewPost />} />
+            <Route path="edit/:id" element={<NewPost />} />
+          </Route>
 
-        <Route path="/myPosts" element={<MyPosts />} />
-        <Route path="/lists" element={<MyLists />} />
-        <Route path="/profile" element={<Profile />} />
+          <Route path="/myPosts" element={<MyPosts />} />
+          <Route path="/lists" element={<MyLists />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
       </Route>
-      <Route
-        path="/"
-        element={
-          isAuthenticated ? (
-            <Navigate to="/posts" replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+
+      {/* Root */}
+      <Route path="/" element={<Navigate to="/posts" replace />} />
+
+      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -1,71 +1,57 @@
 import { useNavigate } from "react-router-dom";
-import { ApiError } from "@api/apiError";
-import { HttpStatusCode } from "axios";
 import useUserStore from "@/state/useUserStore";
 import { AuthService } from "@/api/services/authService";
 import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
+import useTokens from "./useTokens";
+import { tokenService } from "@/api/services/tokenService";
 
 export const useAuth = () => {
   const navigate = useNavigate();
-  const { setUser, resetUser, isAuthenticated } = useUserStore();
-
-  const register = async (payload: RegisterRequestDTO) => {
-    try {
-      const res = await AuthService.register(payload);
-
-      if (res.status === HttpStatusCode.Created) {
-        setUser(res.data.user);
-        navigate("/posts");
-      }
-    } catch (error) {
-      handleAuthError(error);
-    }
-  };
+  const { setUser, resetUser } = useUserStore();
+  const { setAccessToken, clearTokens } = useTokens();
 
   const login = async (payload: LoginRequestDTO) => {
-    try {
-      const res = await AuthService.login(payload);
+    const res = await AuthService.login(payload);
 
-      if (res.status === HttpStatusCode.Created) {
-        setUser(res.data.user);
-        navigate("/posts");
-      } else {
-        console.error(`Auth error: ${res.status}`);
-      }
-    } catch (error) {
-      handleAuthError(error);
-    }
+    setAccessToken(res.data.accessToken);
+    setUser(res.data.user);
+    navigate("/posts");
+  };
+
+  const register = async (payload: RegisterRequestDTO) => {
+    const res = await AuthService.register(payload);
+
+    setAccessToken(res.data.accessToken);
+    setUser(res.data.user);
+    navigate("/posts");
   };
 
   const logout = async () => {
     try {
       await AuthService.logout();
-    } catch (error) {
-      handleAuthError(error);
     } finally {
+      clearTokens();
       resetUser();
       navigate("/login");
     }
   };
 
-  const handleAuthError = (error: unknown) => {
-    if (error instanceof ApiError) {
-      console.error(`Auth error: ${error.message}`);
-      if (error.status === HttpStatusCode.Unauthorized) {
-        navigate("/login");
-      }
-    } else {
-      console.error("Unexpected error", error);
+  const syncUser = async () => {
+    const token = tokenService.getAccess();
+
+    if (!token) {
+      resetUser();      
+      navigate("/login"); 
+      return;
     }
-
-    throw error;
+    try {
+      const user = await AuthService.getCurrentUser();
+      setUser(user);
+    } catch {
+      clearTokens();
+      resetUser();
+    }
   };
 
-  return {
-    login,
-    register,
-    logout,
-    isAuthenticated,
-    AuthService,
-  };
+  return { login, register, logout, syncUser };
 };

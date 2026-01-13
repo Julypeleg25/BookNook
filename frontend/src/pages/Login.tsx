@@ -9,11 +9,10 @@ import {
 import loginIcon from "@assets/login-icon.png";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleCredentialResponse } from "@react-oauth/google";
-
 import { FcGoogle } from "react-icons/fc";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 import { AuthResponseDto, LoginRequestDTO } from "@shared/dtos/auth.dto";
@@ -23,11 +22,12 @@ import env from "@/config/env";
 import { AxiosError, AxiosResponse } from "axios";
 import { axiosClient } from "@/api/axios/axiosClient";
 import useUserStore from "@/state/useUserStore";
+import { tokenService } from "@/api/services/tokenService";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const {setUser} = useUserStore()
+  const {setUser, user} = useUserStore()
   const [loginError, setLoginError] = useState<string>('')
   const [showPassword, setShowPassword] = useState(false);
   const {
@@ -45,6 +45,8 @@ const Login = () => {
     mode: "onSubmit",
   });
 
+
+
   const handleSignup = () => navigate("/register");
 
   const onSubmit = async (data: LoginRequestDTO) => {
@@ -55,6 +57,12 @@ const Login = () => {
       setError("root", { message: "Invalid username or password" });
     }
   };
+  async function urlToFile(url: string, filename: string): Promise<File> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new File([blob], filename, { type: blob.type });
+}
+
 
     const handleGoogleSuccess = async (
     credentialResponse: GoogleCredentialResponse
@@ -65,11 +73,11 @@ const Login = () => {
       }) as AxiosResponse<AuthResponseDto>;
 
       const {user, accessToken} = response.data
-
+      console.log(user)
+      tokenService.setAccess(accessToken);
       // todo clean the user , auth hooks, too many
       setUser(user)
       // todo accesstoken in hook
-      localStorage.setItem("accessToken", accessToken)
 
       navigate("/posts");
     } catch (err) {

@@ -46,7 +46,6 @@ const SearchFiltersModal = (props: SearchFiltersModalProps) => {
   });
 
   const onSubmit = (data: ISearchFiltersForm) => {
-    console.log(data);
     if (data.yearPublishedFrom > data.yearPublishedTo) {
       return;
     }

@@ -1,5 +1,5 @@
 import { Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload, VerifyCallback } from "jsonwebtoken";
 import { IUser, JwtDecodedUser } from "@models/User";
 import { logger } from "@utils/logger";
 import { UnauthorizedError } from "@utils/errors";
@@ -8,12 +8,12 @@ import { ENV } from "@config/config";
 export function generateTokens(user: IUser): { accessToken: string; refreshToken: string } {
   try {
     const accessToken = jwt.sign(
-      { userId: user._id} ,
+      {  _id: user._id} ,
       ENV.JWT_ACCESS_SECRET!,
-      { expiresIn: "15m" }
+      { expiresIn: "1m" }
     );
     const refreshToken = jwt.sign(
-      { userId: user._id },
+      {  _id: user._id },
       ENV.JWT_REFRESH_SECRET!,
       { expiresIn: "7d" }
     );
@@ -24,18 +24,10 @@ export function generateTokens(user: IUser): { accessToken: string; refreshToken
   }
 }
 
-// todo only store refresh
 export function setAuthCookies(
   res: Response,
-  accessToken: string,
   refreshToken: string
 ): void {
-  // res.cookie("accessToken", accessToken, {
-  //   httpOnly: true,
-  //   secure: ENV.NODE_ENV === "production",
-  //   sameSite: "lax",
-  //   maxAge: 15 * 60 * 1000,
-  // });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: ENV.NODE_ENV === "production",
@@ -49,9 +41,16 @@ export function clearAuthCookies(res: Response): void {
   res.clearCookie("refreshToken", { path: "/" });
 }
 
-export async function verifyRefreshToken(token: string): Promise<JwtDecodedUser> {
-  try {
-    return jwt.verify(token, ENV.JWT_REFRESH_SECRET!) as JwtDecodedUser;
+export async function verifyRefreshToken(token: string): Promise<JwtPayload> 
+{  try {
+    const decoded = jwt.verify(token, ENV.JWT_REFRESH_SECRET!)
+    
+    if (typeof decoded === "string") {
+      throw new UnauthorizedError("Invalid refresh token payload");
+    }
+
+    return decoded
+
   } catch (error) {
     logger.error("Error verifying refresh token:", error);
     throw new UnauthorizedError("Invalid refresh token");

@@ -1,11 +1,10 @@
 import express from "express";
-import passport from "passport";
 import {
-  googleAuthCallback,
   logout,
   register,
   login,
   refresh,
+  googleAuthenticate,
 } from "@controllers/authController";
 import { upload } from "@config/multerConfig";
 import { validateBody } from "@middlewares/validateRequest";
@@ -23,19 +22,7 @@ router.post(
 router.post("/login", validateBody(LoginSchema), login);
 router.post("/refresh", refresh);
 
-router.post(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-router.get(
-  "/oauth2/redirect/google",
-  passport.authenticate("google", {
-    failureRedirect: `${ENV.FRONTEND_URL}/login`,
-    session: false,
-  }),
-  googleAuthCallback
-);
+router.post("/google", googleAuthenticate);
 
 router.get("/logout", logout);
 

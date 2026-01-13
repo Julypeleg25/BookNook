@@ -12,6 +12,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 import useUserStore from "@state/useUserStore";
 import { getTimeOfDay } from "@utils/dateUtils";
+import { useEffect } from "react";
 
 const navItemSx = {
   position: "relative",
@@ -43,6 +44,9 @@ const navItemSx = {
 
 const AppBar = () => {
   const { user } = useUserStore();
+  useEffect(() => {
+    console.log('appbar',user, user.avatar)
+  },[user])
   const navigate = useNavigate();
 
   return (
