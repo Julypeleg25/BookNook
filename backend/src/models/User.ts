@@ -2,7 +2,6 @@ import mongoose, { Document, Model } from "mongoose";
 
 const { Schema } = mongoose;
 
-// todo IUSER, USERDTO user model.. too many
 export interface IUser extends Document {
   provider: string;
   username: string;
