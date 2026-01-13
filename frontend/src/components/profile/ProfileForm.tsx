@@ -3,11 +3,11 @@ import { useForm } from "react-hook-form";
 import { useSnackbar } from "notistack";
 import useUserStore from "@state/useUserStore";
 import AvatarField from "./AvatarField";
-import NameField from "./NameField";
 import UsernameField from "./UsernameField";
 import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
 import { useState } from "react";
 import { useUserApi } from "@/hooks/useUserApi";
+import { getAvatarSrcUrl } from "@/utils/userUtils";
 
 interface Props {
   onCancel: () => void;
@@ -22,14 +22,12 @@ const ProfileForm = ({ onCancel }: Props) => {
   const {
     handleSubmit,
     control,
-    reset,
     setError,
     formState: { isDirty, errors },
   } = useForm<UpdateUserRequestDTO>({
     defaultValues: {
-      name: user.name,
       username: user.username,
-      avatar: user.avatar,
+      avatar: getAvatarSrcUrl(user.avatar),
     },
   });
 
@@ -54,7 +52,6 @@ const ProfileForm = ({ onCancel }: Props) => {
       <AvatarField control={control} />
 
       <Box display="flex" gap={2} mt={3}>
-        <NameField control={control} />
         <UsernameField control={control} />
       </Box>
 

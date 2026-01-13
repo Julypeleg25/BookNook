@@ -59,7 +59,6 @@ const SignUp = () => {
   };
 
   const registerWithGoogle = () => {
-    //TODO:make it work
     window.location.href = `${env.API_BASE_URL}/google`;
   };
 

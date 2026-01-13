@@ -1,4 +1,5 @@
 import useUserStore from "@/state/useUserStore";
+import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { Box, Typography, Avatar } from "@mui/material";
 
 const ProfileView = () => {
@@ -6,9 +7,11 @@ const ProfileView = () => {
 
   return (
     <Box display="flex" gap={3} alignItems="center">
-      <Avatar src={user.avatar} sx={{ width: "4rem", height: "4rem" }} />
+      <Avatar
+        src={getAvatarSrcUrl(user.avatar)}
+        sx={{ width: "4rem", height: "4rem" }}
+      />
       <Box>
-        <Typography fontWeight={600}>{user.name}</Typography>
         <Typography color="text.secondary">@{user.username}</Typography>
       </Box>
     </Box>

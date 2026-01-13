@@ -27,8 +27,8 @@ import { tokenService } from "@/api/services/tokenService";
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const {setUser, user} = useUserStore()
-  const [loginError, setLoginError] = useState<string>('')
+  const { setUser, user } = useUserStore();
+  const [loginError, setLoginError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const {
     handleSubmit,
@@ -45,8 +45,6 @@ const Login = () => {
     mode: "onSubmit",
   });
 
-
-
   const handleSignup = () => navigate("/register");
 
   const onSubmit = async (data: LoginRequestDTO) => {
@@ -58,31 +56,27 @@ const Login = () => {
     }
   };
   async function urlToFile(url: string, filename: string): Promise<File> {
-  const res = await fetch(url);
-  const blob = await res.blob();
-  return new File([blob], filename, { type: blob.type });
-}
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new File([blob], filename, { type: blob.type });
+  }
 
-
-    const handleGoogleSuccess = async (
+  const handleGoogleSuccess = async (
     credentialResponse: GoogleCredentialResponse
   ) => {
     try {
-      const response = await axiosClient.post( `${env.API_BASE_URL}/google`, {
+      const response = (await axiosClient.post(`${env.API_BASE_URL}/google`, {
         token: credentialResponse.credential,
-      }) as AxiosResponse<AuthResponseDto>;
+      })) as AxiosResponse<AuthResponseDto>;
 
-      const {user, accessToken} = response.data
-      console.log(user)
+      const { user, accessToken } = response.data;
       tokenService.setAccess(accessToken);
-      // todo clean the user , auth hooks, too many
-      setUser(user)
-      // todo accesstoken in hook
+      setUser(user);
 
       navigate("/posts");
     } catch (err) {
       const error = err as AxiosError;
-      setLoginError(error.response?.statusText|| "Google login failed");
+      setLoginError(error.response?.statusText || "Google login failed");
     }
   };
 
@@ -103,10 +97,10 @@ const Login = () => {
             <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
               <Typography variant="h4">Welcome to BookNook</Typography>
               <GoogleLogin
-                  shape="circle"
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleFailure}
-                />
+                shape="circle"
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleFailure}
+              />
               <Divider>or</Divider>
             </div>
             <div

@@ -13,15 +13,10 @@ import NotFound from "@pages/NotFound";
 import AppLayout from "./AppLayout";
 import PublicLayout from "./layout/PublicLayout";
 import useUserStore from "@/state/useUserStore";
-import { useEffect } from "react";
 
 const Router = () => {
   const ProtectedRoute = () => {
-    const { isAuthenticated, user } = useUserStore();
-    console.log(isAuthenticated);
-    useEffect(() => {
-      console.log(user, "Gfddfdf");
-    }, [user]);
+    const { isAuthenticated } = useUserStore();
     return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
   };
 

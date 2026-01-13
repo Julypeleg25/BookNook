@@ -1,6 +1,7 @@
 import { CardHeader, CardMedia, Typography, Box, Avatar } from "@mui/material";
 import type { BookPost } from "@models/Book";
 import { Link as RouterLink } from "react-router-dom";
+import { getAvatarSrcUrl } from "@/utils/userUtils";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -10,7 +11,12 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
   return (
     <>
       <CardHeader
-        avatar={<Avatar src={post.user.avatar} alt={post.user.name} />}
+        avatar={
+          <Avatar
+            src={getAvatarSrcUrl(post.user.avatar)}
+            alt={post.user.name}
+          />
+        }
         title={
           <Typography
             sx={{

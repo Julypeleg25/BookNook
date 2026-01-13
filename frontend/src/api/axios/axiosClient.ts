@@ -28,7 +28,6 @@ export const refreshTokenAxiosClient = axios.create({
   withCredentials: true,
 });
 
-
 const addBearerToken = (token: string) => `Bearer ${token}`;
 
 let isRefreshing = false;
@@ -95,7 +94,6 @@ axiosClient.interceptors.response.use(
         return axiosClient(originalRequest);
       } catch (err) {
         tokenService.clear();
-        console.log("fffffffffffffffffffffffff");
         const typedError =
           err instanceof Error ? err : new Error("Token refresh failed");
         resolveQueuedRequests(typedError);

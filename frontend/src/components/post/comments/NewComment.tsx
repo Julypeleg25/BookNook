@@ -1,3 +1,5 @@
+import env from "@/config/env";
+import { getAvatarSrcUrl } from "@/utils/userUtils";
 import {
   TextField,
   InputAdornment,
@@ -54,7 +56,7 @@ const NewComment = forwardRef(
           zIndex: 1000,
         }}
       >
-        <Avatar src={avatarUrl} />
+        <Avatar src={getAvatarSrcUrl(avatarUrl)} />
         <TextField
           inputRef={(el) => {
             if (el) inputRef?.focus();
@@ -75,19 +77,21 @@ const NewComment = forwardRef(
           helperText={error ?? `${value?.length || 0}/500`}
           multiline
           maxRows={3}
-          slotProps={{input:{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={sendComment}
-                  disabled={!value.trim()}
-                  edge="end"
-                >
-                  <MdSend />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={sendComment}
+                    disabled={!value.trim()}
+                    edge="end"
+                  >
+                    <MdSend />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
           onKeyDown={(e) => e.key === "Enter" && sendComment()}
         />
       </Box>
