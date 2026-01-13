@@ -22,6 +22,13 @@ export const axiosClient = axios.create({
   withCredentials: true,
 });
 
+export const refreshTokenAxiosClient = axios.create({
+  baseURL: env.API_BASE_URL,
+  timeout: API_TIMEOUT,
+  withCredentials: true,
+});
+
+
 const addBearerToken = (token: string) => `Bearer ${token}`;
 
 let isRefreshing = false;
@@ -93,6 +100,7 @@ axiosClient.interceptors.response.use(
           err instanceof Error ? err : new Error("Token refresh failed");
         resolveQueuedRequests(typedError);
         useUserStore.getState().resetUser();
+        throw typedError;
       } finally {
         isRefreshing = false;
       }

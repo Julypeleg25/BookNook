@@ -5,7 +5,8 @@ import {
 } from "@shared/dtos/auth.dto";
 import { endpoints } from "../endpoints";
 import { ApiError } from "../apiError";
-import { axiosClient } from "../axios/axiosClient";
+import { axiosClient, refreshTokenAxiosClient } from "../axios/axiosClient";
+
 import { AxiosResponse } from "axios";
 import { UserDto } from "@shared/index";
 
@@ -32,7 +33,7 @@ export const AuthService = {
 
   async refreshToken(): Promise<string> {
     try {
-      const res = await axiosClient.post<{ accessToken: string }>(
+      const res = await refreshTokenAxiosClient.post<{ accessToken: string }>(
         endpoints.auth.refresh
       );
 

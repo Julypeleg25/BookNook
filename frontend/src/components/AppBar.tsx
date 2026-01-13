@@ -83,7 +83,7 @@ const AppBar = () => {
               <IconButton onClick={() => navigate("/profile")} color="inherit">
                 <Avatar
                   sx={{ width: "3rem", height: "3rem" }}
-                  src={'https://lh3.googleusercontent.com/a/ACg8ocJc9wZw2U1dWHf7dOI7IvU8FQs7jjabYSxCDtnw7obLF-pxic0=s96-c'}
+                  src={user.avatar}
                 />
               </IconButton>
             </Tooltip>
