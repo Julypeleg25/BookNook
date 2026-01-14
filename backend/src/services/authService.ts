@@ -10,7 +10,7 @@ export function generateTokens(user: IUser): { accessToken: string; refreshToken
     const accessToken = jwt.sign(
       {  _id: user._id} ,
       ENV.JWT_ACCESS_SECRET!,
-      { expiresIn: "1m" }
+      { expiresIn: "15m" }
     );
     const refreshToken = jwt.sign(
       {  _id: user._id },

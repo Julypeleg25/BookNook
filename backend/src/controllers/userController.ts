@@ -5,6 +5,7 @@ import { logger } from "@utils/logger";
 import { isImageFile, deleteFile, deleteOldAvatar } from "@utils/fileUtils";
 import { UPLOADS_FOLDER } from "@config/multerConfig";
 import { HttpStatusCode } from "axios";
+import { sanitizeUser } from "@utils/userUtils";
 
 export const getCurrentUser = (req: Request, res: Response) => {
   res.json(req.authenticatedUser);
@@ -16,7 +17,7 @@ export async function updateUserHandler(
   next: NextFunction
 ) {
   try {
-    const userId = req.authenticatedUser!._id;
+    const userId = req.authenticatedUser!.id;
     const { name, username } = req.body;
     const updateData: any = {};
 
@@ -37,13 +38,7 @@ export async function updateUserHandler(
     res
       .json({
         message: "User updated successfully",
-        user: {
-          id: updatedUser._id,
-          name: updatedUser.name,
-          username: updatedUser.username,
-          avatar: updatedUser.avatar,
-          email: updatedUser.email,
-        },
+        user: sanitizeUser(updatedUser)
       })
       .status(HttpStatusCode.Ok);
   } catch (error) {
