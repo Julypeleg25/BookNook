@@ -7,7 +7,7 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password?: string;
-  avatar: string;
+  avatar?: string;
   bio?: string;
   providerId?: string;
   wishlist: string[];
@@ -55,7 +55,7 @@ const userSchema = new Schema<IUser>(
       maxlength: 60,
     },
     googleId: { type: String, unique: true, sparse: true }, 
-    avatar: {type: String, required: true},
+    avatar: String,
     bio: String,
     providerId: {
       type: String,

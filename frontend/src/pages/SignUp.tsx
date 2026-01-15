@@ -49,6 +49,7 @@ const SignUp = () => {
     try {
       await register(data);
       reset();
+
     } catch (error: any) {
       setError("root", {
         message: error.details.error || "Invalid details, try again",
@@ -82,22 +83,8 @@ const SignUp = () => {
             Sign up now
           </Typography>
 
-          <Button
-            fullWidth
-            variant="outlined"
-            size="large"
-            onClick={registerWithGoogle}
-            startIcon={<FcGoogle />}
-            sx={{ textTransform: "none", borderRadius: "0.5rem" }}
-          >
-            Sign up with Google
-          </Button>
+          
 
-          <Divider sx={{ my: "1rem" }}>
-            <Typography variant="body2" color="text.secondary">
-              or
-            </Typography>
-          </Divider>
 
           <Stack spacing="1rem">
             {[
@@ -105,12 +92,7 @@ const SignUp = () => {
                 name: "username",
                 label: "Username",
                 placeholder: "Choose a username",
-              },
-              {
-                name: "name",
-                label: "Full Name",
-                placeholder: "Enter your name",
-              },
+              },             
               { name: "email", label: "Email", placeholder: "you@example.com" },
             ].map((input) => (
               <Box key={input.name}>

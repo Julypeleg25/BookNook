@@ -16,6 +16,7 @@ export const endpoints = {
   books: {
     getAll: "/books",
     byId: (externalBookId: string) => `/books/${externalBookId}`,
+    search: '/api/books'
   },
 
   lists: {

@@ -15,7 +15,6 @@ const router = express.Router();
 
 router.post(
   "/register",
-  upload.single("avatar"),
   validateBody(RegisterSchema),
   register
 );

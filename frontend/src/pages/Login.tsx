@@ -61,7 +61,7 @@ const Login = () => {
     return new File([blob], filename, { type: blob.type });
   }
 
-  const handleGoogleSuccess = async (
+   const handleGoogleSuccess = async (
     credentialResponse: GoogleCredentialResponse
   ) => {
     try {
@@ -80,7 +80,7 @@ const Login = () => {
     }
   };
 
-  const handleGoogleFailure = () => {
+   const handleGoogleFailure = () => {
     setLoginError("Google login failed");
   };
 

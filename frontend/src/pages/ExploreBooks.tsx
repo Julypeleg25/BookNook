@@ -1,55 +1,53 @@
 import { Box, Fab } from "@mui/material";
 import { books } from "../exampleData";
-import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
+import SearchFiltersModal, { BookSummary } from "@components/searchFilters/SearchFiltersModal";
 import SearchBar from "@components/searchFilters/SearchBar";
 import BookInfoCard from "@components/bookCards/BookInfoCard";
 import { MdAdd } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
 import { useState } from "react";
+import { ISearchFiltersForm } from "@/components/searchFilters/models/SearchFiltersOptions";
+import { axiosClient } from "@/api/axios/axiosClient";
+import { endpoints } from "@/api/endpoints";
+
+// ExploreBooks.tsx
 
 const ExploreBooks = () => {
-  const navigate = useNavigate();
-  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [books, setBooks] = useState<BookSummary[]>([]);
+  const [filters, setFilters] = useState<ISearchFiltersForm | null>(null);
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false)
 
-  const { visibleItems, loaderRef } = useInfiniteLoader({
-    items: books,
-    batchSize: 20,
-  });
+  const handleSearch = async (formFilters: ISearchFiltersForm) => {
+    setFilters(formFilters);
+    
+    // Call your API helper (make sure this hits your backend route)
+    const response = await axiosClient.get(endpoints.books.search, {
+      params: {
+        author: formFilters.author,
+        genre: formFilters.genre,
+        language: formFilters.language,
+        // Map other fields as needed
+      }
+    });
+    
+    setBooks(response.items);
+  };
 
   return (
-    <Box sx={{ p: "1rem", mt: "1.5rem" }}>
+    <Box>
       <SearchBar setIsFiltersModalOpen={setIsFiltersModalOpen} />
-
-      <Box
-        display="grid"
-        mt="2rem"
-        gridTemplateColumns={{
-          xs: "1fr",
-          sm: "1fr 1fr",
-          md: "repeat(5, 1fr)",
-        }}
-        gap="1.5rem"
-      >
-        {visibleItems.map((book) => (
-          <BookInfoCard key={book.id} book={book} />
-        ))}
+      
+      {/* Grid displaying the 'books' state */}
+      <Box display="grid">
+        {books.map((book) => <BookInfoCard key={book.id} book={book} />)}
       </Box>
-
-      <Box ref={loaderRef} />
 
       <SearchFiltersModal
         open={isFiltersModalOpen}
         onClose={() => setIsFiltersModalOpen(false)}
+        onApply={handleSearch} // Pass the submit handler here
       />
-
-      <Fab
-        color="primary"
-        sx={{ position: "fixed", bottom: "1.5rem", right: "1.5rem" }}
-        onClick={() => navigate("/post")}
-      >
-        <MdAdd size="1.8rem" />
-      </Fab>
     </Box>
   );
 };

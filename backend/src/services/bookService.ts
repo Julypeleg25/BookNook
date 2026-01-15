@@ -48,12 +48,12 @@ export async function searchBooks(query: BooksQuery): Promise<{
   items: BookSummary[];
 }> {
   try {
-    const { title, author, subject, page = "1", limit = "10" } = query;
+    const { title, author, genre, language, page = "1", limit = "10" } = query;
 
     const queryParts: string[] = [];
     if (title) queryParts.push(`intitle:${title}`);
     if (author) queryParts.push(`inauthor:${author}`);
-    if (subject) queryParts.push(`subject:${subject}`);
+    if (genre) queryParts.push(`subject:${genre}`);
 
     const q = queryParts.length ? queryParts.join("+") : " ";
 
@@ -63,6 +63,13 @@ export async function searchBooks(query: BooksQuery): Promise<{
 
     const fields =
       "items(id,volumeInfo(title,authors,imageLinks/thumbnail)),totalItems";
+      console.log( {
+        q,
+        startIndex,
+        maxResults: limitNumber,
+        fields,
+        key: API_KEY,
+      },)
 
     const response = await axios.get<GoogleBooksResponse>(GOOGLE_BOOKS_API, {
       params: {
@@ -70,7 +77,6 @@ export async function searchBooks(query: BooksQuery): Promise<{
         startIndex,
         maxResults: limitNumber,
         fields,
-        key: API_KEY,
       },
     });
 

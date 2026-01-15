@@ -36,12 +36,11 @@ export const register = async (
       throw new ValidationError("Avatar must be an image file");
     }
 
-    const { name, email, username, password } = req.body;
+    const {  email, username, password } = req.body;
     const avatarPath = req.file ? `/uploads/${req.file.filename}` : undefined;
     const hashedPassword = await hashPassword(password);
 
     const user = await createUser({
-      name,
       username,
       email,
       provider: "local",
@@ -53,7 +52,7 @@ export const register = async (
     await updateUserTokens(String(user._id), accessToken, refreshToken);
     setAuthCookies(res, refreshToken);
 
-    res.status(HttpStatusCode.Created).json(sanitizeUser(user));
+    res.status(HttpStatusCode.Created).json({user: sanitizeUser(user), accessToken});
   } catch (error) {
     if (req.file) deleteFile(req.file.path);
     next(error);
