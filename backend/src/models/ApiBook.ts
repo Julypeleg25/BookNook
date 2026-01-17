@@ -3,12 +3,13 @@ export interface BookSummary {
   title: string;
   authors: string[];
   thumbnail?: string;
+  publishedDate?: string;
+
 }
 
 export interface BookDetail extends BookSummary {
   subtitle?: string;
   description?: string;
-  publishedDate?: string;
   pageCount?: number;
   categories: string[];
   previewLink?: string;

@@ -4,8 +4,8 @@ export interface ISearchFiltersForm {
   author: string;
   yearPublishedFrom: string;
   yearPublishedTo: string;
-  likesAmount: string;
-  reviewsAmount: string;
+  likesAmount: number;
+  reviewsAmount: number;
   rating: number;
 }
 

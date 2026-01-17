@@ -6,8 +6,8 @@ interface Book {
   title: string;
   author: string;
   description: string;
-  coverImage: string;
-  publishedDate: Date;
+  thumbnail: string;
+  publishedDate: string;
   genres: GenreOptionsType[];
 }
 

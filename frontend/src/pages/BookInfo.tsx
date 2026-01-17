@@ -83,7 +83,7 @@ const BookInfo = () => {
           >
             <Box
               component="img"
-              src={book.coverImage}
+              src={book.thumbnail}
               alt={book.title}
               sx={{
                 width: "100%",

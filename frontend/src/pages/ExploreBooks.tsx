@@ -1,52 +1,71 @@
-import { Box, Fab } from "@mui/material";
-import { books } from "../exampleData";
-import SearchFiltersModal, { BookSummary } from "@components/searchFilters/SearchFiltersModal";
+import { Box } from "@mui/material";
+import { useState, useEffect } from "react";
+import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
 import SearchBar from "@components/searchFilters/SearchBar";
 import BookInfoCard from "@components/bookCards/BookInfoCard";
-import { MdAdd } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
-import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
-import { useState } from "react";
 import { ISearchFiltersForm } from "@/components/searchFilters/models/SearchFiltersOptions";
 import { axiosClient } from "@/api/axios/axiosClient";
 import { endpoints } from "@/api/endpoints";
 
-// ExploreBooks.tsx
-
 const ExploreBooks = () => {
-  const [books, setBooks] = useState<BookSummary[]>([]);
-  const [filters, setFilters] = useState<ISearchFiltersForm | null>(null);
-  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false)
+  const [books, setBooks] = useState([]);
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  
+  // Single state for filters
+  const [filters, setFilters] = useState<ISearchFiltersForm>({
+    language: "",
+    genre: "",
+    author: "",
+    yearPublishedFrom: "",
+    yearPublishedTo: "",
+    rating: 0,
+    likesAmount: 0,
+    reviewsAmount: 0
+  });
 
-  const handleSearch = async (formFilters: ISearchFiltersForm) => {
-    setFilters(formFilters);
-    
-    // Call your API helper (make sure this hits your backend route)
-    const response = await axiosClient.get(endpoints.books.search, {
-      params: {
-        author: formFilters.author,
-        genre: formFilters.genre,
-        language: formFilters.language,
-        // Map other fields as needed
+  // Fetch books whenever filters change
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await axiosClient.get(endpoints.books.search, {
+          params: {
+            author: filters.author || undefined,
+            subject: filters.genre || undefined,
+            language: filters.language || undefined,
+            // Add other params your backend expects
+          }
+        });
+
+        console.log(response.data.items)
+        setBooks(response.data.items || []);
+      } catch (error) {
+        console.error("Failed to fetch books", error);
       }
-    });
-    
-    setBooks(response.items);
-  };
+    };
+
+    fetchBooks();
+  }, [filters]); 
 
   return (
-    <Box>
+    <Box sx={{ p: 3 }}>
       <SearchBar setIsFiltersModalOpen={setIsFiltersModalOpen} />
       
-      {/* Grid displaying the 'books' state */}
-      <Box display="grid">
-        {books.map((book) => <BookInfoCard key={book.id} book={book} />)}
+      <Box 
+        display="grid" 
+        gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" 
+        gap={3} 
+        mt={4}
+      >
+        {books.map((book: any) => (
+          <BookInfoCard key={book.id} book={book} />
+        ))}
       </Box>
 
       <SearchFiltersModal
         open={isFiltersModalOpen}
         onClose={() => setIsFiltersModalOpen(false)}
-        onApply={handleSearch} // Pass the submit handler here
+        onApply={(data) => setFilters(data)} // Updates the single state
+        currentFilters={filters} // Passes state back to modal
       />
     </Box>
   );

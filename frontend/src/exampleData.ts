@@ -84,7 +84,7 @@ const books: Book[] = Array.from({ length: 200 }, (_, i) => ({
   title: faker.book.title(),
   author: faker.person.fullName(),
   description: faker.lorem.paragraph(),
-  coverImage: `https://picsum.photos/300/450?random=book-${i + 1}`,
+  thumbnail: `https://picsum.photos/300/450?random=book-${i + 1}`,
   publishedDate: faker.date.past({ years: 30 }),
   genres: randomItems(Object.values(GenreOptions), 1, 3),
   pages: faker.number.int({ min: 120, max: 900 }),

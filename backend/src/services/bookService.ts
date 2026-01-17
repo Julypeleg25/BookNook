@@ -11,7 +11,7 @@ import { NotFoundError } from "@utils/errors";
 import { logger } from "@utils/logger";
 import { ENV } from "@config/config";
 
-const GOOGLE_BOOKS_API = ENV.GOOGLE_BOOKS_API_KEY;
+const GOOGLE_BOOKS_API = ENV.GOOGLE_BOOKS_API;
 const API_KEY = ENV.GOOGLE_BOOKS_API_KEY;
 
 function normalizeBookSummary(volume: GoogleBooksVolume): BookSummary {
@@ -21,6 +21,7 @@ function normalizeBookSummary(volume: GoogleBooksVolume): BookSummary {
     title: info.title,
     authors: info.authors ?? [],
     thumbnail: info.imageLinks?.thumbnail,
+    publishedDate:info.publishedDate
   };
 }
 
@@ -48,12 +49,13 @@ export async function searchBooks(query: BooksQuery): Promise<{
   items: BookSummary[];
 }> {
   try {
-    const { title, author, genre, language, page = "1", limit = "10" } = query;
+    const { title, author, subject, language, page = "1", limit = "20" } = query;
+    console.log(query)
 
     const queryParts: string[] = [];
-    if (title) queryParts.push(`intitle:${title}`);
-    if (author) queryParts.push(`inauthor:${author}`);
-    if (genre) queryParts.push(`subject:${genre}`);
+    if (title) queryParts.push(`intitle:"${title}"`);
+    if (author) queryParts.push(`inauthor:"${author}"`);
+    if (subject) queryParts.push(`subject:"${subject}"`);
 
     const q = queryParts.length ? queryParts.join("+") : " ";
 
@@ -62,14 +64,7 @@ export async function searchBooks(query: BooksQuery): Promise<{
     const startIndex = (pageNumber - 1) * limitNumber;
 
     const fields =
-      "items(id,volumeInfo(title,authors,imageLinks/thumbnail)),totalItems";
-      console.log( {
-        q,
-        startIndex,
-        maxResults: limitNumber,
-        fields,
-        key: API_KEY,
-      },)
+      "items(id,volumeInfo(title,authors,imageLinks/thumbnail,publishedDate)),totalItems";
 
     const response = await axios.get<GoogleBooksResponse>(GOOGLE_BOOKS_API, {
       params: {
