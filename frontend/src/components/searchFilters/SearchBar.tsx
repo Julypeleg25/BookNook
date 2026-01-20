@@ -1,33 +1,31 @@
-import { TextField, IconButton, Button } from "@mui/material";
+import { TextField, IconButton, Button, Box } from "@mui/material";
 import { HiOutlineAdjustmentsVertical } from "react-icons/hi2";
 
-const SearchBar = ({
-  setIsFiltersModalOpen,
-}: {
+interface SearchBarProps {
+  onSearch: () => void;
+  searchTerm: string;
+  setSearchTerm: (val: string) => void;
   setIsFiltersModalOpen: (open: boolean) => void;
-}) => {
+}
+
+const SearchBar = ({ onSearch, searchTerm, setSearchTerm, setIsFiltersModalOpen }: SearchBarProps) => {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        width: "80rem",
-        maxWidth: "90rem",
-      }}
-    >
+    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       <TextField
-        label="Search"
-        placeholder="Search books by title or author"
+        placeholder="Search books by title"
         variant="outlined"
-        style={{ width: "60rem", maxWidth: "45rem" }}
+        fullWidth
+        sx={{ maxWidth: "45rem" }}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
       />
       <IconButton onClick={() => setIsFiltersModalOpen(true)}>
         <HiOutlineAdjustmentsVertical size={"2rem"} />
       </IconButton>
-      <Button style={{ marginLeft: "0.6rem" }} variant="outlined">
+      <Button variant="contained" onClick={onSearch}>
         Search
       </Button>
-    </div>
+    </Box>
   );
 };
 export default SearchBar;

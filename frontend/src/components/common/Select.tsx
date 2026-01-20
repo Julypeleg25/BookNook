@@ -36,7 +36,8 @@ const Select = (props: SelectProps) => {
           props.onChange(typeof value === 'string' ? value.split(',') : (value as (string | number)[]));
         }}
         startAdornment={props.startIcon}
-        variant="standard"
+        variant="outlined"
+        fullWidth
         // disableUnderline // Remove this if you want to see the select line
         multiple={props.multiple}
         value={props.selectedValues}

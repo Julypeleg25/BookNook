@@ -49,22 +49,20 @@ export async function searchBooks(query: BooksQuery): Promise<{
   items: BookSummary[];
 }> {
   try {
-    const { title, author, subject, language, page = "1", limit = "20" } = query;
-    console.log(query)
+    const { title, author, subject, page = 1, limit = 20 } = query;
 
     const queryParts: string[] = [];
     if (title) queryParts.push(`intitle:"${title}"`);
     if (author) queryParts.push(`inauthor:"${author}"`);
     if (subject) queryParts.push(`subject:"${subject}"`);
 
-    const q = queryParts.length ? queryParts.join("+") : " ";
+    const q = queryParts.length ? queryParts.join("+") : '""';
 
-    const pageNumber = Number(page);
-    const limitNumber = Number(limit);
+    const pageNumber = Math.max(1, Number(page));
+    const limitNumber = Math.min(Math.max(1, Number(limit)), 40); 
     const startIndex = (pageNumber - 1) * limitNumber;
 
-    const fields =
-      "items(id,volumeInfo(title,authors,imageLinks/thumbnail,publishedDate)),totalItems";
+    const fields = "items(id,volumeInfo(title,authors,imageLinks/thumbnail,publishedDate)),totalItems";
 
     const response = await axios.get<GoogleBooksResponse>(GOOGLE_BOOKS_API, {
       params: {
@@ -72,18 +70,18 @@ export async function searchBooks(query: BooksQuery): Promise<{
         startIndex,
         maxResults: limitNumber,
         fields,
+        key: API_KEY, 
       },
     });
 
     const data = response.data;
+    const totalItems = data.totalItems ?? 0;
 
     return {
       page: pageNumber,
       limit: limitNumber,
-      totalItems: data.totalItems ?? 0,
-      totalPages: data.totalItems
-        ? Math.ceil(data.totalItems / limitNumber)
-        : 0,
+      totalItems: totalItems,
+      totalPages: Math.ceil(totalItems / limitNumber),
       items: data.items?.map(normalizeBookSummary) ?? [],
     };
   } catch (error) {
@@ -91,7 +89,6 @@ export async function searchBooks(query: BooksQuery): Promise<{
     throw error;
   }
 }
-
 export async function getBookByGoogleIdFromGoogle(
   googleId: string
 ): Promise<GoogleBooksVolume> {

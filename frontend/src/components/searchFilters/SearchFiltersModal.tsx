@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   Rating,
+  Slider,
   TextField,
   Typography,
 } from "@mui/material";
@@ -14,7 +15,6 @@ import { Controller, useForm } from "react-hook-form";
 import Select from "../common/Select";
 import {
   genreMenuItems,
-  languageMenuItems,
   ISearchFiltersForm,
 } from "./models/SearchFiltersOptions";
 
@@ -30,14 +30,10 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
     defaultValues: currentFilters,
   });
 
-  // Syncs the modal with the state when opened
   useEffect(() => {
     if (open) reset(currentFilters);
   }, [open, currentFilters, reset]);
 
-    useEffect(() => {
-    console.log(currentFilters)
-  }, [open, currentFilters, reset]);
 
   const onSubmit = (data: ISearchFiltersForm) => {
     onApply(data);
@@ -45,32 +41,12 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
   };
 
   return (
-    // maxWidth="sm" and fullWidth here make the modal itself a good size
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogTitle sx={{ fontWeight: 'bold' }}>Search Filters</DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
-            
-            {/* Language & Genre: use flexbox to make them sit side-by-side but grow */}
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Controller
-              
-                name="language"
-                control={control}
-                render={({ field }) => (
-                  <Box sx={{ flex: 1 }}> {/* Box helps control the width */}
-                    <Select
-                      label="Language"
-                      menuItems={languageMenuItems}
-                      // Pass an array to the component, but ensure it's never undefined
-                      selectedValues={field.value ? [field.value] : []} 
-                      // Crucial: check if val exists before accessing index 0
-                      onChange={(val) => field.onChange(val.length > 0 ? val[0] : "")}
-                    />
-                  </Box>
-                )}
-              />
+        <DialogContent dividers >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1, p:4 }}>
+             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap:2 }}>
               <Controller
                 name="genre"
                 control={control}
@@ -78,6 +54,7 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
                   <Box sx={{ flex: 1 }}>
                     <Select
                       label="Genre"
+                      fullWidth
                       menuItems={genreMenuItems}
                       selectedValues={field.value ? [field.value] : []}
                       onChange={(val) => field.onChange(val.length > 0 ? val[0] : "")}
@@ -85,16 +62,13 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
                   </Box>
                 )}
               />
-            </Box>
 
-            {/* Author */}
             <Controller
               name="author"
               control={control}
               render={({ field }) => (
                 <TextField 
                   {...field} 
-                  fullWidth 
                   label="Author" 
                   variant="outlined"
                   error={!!errors.author} 
@@ -102,9 +76,11 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
                 />
               )}
             />
+            </Box>
+            
 
-            {/* Rating */}
-            <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', flexDirection:'column'}}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>Minimum Rating</Typography>
               <Controller
                 name="rating"
@@ -119,7 +95,32 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
                 )}
               />
             </Box>
-          </Box>
+            <Box sx={{ display: 'flex', flexDirection:'column'}}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Minimum Reviews</Typography>
+              <Controller
+                name="reviewsAmount"
+                control={control}
+                render={({ field }) => (
+                  
+                    <Slider
+                      {...field}
+                      value={field.value || 0}
+                      onChange={(_, value) => field.onChange(value)}
+                      min={0}
+                      max={500}
+                      step={5}
+                      sx={{width: 240}}
+                      marks={[
+                        { value: 0, label: '0' },
+                        { value: 500, label: '500+' },
+                      ]}
+                    />
+                )}
+              />
+            </Box>
+
+            </Box>
+            </Box>
         </DialogContent>
 
         <DialogActions sx={{ p: 2.5 }}>
@@ -132,6 +133,7 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
           >
             Apply Filters
           </Button>
+          
         </DialogActions>
       </form>
     </Dialog>
