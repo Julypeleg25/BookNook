@@ -12,6 +12,7 @@ import { getGoogleBookByLocalId } from "@services/bookService";
 import { ValidationError } from "@utils/errors";
 import { logger } from "@utils/logger";
 import { isImageFile, deleteFile } from "@utils/fileUtils";
+import { Types } from "mongoose";
 
 export const createReviewHandler = async (
   req: Request,
@@ -20,17 +21,6 @@ export const createReviewHandler = async (
 ) => {
   try {
     const { bookId, review, rating } = req.body;
-
-    // const { error } = reviewSchema.validate({ bookId, review, rating });
-    // if (error) {
-    //   if (req.file) deleteFile(req.file.path);
-    //   throw new ValidationError(
-    //     error.details && error.details[0]
-    //       ? error.details[0].message
-    //       : "error at creating user review"
-    //   );
-    // }
-
     if (req.file && !isImageFile(req.file.originalname)) {
       deleteFile(req.file.path);
       throw new ValidationError("Picture must be an image file");
@@ -39,7 +29,7 @@ export const createReviewHandler = async (
     const picturePath = req.file ? `/uploads/${req.file.filename}` : undefined;
 
     const newReview = await createReview(
-      req.authenticatedUser!._id,
+      new Types.ObjectId(req.authenticatedUser!.id),
       bookId,
       Number(rating),
       review,
@@ -49,7 +39,7 @@ export const createReviewHandler = async (
     res.status(201).json(newReview);
   } catch (error: any) {
     if (req.file) deleteFile(req.file.path);
-    if (error instanceof ValidationError) {
+    if (error?.name === "ValidationError") {
       return res.status(400).json({ error: error.message });
     }
     logger.error("Error creating review:", error);
@@ -174,7 +164,7 @@ export const likeReviewHandler = async (
   try {
     const { id } = req.params;
     if (!id) throw Error(`review ${id} doesn't exist`);
-    const likesCount = await likeReview(id, req.authenticatedUser!._id);
+    const likesCount = await likeReview(id, new Types.ObjectId(req.authenticatedUser!.id));
     res.json({ likes: likesCount });
   } catch (error) {
     logger.error(`Error liking review ${req.params.id}:`, error);

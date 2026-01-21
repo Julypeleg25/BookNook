@@ -24,14 +24,17 @@ const ExploreBooks = () => {
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["booksSearch", filters, searchTerm, page],
     queryFn: async () => {
+
       const response = await axiosClient.get(endpoints.books.search, {
         params: {
           author: filters.author || undefined,
           subject: filters.genre || undefined,
           title: searchTerm,
+          reviewCount: filters.reviewsAmount || undefined,
+          rating: filters.rating || undefined,
           page,
           limit: PAGE_SIZE 
-        }
+        } 
       });
       return response.data;
     },

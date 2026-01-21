@@ -22,7 +22,6 @@ export const useAuth = () => {
     const res = await AuthService.register(payload);
 
     setAccessToken(res.data.accessToken);
-    console.log(res.data.user)
     setUser(res.data.user);
     navigate("/posts");
   };
@@ -47,7 +46,6 @@ export const useAuth = () => {
     }
     try {
       const user = await AuthService.getCurrentUser();
-            console.log(user)
       setUser(user);
     } catch {
       clearTokens();

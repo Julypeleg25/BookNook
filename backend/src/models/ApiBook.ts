@@ -23,6 +23,8 @@ export interface BooksQuery {
   subject?: string;
   page?: string;
   limit?: string;
+  rating?: number;
+  reviewCount?:number;
 }
 
 export interface GoogleBooksVolume {

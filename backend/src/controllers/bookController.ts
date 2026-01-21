@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { searchBooks, getBookDetails } from "@services/bookService";
+import { searchBooks, getBookDetails, localSearchBooks } from "@services/bookService";
 import { logger } from "@utils/logger";
 import { BooksQuery } from "@models/ApiBook";
 
@@ -10,8 +10,13 @@ export const searchBooksHandler = async (
 ) => {
   try {
     const query = req.query as BooksQuery;
+    if(query.rating || query.reviewCount){
+      const localResult = await localSearchBooks(query)
+      return res.json(localResult);
+
+    }
     const result = await searchBooks(query);
-    res.json(result);
+    return res.json(result);
   } catch (error) {
     logger.error("Error searching books:", error);
     next(error);

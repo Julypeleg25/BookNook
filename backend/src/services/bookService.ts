@@ -25,17 +25,17 @@ function normalizeBookSummary(volume: GoogleBooksVolume): BookSummary {
   };
 }
 
-function normalizeBookDetail(volume: GoogleBooksVolume): BookDetail {
+export function normalizeBookDetail(volume: GoogleBooksVolume): BookDetail {
   const info = volume.volumeInfo;
   return {
     id: volume.id,
     title: info.title,
     subtitle: info.subtitle,
     authors: info.authors ?? [],
+    categories: info.categories ?? [],
     description: info.description,
     publishedDate: info.publishedDate,
     pageCount: info.pageCount,
-    categories: info.categories ?? [],
     thumbnail: info.imageLinks?.thumbnail,
     previewLink: info.previewLink,
   };
@@ -44,12 +44,10 @@ function normalizeBookDetail(volume: GoogleBooksVolume): BookDetail {
 export async function searchBooks(query: BooksQuery): Promise<{
   page: number;
   limit: number;
-  totalItems: number;
-  totalPages: number;
   items: BookSummary[];
 }> {
   try {
-    const { title, author, subject, page = 1, limit = 20 } = query;
+    const { title, author, subject, page = 1, limit = 20} = query;
 
     const queryParts: string[] = [];
     if (title) queryParts.push(`intitle:"${title}"`);
@@ -75,13 +73,10 @@ export async function searchBooks(query: BooksQuery): Promise<{
     });
 
     const data = response.data;
-    const totalItems = data.totalItems ?? 0;
 
     return {
       page: pageNumber,
       limit: limitNumber,
-      totalItems: totalItems,
-      totalPages: Math.ceil(totalItems / limitNumber),
       items: data.items?.map(normalizeBookSummary) ?? [],
     };
   } catch (error) {
@@ -89,6 +84,43 @@ export async function searchBooks(query: BooksQuery): Promise<{
     throw error;
   }
 }
+
+export async function localSearchBooks(query: BooksQuery): Promise<{
+  page: number;
+  limit: number
+  items: BookSummary[];
+}> {
+  const {
+    page = 1,
+    limit = 20,
+    title, 
+    author,
+    rating,
+    reviewCount,
+    subject
+  } = query;
+
+  const { items, total } =
+    await bookRepository.localSearchBooks({  page: Number(page),
+    limit: Number(limit),
+    title, 
+    author,
+    minRating: rating,
+    minReviews: reviewCount, subject});
+
+  return {
+    page:  Number(page),
+    limit: Number(limit),
+    items: items.map((book) => ({
+      id: book.externalId,
+      title: book.title,
+      authors: book.authors,
+      thumbnail: book.thumbnail,
+      publishedDate: book.publishedDate,
+    })),
+  };
+}
+
 export async function getBookByGoogleIdFromGoogle(
   googleId: string
 ): Promise<GoogleBooksVolume> {
