@@ -3,11 +3,11 @@ import { isReviewAuthor } from "@services/userReviewService";
 import { ForbiddenError } from "@utils/errors";
 import { logger } from "@utils/logger";
 
-export async function isReviewAuthorMiddleware(
+export const isReviewAuthorMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> {
+): Promise<void> => {
   try {
     const { id } = req.params;
     if (!id) {
@@ -36,4 +36,4 @@ export async function isReviewAuthorMiddleware(
     logger.error("Error checking review author:", error);
     next(error);
   }
-}
+};

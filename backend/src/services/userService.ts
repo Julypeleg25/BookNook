@@ -15,29 +15,29 @@ interface CreateUserData {
   avatar?: string;
 }
 
-export async function getUserById(
+export const getUserById = async (
   userId: Types.ObjectId | string
-): Promise<IUser> {
+): Promise<IUser> => {
   const user = await userRepository.findById(userId);
   if (!user) {
     throw new NotFoundError("User not found");
   }
   return user;
-}
+};
 
-export async function getUserByUsername(
+export const getUserByUsername = async (
   username: string
-): Promise<IUser | null> {
+): Promise<IUser | null> => {
   return await userRepository.findByUsername(username);
-}
+};
 
-export async function getUserByProviderId(
+export const getUserByProviderId = async (
   providerId: string
-): Promise<IUser | null> {
+): Promise<IUser | null> => {
   return await userRepository.findByProviderId(providerId);
-}
+};
 
-export async function createUser(userData: CreateUserData): Promise<IUser> {
+export const createUser = async (userData: CreateUserData): Promise<IUser> => {
   const existingEmail = await userRepository.findByEmail(userData.email);
   if (existingEmail) {
     throw new ConflictError("Email already exists");
@@ -56,12 +56,12 @@ export async function createUser(userData: CreateUserData): Promise<IUser> {
     ...userData,
     password: hashedPassword,
   });
-}
+};
 
-export async function updateUser(
+export const updateUser = async (
   userId: Types.ObjectId | string,
   updateData: UpdateUserRequestDTO
-): Promise<IUser> {
+): Promise<IUser> => {
   if (updateData.username) {
     const existingUser = await userRepository.findByUsername(updateData.username);
     if (existingUser && existingUser._id.toString() !== userId.toString()) {
@@ -75,12 +75,12 @@ export async function updateUser(
   }
 
   return updatedUser;
-}
+};
 
-export async function updateUserTokens(
+export const updateUserTokens = async (
   userId: string,
   accessToken: string | null,
   refreshToken: string | null
-): Promise<void> {
+): Promise<void> => {
   await userRepository.updateTokens(userId, accessToken, refreshToken);
-}
+};

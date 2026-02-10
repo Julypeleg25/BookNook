@@ -1,7 +1,7 @@
-import { Controller, type Control } from "react-hook-form";
+import { Controller, type Control, type FieldValues } from "react-hook-form";
 import ImageUpload from "../common/ImageUpload";
 
-export default function AvatarField({ control }: { control: Control<any> }) {
+const AvatarField = ({ control }: { control: Control<FieldValues> }) => {
   return (
     <Controller
       name="avatar"
@@ -11,4 +11,6 @@ export default function AvatarField({ control }: { control: Control<any> }) {
       )}
     />
   );
-}
+};
+
+export default AvatarField;

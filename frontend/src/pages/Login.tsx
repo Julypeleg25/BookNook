@@ -55,11 +55,11 @@ const Login = () => {
       setError("root", { message: "Invalid username or password" });
     }
   };
-  async function urlToFile(url: string, filename: string): Promise<File> {
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
     const res = await fetch(url);
     const blob = await res.blob();
     return new File([blob], filename, { type: blob.type });
-  }
+  };
 
    const handleGoogleSuccess = async (
     credentialResponse: GoogleCredentialResponse

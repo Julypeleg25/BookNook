@@ -3,25 +3,25 @@ import { Types } from "mongoose";
 import { userRepository } from "@repositories/userRepository";
 import { ValidationError } from "@utils/errors";
 
-export async function addBookToUserList(
+export const addBookToUserList = async (
   userId: Types.ObjectId | string,
   bookId: string,
   listType: "wish" | "read"
-): Promise<string[]> {
+): Promise<string[]> => {
   if (listType !== "wish" && listType !== "read") {
     throw new ValidationError("Invalid list type");
   }
   return await userRepository.addBookToList(userId, bookId, listType);
-}
+};
 
-export async function getUserWishlist(
+export const getUserWishlist = async (
   userId: Types.ObjectId | string
-): Promise<string[]> {
+): Promise<string[]> => {
   return await userRepository.getList(userId, "wish");
-}
+};
 
-export async function getUserReadlist(
+export const getUserReadlist = async (
   userId: Types.ObjectId | string
-): Promise<string[]> {
+): Promise<string[]> => {
   return await userRepository.getList(userId, "read");
-}
+};

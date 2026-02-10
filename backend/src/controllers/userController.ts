@@ -11,11 +11,11 @@ export const getCurrentUser = (req: Request, res: Response): void => {
   res.json(req.authenticatedUser);
 };
 
-export async function updateUserHandler(
+export const updateUserHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> {
+): Promise<void> => {
   try {
     const userId = req.authenticatedUser!.id;
     const { name, username } = req.body;
@@ -44,4 +44,4 @@ export async function updateUserHandler(
     if (req.file) await deleteFile(req.file.path);
     next(error);
   }
-}
+};

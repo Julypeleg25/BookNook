@@ -5,7 +5,7 @@ export const formatDate = (date: string | Date) =>
     year: "numeric",
   });
 
-export function timeAgo(dateInput: Date | string): string {
+export const timeAgo = (dateInput: Date | string): string => {
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -29,7 +29,7 @@ export function timeAgo(dateInput: Date | string): string {
   }
 
   return date.toLocaleDateString("en-GB");
-}
+};
 
 const timeOfDay = {
   MORNING: "morning",

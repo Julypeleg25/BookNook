@@ -1,14 +1,14 @@
 import type { AxiosRequestConfig } from "axios";
 import { axiosClient } from "./axios/axiosClient";
 
-export async function apiRequest<T>(
+export const apiRequest = async <T>(
   config: AxiosRequestConfig,
   signal?: AbortSignal,
-): Promise<T> {
+): Promise<T> => {
   const response = await axiosClient.request<T>({
     ...config,
     signal,
   });
 
   return response.data;
-}
+};

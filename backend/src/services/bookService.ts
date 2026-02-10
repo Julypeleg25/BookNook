@@ -15,7 +15,7 @@ import { IBook } from "@models/Book";
 const GOOGLE_BOOKS_API = ENV.GOOGLE_BOOKS_API;
 const API_KEY = ENV.GOOGLE_BOOKS_API_KEY;
 
-function normalizeBookSummary(volume: GoogleBooksVolume): BookSummary {
+const normalizeBookSummary = (volume: GoogleBooksVolume): BookSummary => {
   const info = volume.volumeInfo;
   return {
     id: volume.id,
@@ -24,9 +24,9 @@ function normalizeBookSummary(volume: GoogleBooksVolume): BookSummary {
     thumbnail: info.imageLinks?.thumbnail,
     publishedDate: info.publishedDate,
   };
-}
+};
 
-export function normalizeBookDetail(volume: GoogleBooksVolume): BookDetail {
+export const normalizeBookDetail = (volume: GoogleBooksVolume): BookDetail => {
   const info = volume.volumeInfo;
   return {
     id: volume.id,
@@ -40,9 +40,9 @@ export function normalizeBookDetail(volume: GoogleBooksVolume): BookDetail {
     thumbnail: info.imageLinks?.thumbnail,
     previewLink: info.previewLink,
   };
-}
+};
 
-function localBookToSummary(book: IBook): BookSummary {
+const localBookToSummary = (book: IBook): BookSummary => {
   return {
     id: book.externalId,
     title: book.title,
@@ -50,7 +50,7 @@ function localBookToSummary(book: IBook): BookSummary {
     thumbnail: book.thumbnail,
     publishedDate: book.publishedDate,
   };
-}
+};
 
 interface PaginatedBooks {
   page: number;
@@ -58,7 +58,7 @@ interface PaginatedBooks {
   items: BookSummary[];
 }
 
-export async function searchBooks(query: BooksQuery): Promise<PaginatedBooks> {
+export const searchBooks = async (query: BooksQuery): Promise<PaginatedBooks> => {
   const { title, author, subject, page = "1", limit = "20" } = query;
 
   const queryParts: string[] = [];
@@ -90,11 +90,11 @@ export async function searchBooks(query: BooksQuery): Promise<PaginatedBooks> {
     limit: limitNumber,
     items: response.data.items?.map(normalizeBookSummary) ?? [],
   };
-}
+};
 
-export async function localSearchBooks(
+export const localSearchBooks = async (
   query: BooksQuery
-): Promise<PaginatedBooks> {
+): Promise<PaginatedBooks> => {
   const {
     page = "1",
     limit = "20",
@@ -123,11 +123,11 @@ export async function localSearchBooks(
     limit: limitNumber,
     items: items.map(localBookToSummary),
   };
-}
+};
 
-export async function getBookByGoogleIdFromGoogle(
+export const getBookByGoogleIdFromGoogle = async (
   googleId: string
-): Promise<GoogleBooksVolume> {
+): Promise<GoogleBooksVolume> => {
   try {
     const response = await axios.get<GoogleBooksVolume>(
       `${GOOGLE_BOOKS_API}/${googleId}`,
@@ -143,31 +143,31 @@ export async function getBookByGoogleIdFromGoogle(
     );
     throw new NotFoundError("Book not found in Google Books");
   }
-}
+};
 
-export async function getLocalBookByGoogleId(
+export const getLocalBookByGoogleId = async (
   googleId: string
-): Promise<IBook | null> {
+): Promise<IBook | null> => {
   return await bookRepository.findByExternalId(googleId);
-}
+};
 
-export async function getLocalBookByLocalId(
+export const getLocalBookByLocalId = async (
   localId: string
-): Promise<IBook | null> {
+): Promise<IBook | null> => {
   return await bookRepository.findById(localId);
-}
+};
 
-export async function getGoogleBookByLocalId(
+export const getGoogleBookByLocalId = async (
   localId: string
-): Promise<GoogleBooksVolume> {
+): Promise<GoogleBooksVolume> => {
   const localBook = await bookRepository.findById(localId);
   if (!localBook) {
     throw new NotFoundError("Book not found");
   }
   return await getBookByGoogleIdFromGoogle(localBook.externalId);
-}
+};
 
-export async function getBookDetails(googleId: string): Promise<BookDetail> {
+export const getBookDetails = async (googleId: string): Promise<BookDetail> => {
   const googleBook = await getBookByGoogleIdFromGoogle(googleId);
   const bookDetail = normalizeBookDetail(googleBook);
 
@@ -178,8 +178,8 @@ export async function getBookDetails(googleId: string): Promise<BookDetail> {
   }
 
   return bookDetail;
-}
+};
 
-export async function getOrCreateLocalBook(googleId: string): Promise<IBook> {
+export const getOrCreateLocalBook = async (googleId: string): Promise<IBook> => {
   return await bookRepository.getOrCreate(googleId);
-}
+};

@@ -5,7 +5,7 @@ interface TokensState {
   refreshToken: string | null;
 }
 
-function useTokens() {
+const useTokens = () => {
   const getTokens = (): TokensState => ({
     accessToken: tokenService.getAccess(),
     refreshToken: tokenService.getRefresh(),
@@ -20,6 +20,6 @@ function useTokens() {
   };
 
   return { getTokens, setAccessToken, clearTokens };
-}
+};
 
 export default useTokens;
