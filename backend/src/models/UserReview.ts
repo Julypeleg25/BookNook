@@ -4,6 +4,8 @@ export interface ReviewComment {
   user: Types.ObjectId;
   comment: string;
   createdAt: Date;
+  createdDate?: Date; // Virtual
+  content?: string; // Virtual
 }
 
 export interface IUserReview extends Document {
@@ -16,6 +18,9 @@ export interface IUserReview extends Document {
   createdAt: Date;
   updatedAt: Date;
   likes: Types.ObjectId[];
+  imageUrl?: string; // Virtual
+  description?: string; // Virtual
+  createdDate?: Date; // Virtual
 }
 
 const ReviewCommentSchema = new Schema<ReviewComment>(
@@ -24,8 +29,16 @@ const ReviewCommentSchema = new Schema<ReviewComment>(
     comment: { type: String, required: true, minLength: 1, maxLength: 200 },
     createdAt: { type: Date, default: Date.now },
   },
-  { _id: true }
+  { _id: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+ReviewCommentSchema.virtual("createdDate").get(function () {
+  return this.createdAt;
+});
+
+ReviewCommentSchema.virtual("content").get(function () {
+  return this.comment;
+});
 
 const UserReviewSchema = new Schema<IUserReview>(
   {
@@ -47,8 +60,20 @@ const UserReviewSchema = new Schema<IUserReview>(
     picturePath: { type: String },
     comments: [ReviewCommentSchema],
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+UserReviewSchema.virtual("imageUrl").get(function () {
+  return this.picturePath;
+});
+
+UserReviewSchema.virtual("description").get(function () {
+  return this.review;
+});
+
+UserReviewSchema.virtual("createdDate").get(function () {
+  return this.createdAt;
+});
 
 export const UserReviewModel = mongoose.model<IUserReview>(
   "UserReview",

@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt";
+import { SALT_ROUNDS } from "@config/constants";
 
 export async function hashPassword(password: string): Promise<string> {
-  return await bcrypt.hash(password, 10);
+  return await bcrypt.hash(password, SALT_ROUNDS);
 }
 
 export async function comparePassword(
@@ -10,4 +11,3 @@ export async function comparePassword(
 ): Promise<boolean> {
   return await bcrypt.compare(plainPassword, hashedPassword);
 }
-

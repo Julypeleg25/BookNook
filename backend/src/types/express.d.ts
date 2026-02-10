@@ -1,9 +1,8 @@
-import { UserDto } from "@shared/index";
-import { IUser } from "../models/User";
+import { UserDto } from "@shared/dtos/user.dto";
 
 declare global {
   namespace Express {
-    export interface Request {
+    interface Request {
       authenticatedUser?: UserDto;
     }
   }

@@ -30,7 +30,7 @@ const BookSchema = new Schema(
     ratingCount: { type: Number, default: 0, index: true },
     ratingSum: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
 export const BookModel = mongoose.model<IBook>("Book", BookSchema);

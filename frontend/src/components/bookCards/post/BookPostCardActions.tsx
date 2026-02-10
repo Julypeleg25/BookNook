@@ -1,8 +1,9 @@
 import {
-    CardActions, IconButton,
-    Rating,
-    Typography,
-    Stack
+  CardActions,
+  IconButton,
+  Rating,
+  Typography,
+  Stack,
 } from "@mui/material";
 import type { BookPost } from "@models/Book";
 import { useNavigate } from "react-router-dom";
@@ -32,7 +33,7 @@ const BookPostCardActions = ({ post }: BookPostCardProps) => {
           <IconButton size="small">
             <FiHeart />
           </IconButton>
-          <Typography fontSize="1rem">{post.likes}</Typography>
+          <Typography fontSize="1rem">{post.likes.length}</Typography>
         </Stack>
 
         <Stack direction="row" spacing="0.3rem" alignItems="center">

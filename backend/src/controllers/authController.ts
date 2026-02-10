@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import User, { IUser } from "@models/User";
+import User from "@models/User";
 import {
   generateTokens,
   setAuthCookies,
@@ -7,44 +7,41 @@ import {
   verifyRefreshToken,
 } from "@services/authService";
 import { OAuth2Client } from "google-auth-library";
-import { generateUsernameFromEmail, sanitizeUser } from "../utils/userUtils";
+import { generateUsernameFromEmail, sanitizeUser } from "@utils/userUtils";
 import {
   createUser,
   getUserByUsername,
   updateUserTokens,
   getUserById,
 } from "@services/userService";
-import { comparePassword, hashPassword } from "@utils/hashPassword";
+import { comparePassword } from "@utils/hashPassword";
 import { ValidationError, UnauthorizedError } from "@utils/errors";
 import { logger } from "@utils/logger";
 import { isImageFile, deleteFile } from "@utils/fileUtils";
 import { ENV } from "@config/config";
 import { COOKIE } from "@config/constants";
 import { HttpStatusCode } from "axios";
-import { UserDto } from "@shared/dtos/user.dto";
-import { AuthResponseDto } from "@shared/index";
-import jwt from "jsonwebtoken";
+import { AuthResponseDto } from "@shared/dtos/auth.dto";
 
 export const register = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     if (req.file && !isImageFile(req.file.originalname)) {
-      deleteFile(req.file.path);
+      await deleteFile(req.file.path);
       throw new ValidationError("Avatar must be an image file");
     }
 
-    const {  email, username, password } = req.body;
+    const { email, username, password } = req.body;
     const avatarPath = req.file ? `/uploads/${req.file.filename}` : undefined;
-    const hashedPassword = await hashPassword(password);
 
     const user = await createUser({
       username,
       email,
       provider: "local",
-      password: hashedPassword,
+      password,
       avatar: avatarPath,
     });
 
@@ -52,52 +49,69 @@ export const register = async (
     await updateUserTokens(String(user._id), accessToken, refreshToken);
     setAuthCookies(res, refreshToken);
 
-    res.status(HttpStatusCode.Created).json({user: sanitizeUser(user), accessToken});
+    const response: AuthResponseDto = {
+      user: sanitizeUser(user),
+      accessToken,
+    };
+    res.status(HttpStatusCode.Created).json(response);
   } catch (error) {
-    if (req.file) deleteFile(req.file.path);
+    if (req.file) await deleteFile(req.file.path);
     next(error);
   }
 };
 
-export const login = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { username, password } = req.body;
 
-  const user = await getUserByUsername(username);
-  if (!user || !(await comparePassword(password, user.password!))) {
-    return res.status(401).json({ message: "Invalid credentials" });
+    const user = await getUserByUsername(username);
+    if (!user?.password || !(await comparePassword(password, user.password))) {
+      res.status(HttpStatusCode.Unauthorized).json({ message: "Invalid credentials" });
+      return;
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user);
+    await updateUserTokens(user._id.toString(), accessToken, refreshToken);
+
+    setAuthCookies(res, refreshToken);
+
+    const response: AuthResponseDto = {
+      accessToken,
+      user: sanitizeUser(user),
+    };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-
-  const { accessToken, refreshToken } = generateTokens(user);
-  await updateUserTokens(user._id.toString(), accessToken, refreshToken);
-
-  setAuthCookies(res, refreshToken);
-  res.json({
-    accessToken,
-    user: sanitizeUser(user),
-  });
 };
 
 export const refresh = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const oldRefreshToken = req.cookies[COOKIE.REFRESH];
-    if (!oldRefreshToken) throw new UnauthorizedError("No refresh token");
+    const oldRefreshToken = req.cookies[COOKIE.REFRESH] as string | undefined;
+    if (!oldRefreshToken) {
+      throw new UnauthorizedError("No refresh token");
+    }
 
-    const decoded = await verifyRefreshToken(oldRefreshToken);
+    const decoded = verifyRefreshToken(oldRefreshToken);
     const user = await getUserById(decoded._id);
 
-    if (!user || user.refreshToken !== oldRefreshToken) {
+    if (user.refreshToken !== oldRefreshToken) {
       throw new UnauthorizedError("Invalid refresh token");
     }
 
     const { accessToken, refreshToken } = generateTokens(user);
 
     setAuthCookies(res, refreshToken);
+    await updateUserTokens(decoded._id, accessToken, refreshToken);
 
-    updateUserTokens(decoded._id.toString(), accessToken, refreshToken);
     res.json({ accessToken });
   } catch (error) {
     next(error);
@@ -105,51 +119,69 @@ export const refresh = async (
 };
 
 const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
-export const googleAuthenticate = async (req: Request, res: Response) => {
-  const { token } = req.body;
 
-  const ticket = await client.verifyIdToken({
-    idToken: token,
-    audience: ENV.GOOGLE_CLIENT_ID,
-  });
+export const googleAuthenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { token } = req.body;
+    if (!token || typeof token !== "string") {
+      res.status(HttpStatusCode.BadRequest).json({ message: "Google token is required" });
+      return;
+    }
 
-  const { email, sub, picture } = ticket.getPayload()!;
-  if (!email) return res.status(401).json({ message: "No email" });
-
-  let user = await User.findOne({ email });
-
-  if (!user) {
-    user = await User.create({
-      email,
-      username: generateUsernameFromEmail(email),
-      googleId: sub,
-      avatar: picture,
-      provider: "google",
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: ENV.GOOGLE_CLIENT_ID,
     });
+
+    const payload = ticket.getPayload();
+    if (!payload?.email) {
+      res.status(HttpStatusCode.Unauthorized).json({ message: "Invalid Google token" });
+      return;
+    }
+
+    const { email, sub, picture } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        email,
+        username: generateUsernameFromEmail(email),
+        googleId: sub,
+        avatar: picture,
+        provider: "google",
+      });
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user);
+    await updateUserTokens(user._id.toString(), accessToken, refreshToken);
+
+    setAuthCookies(res, refreshToken);
+
+    const response: AuthResponseDto = {
+      accessToken,
+      user: sanitizeUser(user),
+    };
+    res.json(response);
+  } catch (error) {
+    logger.error("Google authentication error:", error);
+    next(error);
   }
-
-  const { accessToken, refreshToken } = generateTokens(user);
-
-  setAuthCookies(res, refreshToken);
-  res.json({
-    accessToken,
-    user: sanitizeUser(user),
-  });
 };
 
 export const logout = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    req.logout((err) => {
-      if (err) logger.error("Passport logout error:", err);
-    });
-
     clearAuthCookies(res);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    next(err);
+    res.status(HttpStatusCode.Ok).json({ success: true });
+  } catch (error) {
+    next(error);
   }
 };

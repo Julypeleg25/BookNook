@@ -1,8 +1,8 @@
 interface User {
-  name: string;
-  username: string;
-  avatar: string;
   id: string;
+  username: string;
+  avatar?: string;
+  email?: string;
 }
 
 export type { User };

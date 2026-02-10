@@ -10,6 +10,7 @@ interface BookInfoHeaderProps {
 
 const BookInfoHeader = ({ book }: BookInfoHeaderProps) => {
   const { goBack } = useNav();
+  const year = book.publishedDate ? new Date(book.publishedDate).getFullYear() : "Unknown";
 
   return (
     <div>
@@ -27,14 +28,14 @@ const BookInfoHeader = ({ book }: BookInfoHeaderProps) => {
             alignItems: "center",
           }}
         >
-          <Typography variant="h4" style={{ gap: "0.5rem", display: "flex" }}>
+          <Typography variant="h4" style={{ gap: "0.5rem", display: "flex", alignItems: "center" }}>
             <Tooltip title="Go Back">
-              <IconButton onClick={goBack} sx={{ mb: "1rem" }}>
+              <IconButton onClick={goBack}>
                 <BiArrowBack />
               </IconButton>
             </Tooltip>
             <div>{book.title}</div>
-            <div>({new Date(book.publishedDate).getFullYear()})</div>
+            <div style={{ color: "gray", fontSize: "1.5rem" }}>({year})</div>
           </Typography>
         </div>
         <BookHeader id={book.id} />

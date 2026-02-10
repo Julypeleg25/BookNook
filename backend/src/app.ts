@@ -1,11 +1,9 @@
 import { ENV } from "@config/config";
 import express from "express";
 import mongoose from "mongoose";
-import session from "express-session";
 import cors from "cors";
 import authRoutes from "@routes/auth";
 import listRouter from "@routes/list";
-import User, { IUser } from "@models/User";
 import swaggerUi from "swagger-ui-express";
 import booksRouter from "@routes/books";
 import userReviewsRouter from "@routes/userReview";
@@ -15,6 +13,7 @@ import { UPLOADS_FOLDER } from "@config/multerConfig";
 import cookieParser from "cookie-parser";
 import { authenticate } from "@middlewares/authMiddleware";
 import { errorHandler } from "@middlewares/errorHandler";
+import { logger } from "@utils/logger";
 
 const app = express();
 const PORT = ENV.PORT;
@@ -28,20 +27,8 @@ app.use(
   })
 );
 
-mongoose
-  .connect(ENV.MONGODB_URL)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+app.use(express.json({ limit: "10mb" }));
 
-app.use(express.json());
-app.use(
-  session({
-    secret: ENV.SESSION_SECRET || "your-secret-key",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: true },
-  })
-);
 app.use("/", authRoutes);
 app.use("/api/books", authenticate, booksRouter);
 app.use("/userReviews", authenticate, userReviewsRouter);
@@ -49,10 +36,21 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/lists", authenticate, listRouter);
 app.use("/api/users", userRouter);
 
-app.use("/uploads", authenticate, express.static(UPLOADS_FOLDER));
+// Uploads should be publicly accessible for img tags to work (since they don't send Bearer tokens)
+// If privacy is required, a different strategy (signed URLs or blob fetching) is needed.
+app.use("/uploads", express.static(UPLOADS_FOLDER));
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+mongoose
+  .connect(ENV.MONGODB_URL)
+  .then(() => {
+    logger.info("Connected to MongoDB");
+    app.listen(PORT, () => {
+      logger.info(`Server is running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    logger.error("MongoDB connection error:", err);
+    process.exit(1);
+  });

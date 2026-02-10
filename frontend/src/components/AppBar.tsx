@@ -1,17 +1,14 @@
 import {
-  Avatar,
   Box,
-  IconButton,
   AppBar as MuiAppBar,
   Toolbar,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import bookNookLogo from "@assets/booknook.png";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import useUserStore from "@state/useUserStore";
 import { getTimeOfDay } from "@utils/dateUtils";
-import { getAvatarSrcUrl } from "@/utils/userUtils";
+import UserMenu from "./UserMenu";
 
 const navItemSx = {
   position: "relative",
@@ -43,15 +40,18 @@ const navItemSx = {
 
 const AppBar = () => {
   const { user } = useUserStore();
-  const navigate = useNavigate();
 
   return (
-    <MuiAppBar position="sticky" style={{ top: 0, width: "100%" }}>
-      <Toolbar style={{ height: "4.5rem", display: "flex", width: "100%" }}>
+    <MuiAppBar position="sticky" sx={{ top: 0, width: "100%" }}>
+      <Toolbar sx={{ height: "4.5rem", display: "flex", width: "100%" }}>
         <Box display="flex" alignItems="center" flexGrow={1}>
-          <img src={bookNookLogo} alt="BookNook" style={{ height: "2.5rem" }} />
-          <div
-            style={{
+          <img
+            src={bookNookLogo}
+            alt="BookNook"
+            style={{ height: "2.5rem" }}
+          />
+          <Box
+            sx={{
               marginLeft: "6rem",
               display: "flex",
               gap: "2rem",
@@ -71,19 +71,12 @@ const AppBar = () => {
             <Typography component={NavLink} to="/myPosts" sx={navItemSx}>
               My Posts
             </Typography>
-          </div>
+          </Box>
         </Box>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           Good {getTimeOfDay()}, {user.username}
-          <Tooltip title="Profile Page">
-            <IconButton onClick={() => navigate("/profile")} color="inherit">
-              <Avatar
-                sx={{ width: "3rem", height: "3rem" }}
-                src={getAvatarSrcUrl(user.avatar)}
-              />
-            </IconButton>
-          </Tooltip>
-        </div>
+          <UserMenu />
+        </Box>
       </Toolbar>
     </MuiAppBar>
   );

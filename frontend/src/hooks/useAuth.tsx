@@ -2,27 +2,25 @@ import { useNavigate } from "react-router-dom";
 import useUserStore from "@/state/useUserStore";
 import { AuthService } from "@/api/services/authService";
 import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
-import useTokens from "./useTokens";
 import { tokenService } from "@/api/services/tokenService";
 
 export const useAuth = () => {
   const navigate = useNavigate();
   const { setUser, resetUser } = useUserStore();
-  const { setAccessToken, clearTokens } = useTokens();
 
   const login = async (payload: LoginRequestDTO) => {
-    const res = await AuthService.login(payload);
+    const data = await AuthService.login(payload);
 
-    setAccessToken(res.data.accessToken);
-    setUser(res.data.user);
+    tokenService.setAccess(data.accessToken);
+    setUser(data.user);
     navigate("/posts");
   };
 
   const register = async (payload: RegisterRequestDTO) => {
-    const res = await AuthService.register(payload);
+    const data = await AuthService.register(payload);
 
-    setAccessToken(res.data.accessToken);
-    setUser(res.data.user);
+    tokenService.setAccess(data.accessToken);
+    setUser(data.user);
     navigate("/posts");
   };
 
@@ -30,7 +28,7 @@ export const useAuth = () => {
     try {
       await AuthService.logout();
     } finally {
-      clearTokens();
+      tokenService.clear();
       resetUser();
       navigate("/login");
     }
@@ -40,15 +38,16 @@ export const useAuth = () => {
     const token = tokenService.getAccess();
 
     if (!token) {
-      resetUser();      
-      navigate("/login"); 
+      resetUser();
+      navigate("/login");
       return;
     }
+
     try {
       const user = await AuthService.getCurrentUser();
       setUser(user);
     } catch {
-      clearTokens();
+      tokenService.clear();
       resetUser();
     }
   };

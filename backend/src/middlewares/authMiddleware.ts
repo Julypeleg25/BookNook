@@ -1,37 +1,29 @@
 import { Request, Response, NextFunction } from "express";
-import { userRepository } from "@repositories/userRepository";
 import { verifyAccessToken } from "@services/authService";
-import { UnauthorizedError } from "@utils/errors";
-import { logger } from "@utils/logger";
-import jwt, { JwtPayload, VerifyErrors } from'jsonwebtoken';
-import cookieParser from 'cookie-parser';
-import { COOKIE } from "@config/constants";
-import { ENV } from "@config/config";
 import { getUserById } from "@services/userService";
-import User from "@models/User";
 import { sanitizeUser } from "@utils/userUtils";
+import { logger } from "@utils/logger";
 
-declare global {
-  namespace Express {
-    interface Request {
-      authenticatedUser?: {
-        id: string;
-        username: string;
-        avatar?: string;
-        email?: string;
-      }
-    }
-  }
-}
-export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+export const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "No token" });
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      res.status(401).json({ message: "No token provided" });
+      return;
+    }
 
-    const decoded = jwt.verify(token, ENV.JWT_ACCESS_SECRET) as jwt.JwtPayload;
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      res.status(401).json({ message: "Invalid authorization header" });
+      return;
+    }
+
+    const decoded = verifyAccessToken(token);
     const user = await getUserById(decoded._id);
-
-    if (!user) return res.status(401).json({ message: "User not found" });
 
     req.authenticatedUser = sanitizeUser(user);
     next();

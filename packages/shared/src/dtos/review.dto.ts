@@ -6,8 +6,8 @@ const objectIdSchema = z
 
 export const ReviewCommentSchema = z.object({
   user: objectIdSchema,
-  comment: z.string().min(1, "Comment cannot be empty").maxLength,
-  createdAt: z.date().optional(),
+  comment: z.string().min(1, "Comment cannot be empty").max(200, "Comment must be at most 200 characters"),
+  createdAt: z.coerce.date().optional(),
 });
 
 export const UserReviewZodSchema = z.object({
@@ -15,8 +15,8 @@ export const UserReviewZodSchema = z.object({
   book: objectIdSchema,
   review: z
     .string()
-    .min(5, "Review must be at least 10 characters long")
-    .max(1500, "Review must be max 1500 characters long"),
+    .min(5, "Review must be at least 5 characters long")
+    .max(1500, "Review must be at most 1500 characters long"),
   rating: z
     .number()
     .min(0)
@@ -33,3 +33,7 @@ export const CreateUserReviewSchema = UserReviewZodSchema.omit({
   likes: true,
   comments: true,
 });
+
+export type ReviewCommentDTO = z.infer<typeof ReviewCommentSchema>;
+export type UserReviewDTO = z.infer<typeof UserReviewZodSchema>;
+export type CreateUserReviewDTO = z.infer<typeof CreateUserReviewSchema>;

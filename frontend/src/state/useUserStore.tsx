@@ -1,22 +1,27 @@
 import { UserDto } from "@shared/dtos/user.dto";
 import { create } from "zustand";
 
-interface UserStoreProps {
+interface UserStoreState {
   user: UserDto;
-  setUser: (user: UserDto) => void;
   isAuthenticated: boolean;
+  setUser: (user: UserDto) => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   resetUser: () => void;
 }
 
-const defaultUser = { avatar: "", id: "", name: "", username: "", email: "" };
+const defaultUser: UserDto = {
+  id: "",
+  username: "",
+  avatar: "",
+  email: "",
+};
 
-const useUserStore = create<UserStoreProps>((set) => ({
+const useUserStore = create<UserStoreState>((set) => ({
   user: defaultUser,
+  isAuthenticated: false,
   setUser: (user) => set({ user, isAuthenticated: true }),
   resetUser: () => set({ user: defaultUser, isAuthenticated: false }),
-  isAuthenticated: false,
-  setIsAuthenticated: (isAuthenticated: boolean) => set({ isAuthenticated }),
+  setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 }));
 
 export default useUserStore;

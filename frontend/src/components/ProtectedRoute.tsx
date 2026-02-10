@@ -1,5 +1,5 @@
 import useUserStore from "@/state/useUserStore";
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
@@ -7,22 +7,9 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user } = useUserStore();
-  const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useUserStore();
 
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     await fetchUser();
-  //     setLoading(false);
-  //   };
-  //   checkAuth();
-  // }, [fetchUser]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user ) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

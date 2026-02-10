@@ -6,24 +6,36 @@ import {
   getReviewById,
   updateReview,
   deleteReview,
-  likeReview,
 } from "@services/userReviewService";
 import { getGoogleBookByLocalId } from "@services/bookService";
 import { ValidationError } from "@utils/errors";
 import { logger } from "@utils/logger";
 import { isImageFile, deleteFile } from "@utils/fileUtils";
 import { Types } from "mongoose";
+import { HttpStatusCode } from "axios";
 
 export const createReviewHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { bookId, review, rating } = req.body;
+
     if (req.file && !isImageFile(req.file.originalname)) {
-      deleteFile(req.file.path);
+      await deleteFile(req.file.path);
       throw new ValidationError("Picture must be an image file");
+    }
+
+    if (!bookId || typeof bookId !== "string") {
+      if (req.file) await deleteFile(req.file.path);
+      throw new ValidationError("Book ID is required");
+    }
+
+    const parsedRating = Number(rating);
+    if (isNaN(parsedRating) || parsedRating < 0 || parsedRating > 5) {
+      if (req.file) await deleteFile(req.file.path);
+      throw new ValidationError("Rating must be a number between 0 and 5");
     }
 
     const picturePath = req.file ? `/uploads/${req.file.filename}` : undefined;
@@ -31,27 +43,24 @@ export const createReviewHandler = async (
     const newReview = await createReview(
       new Types.ObjectId(req.authenticatedUser!.id),
       bookId,
-      Number(rating),
+      parsedRating,
       review,
       picturePath
     );
 
-    res.status(201).json(newReview);
-  } catch (error: any) {
-    if (req.file) deleteFile(req.file.path);
-    if (error?.name === "ValidationError") {
-      return res.status(400).json({ error: error.message });
-    }
+    res.status(HttpStatusCode.Created).json(newReview);
+  } catch (error: unknown) {
+    if (req.file) await deleteFile(req.file.path);
     logger.error("Error creating review:", error);
     next(error);
   }
 };
 
 export const getAllReviewsHandler = async (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const reviews = await getAllReviews();
 
@@ -66,10 +75,10 @@ export const getAllReviewsHandler = async (
             ...reviewObj,
             book: fullBookOfReview,
           };
-        } catch (e) {
+        } catch (error) {
           logger.warn(
             `Error enriching review ${reviewObj._id} with book data:`,
-            e
+            error
           );
           return reviewObj;
         }
@@ -87,10 +96,13 @@ export const getReviewsByUserIdHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { userId } = req.params;
-    if (!userId) throw Error(`user id ${userId} doesn't exist`);
+    if (!userId) {
+      throw new ValidationError("User ID is required");
+    }
+
     const reviews = await getReviewsByUserId(userId);
     res.json(reviews);
   } catch (error) {
@@ -106,10 +118,13 @@ export const getReviewByIdHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id } = req.params;
-    if (!id) throw Error(`review ${id} doesn't exist`);
+    if (!id) {
+      throw new ValidationError("Review ID is required");
+    }
+
     const review = await getReviewById(id);
     res.json(review);
   } catch (error) {
@@ -122,9 +137,13 @@ export const updateReviewHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id } = req.params;
+    if (!id) {
+      throw new ValidationError("Review ID is required");
+    }
+
     const { review, rating } = req.body;
 
     const updateData: {
@@ -134,40 +153,28 @@ export const updateReviewHandler = async (
     } = {};
 
     if (review !== undefined) updateData.review = review;
-    if (rating !== undefined) updateData.rating = Number(rating);
+    if (rating !== undefined) {
+      const parsedRating = Number(rating);
+      if (isNaN(parsedRating) || parsedRating < 0 || parsedRating > 5) {
+        if (req.file) await deleteFile(req.file.path);
+        throw new ValidationError("Rating must be a number between 0 and 5");
+      }
+      updateData.rating = parsedRating;
+    }
+
     if (req.file) {
       if (!isImageFile(req.file.originalname)) {
-        deleteFile(req.file.path);
+        await deleteFile(req.file.path);
         throw new ValidationError("Picture must be an image file");
       }
       updateData.picturePath = `/uploads/${req.file.filename}`;
     }
 
-    if (!id) throw Error(`review ${id} doesn't exist`);
     const updatedReview = await updateReview(id, updateData);
     res.json(updatedReview);
-  } catch (error: any) {
-    if (req.file) deleteFile(req.file.path);
-    if (error instanceof ValidationError) {
-      return res.status(400).json({ error: error.message });
-    }
+  } catch (error: unknown) {
+    if (req.file) await deleteFile(req.file.path);
     logger.error(`Error updating review ${req.params.id}:`, error);
-    next(error);
-  }
-};
-
-export const likeReviewHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { id } = req.params;
-    if (!id) throw Error(`review ${id} doesn't exist`);
-    const likesCount = await likeReview(id, new Types.ObjectId(req.authenticatedUser!.id));
-    res.json({ likes: likesCount });
-  } catch (error) {
-    logger.error(`Error liking review ${req.params.id}:`, error);
     next(error);
   }
 };
@@ -176,10 +183,13 @@ export const deleteReviewHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id } = req.params;
-    if (!id) throw Error(`review ${id} doesn't exist`);
+    if (!id) {
+      throw new ValidationError("Review ID is required");
+    }
+
     await deleteReview(id);
     res.json({ message: "Review deleted successfully" });
   } catch (error) {

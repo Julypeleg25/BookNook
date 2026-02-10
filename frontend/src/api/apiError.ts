@@ -1,5 +1,11 @@
 import { AxiosError } from "axios";
 
+interface ApiErrorResponseData {
+  message?: string;
+  error?: string;
+  code?: string;
+}
+
 export class ApiError extends Error {
   status?: number;
   code?: string;
@@ -14,13 +20,14 @@ export class ApiError extends Error {
   }
 }
 
-export const mapAxiosError = (error: AxiosError): ApiError => {
+export const mapAxiosError = (error: AxiosError<ApiErrorResponseData>): ApiError => {
   if (error.response) {
+    const data = error.response.data;
     return new ApiError(
-      (error.response.data as any)?.message ?? "Request failed",
+      data?.message ?? data?.error ?? "Request failed",
       error.response.status,
-      (error.response.data as any)?.code,
-      error.response.data,
+      data?.code,
+      data,
     );
   }
 

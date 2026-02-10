@@ -77,7 +77,7 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
 
             <Stack direction="row" spacing="1.2rem" alignItems="center">
               <Stack direction="row" gap="0.4rem" alignItems="center">
-                <FiHeart /> {post.likes}
+                <FiHeart /> {post.likes.length}
               </Stack>
               <Stack direction="row" gap="0.4rem" alignItems="center">
                 <FaRegComment /> {post.comments.length}

@@ -3,14 +3,28 @@ import { Types } from "mongoose";
 import { IUser } from "@models/User";
 import { logger } from "@utils/logger";
 
+interface PopulatedUserReview extends Omit<IUserReview, "user"> {
+  user: Pick<IUser, "username" | "avatar" | "bio">;
+}
+
+// Export the interface for use in services including the type for `user` which is populated
+export type { PopulatedUserReview };
+
+interface CreateReviewData {
+  user: Types.ObjectId;
+  book: Types.ObjectId;
+  rating: number;
+  review?: string;
+  picturePath?: string;
+}
+
+interface AggregatedRating {
+  totalRating: number;
+  count: number;
+}
+
 export class UserReviewRepository {
-  async create(reviewData: {
-    user: Types.ObjectId;
-    book: Types.ObjectId;
-    rating: number;
-    review?: string;
-    picturePath?: string;
-  }): Promise<IUserReview> {
+  async create(reviewData: CreateReviewData): Promise<IUserReview> {
     try {
       return await UserReviewModel.create({
         ...reviewData,
@@ -32,34 +46,36 @@ export class UserReviewRepository {
     }
   }
 
-  async findByIdWithUser(reviewId: Types.ObjectId | string): Promise<any> {
+  async findByIdWithUser(
+    reviewId: Types.ObjectId | string
+  ): Promise<PopulatedUserReview | null> {
     try {
       return await UserReviewModel.findById(reviewId).populate<{ user: IUser }>({
         path: "user",
-        select: "name username avatar bio",
-      });
+        select: "username avatar bio",
+      }) as PopulatedUserReview | null;
     } catch (error) {
       logger.error(`Error finding review ${reviewId} with user:`, error);
       throw error;
     }
   }
 
-  async findAll(): Promise<any[]> {
+  async findAll(): Promise<PopulatedUserReview[]> {
     try {
       return await UserReviewModel.find()
         .sort({ createdAt: -1 })
-        .populate<{ user: IUser }>({ path: "user", select: "name username avatar" });
+        .populate<{ user: IUser }>({ path: "user", select: "username avatar" }) as unknown as PopulatedUserReview[];
     } catch (error) {
       logger.error("Error finding all reviews:", error);
       throw error;
     }
   }
 
-  async findByUserId(userId: Types.ObjectId | string): Promise<any[]> {
+  async findByUserId(userId: Types.ObjectId | string): Promise<PopulatedUserReview[]> {
     try {
       return await UserReviewModel.find({ user: userId })
         .sort({ createdAt: -1 })
-        .populate<{ user: IUser }>({ path: "user", select: "name username avatar" });
+        .populate<{ user: IUser }>({ path: "user", select: "username avatar" }) as unknown as PopulatedUserReview[];
     } catch (error) {
       logger.error(`Error finding reviews by userId ${userId}:`, error);
       throw error;
@@ -68,10 +84,14 @@ export class UserReviewRepository {
 
   async update(
     reviewId: Types.ObjectId | string,
-    updateData: Partial<IUserReview>
+    updateData: Partial<Pick<IUserReview, "review" | "rating" | "picturePath">>
   ): Promise<IUserReview | null> {
     try {
-      return await UserReviewModel.findByIdAndUpdate(reviewId, { $set: updateData }, { new: true });
+      return await UserReviewModel.findByIdAndUpdate(
+        reviewId,
+        { $set: updateData },
+        { new: true, runValidators: true }
+      );
     } catch (error) {
       logger.error(`Error updating review ${reviewId}:`, error);
       throw error;
@@ -87,7 +107,10 @@ export class UserReviewRepository {
     }
   }
 
-  async addLike(reviewId: Types.ObjectId | string, userId: Types.ObjectId): Promise<IUserReview | null> {
+  async addLike(
+    reviewId: Types.ObjectId | string,
+    userId: Types.ObjectId
+  ): Promise<IUserReview | null> {
     try {
       return await UserReviewModel.findByIdAndUpdate(
         reviewId,
@@ -100,13 +123,17 @@ export class UserReviewRepository {
     }
   }
 
-  async aggregateRatingsByBook(bookId: Types.ObjectId | string): Promise<{
-    totalRating: number;
-    count: number;
-  }> {
+  async aggregateRatingsByBook(
+    bookId: Types.ObjectId | string
+  ): Promise<AggregatedRating> {
     try {
-      const bookObjectId = typeof bookId === "string" ? new Types.ObjectId(bookId) : bookId;
-      const result = await UserReviewModel.aggregate([
+      const bookObjectId =
+        typeof bookId === "string" ? new Types.ObjectId(bookId) : bookId;
+      const result = await UserReviewModel.aggregate<{
+        _id: Types.ObjectId;
+        totalRating: number;
+        count: number;
+      }>([
         { $match: { book: bookObjectId } },
         {
           $group: {
@@ -118,8 +145,8 @@ export class UserReviewRepository {
       ]);
 
       return {
-        totalRating: result[0]?.totalRating || 0,
-        count: result[0]?.count || 0,
+        totalRating: result[0]?.totalRating ?? 0,
+        count: result[0]?.count ?? 0,
       };
     } catch (error) {
       logger.error(`Error aggregating ratings for book ${bookId}:`, error);
@@ -129,4 +156,3 @@ export class UserReviewRepository {
 }
 
 export const userReviewRepository = new UserReviewRepository();
-

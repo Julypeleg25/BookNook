@@ -1,9 +1,7 @@
-import mongoose, { Document, Model } from "mongoose";
-
-const { Schema } = mongoose;
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
-  provider: string;
+  provider: "local" | "google";
   username: string;
   email: string;
   password?: string;
@@ -14,21 +12,16 @@ export interface IUser extends Document {
   readlist: string[];
   refreshToken?: string;
   accessToken?: string;
-  googleId?: string;   
-}
-
-export interface JwtDecodedUser {
-  userId: string;
-  email: string;
+  googleId?: string;
 }
 
 const userSchema = new Schema<IUser>(
   {
-  provider: {
+    provider: {
       type: String,
       required: true,
-      enum: ['local', 'google'], // Good practice to restrict values
-      default: 'local'
+      enum: ["local", "google"],
+      default: "local",
     },
     username: {
       type: String,
@@ -49,18 +42,16 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       trim: true,
-      // REMOVE required: true if it was there, or keep it optional
-      // Google users will not have a password
       minlength: 6,
       maxlength: 60,
     },
-    googleId: { type: String, unique: true, sparse: true }, 
+    googleId: { type: String, unique: true, sparse: true },
     avatar: String,
     bio: String,
     providerId: {
       type: String,
       unique: true,
-      sparse: true, // IMPORTANT: Allows multiple 'null' values for local users
+      sparse: true,
     },
     refreshToken: {
       type: String,
@@ -70,7 +61,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: null,
     },
-    
+
     wishlist: [
       {
         type: Schema.Types.ObjectId,

@@ -4,6 +4,7 @@ import { formatDate } from "@utils/dateUtils";
 import { Link as RouterLink } from "react-router-dom";
 import BookInfoActions from "./BookInfoActions";
 import React from "react";
+import { getAvatarSrcUrl } from "@/utils/userUtils";
 
 interface BookInfoCardProps {
   book: Book;
@@ -11,6 +12,8 @@ interface BookInfoCardProps {
 }
 
 const BookInfoCard = ({ book, isOnlyInfo }: BookInfoCardProps) => {
+  const displayAuthor = book.authors?.length > 0 ? book.authors.join(", ") : "Unknown Author";
+
   return (
     <Stack alignItems="center" spacing="0.6rem">
       <Box
@@ -32,7 +35,10 @@ const BookInfoCard = ({ book, isOnlyInfo }: BookInfoCardProps) => {
       >
         <Box
           component="img"
-          src={book.thumbnail}
+          src={getAvatarSrcUrl(book.thumbnail)} // Using helper just in case, though usually external URL
+          onError={(e: any) => {
+             e.target.src = "https://via.placeholder.com/150*200?text=No+Cover";
+          }}
           alt={book.title}
           sx={{
             width: "100%",
@@ -60,9 +66,9 @@ const BookInfoCard = ({ book, isOnlyInfo }: BookInfoCardProps) => {
         >
           {book.title}
         </Typography>
-        <Typography fontSize="0.85rem">{book.author}</Typography>
+        <Typography fontSize="0.85rem">{displayAuthor}</Typography>
         <Typography fontSize="0.85rem" color="text.secondary">
-          {formatDate(book.publishedDate)}
+          {book.publishedDate ? formatDate(book.publishedDate) : "Unknown Date"}
         </Typography>
       </Stack>
 
@@ -75,8 +81,7 @@ const BookInfoCard = ({ book, isOnlyInfo }: BookInfoCardProps) => {
         }}
       >
         <Rating
-          // value={book.averageRating}
-          value={4.5}
+          value={book.avgRating ?? 0}
           precision={0.5}
           readOnly
           size="small"

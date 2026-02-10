@@ -1,6 +1,5 @@
-import { Box, Stack, Typography, Divider } from "@mui/material";
-import { books } from "../exampleData";
-import { useMemo } from "react";
+import { Box, Stack, Typography, Divider, CircularProgress } from "@mui/material";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NotFound from "./NotFound";
 import BookInfoHeader from "@components/bookHeaders/BookInfoHeader";
@@ -9,20 +8,43 @@ import { FaUserPen } from "react-icons/fa6";
 import { MdMenuBook, MdNumbers } from "react-icons/md";
 import AiBookRecommendation from "@components/post/AiBookRecommendation";
 import { GrLanguage } from "react-icons/gr";
+import { booksService, BookDetail } from "@/api/services/bookService";
+import { formatDate } from "@/utils/dateUtils";
 
-const AI_RESPONSE =
-  "Based on your prompt, I believe this book will fit you perfectly";
+const AI_RESPONSE = "Based on your prompt, I believe this book will fit you perfectly";
 
 const BookInfo = () => {
   const { id } = useParams<{ id: string }>();
+  const [book, setBook] = useState<BookDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const book = useMemo(() => books.find((b) => b.id === id), [id]);
+  useEffect(() => {
+    const fetchBook = async () => {
+      if (!id) return;
+      try {
+        setLoading(true);
+        const { book } = await booksService.getById(id);
+        setBook(book);
+      } catch (err) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBook();
+  }, [id]);
 
-  if (!book) return <NotFound />;
+  if (loading) return <Box display="flex" justifyContent="center" mt={5}><CircularProgress /></Box>;
+  if (error || !book) return <NotFound />;
+
+  const displayAuthors = book.authors?.join(", ") || "Unknown Author";
+  const displayGenres = book.categories?.join(", ") || "Unknown Genre";
 
   return (
     <Box sx={{ margin: "1.5rem", px: "1rem", py: "2rem" }}>
-      <BookInfoHeader book={book} />
+      <BookInfoHeader book={book as any} /> 
+      
       <Box
         display="grid"
         gridTemplateColumns={{ xs: "1fr", md: "2fr 1fr" }}
@@ -33,7 +55,9 @@ const BookInfo = () => {
         <Stack spacing={3}>
           <Stack direction="row" spacing={1.5} alignItems="flex-start">
             <MdMenuBook size={"1.5rem"} />
-            <Typography variant="body1">{book.description}</Typography>
+            <Typography variant="body1">
+              {book.description?.replace(/<[^>]*>?/gm, "") || "No description available."}
+            </Typography>
           </Stack>
           <Divider />
           <Box
@@ -41,35 +65,18 @@ const BookInfo = () => {
             gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
             gap="1.5rem"
           >
-            <InfoRow icon={<FaUserPen />} label="Author" value={book.author} />
-            <InfoRow
-              icon={<GrLanguage />}
-              label="Language"
-              value={book.author}
-            />
-            <InfoRow icon={<MdNumbers />} label="Pages" value={300} />
+            <InfoRow icon={<FaUserPen />} label="Author" value={displayAuthors} />
+            <InfoRow icon={<MdNumbers />} label="Pages" value={book.pageCount || "N/A"} />
             <InfoRow
               icon={<FaTheaterMasks />}
               label="Genres"
-              value={book.genres.join(", ")}
+              value={displayGenres}
             />
-              <InfoRow
-              icon={<GrLanguage />}
-              label="Language"
-              value={book.author}
-            />
-            <InfoRow icon={<MdNumbers />} label="Pages" value={300} />
             <InfoRow
-              icon={<FaTheaterMasks />}
-              label="Genres"
-              value={book.genres.join(", ")}
+               icon={<GrLanguage />}
+               label="Published"
+               value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"}
             />
-              <InfoRow
-              icon={<GrLanguage />}
-              label="Language"
-              value={book.author}
-            />
-      
           </Box>
         </Stack>
         <Box display="flex" justifyContent="center">
@@ -81,16 +88,18 @@ const BookInfo = () => {
               boxShadow: 4,
             }}
           >
-            <Box
-              component="img"
-              src={book.thumbnail}
-              alt={book.title}
-              sx={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-            />
+            {book.thumbnail && (
+              <Box
+                component="img"
+                src={book.thumbnail}
+                alt={book.title}
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            )}
           </Box>
         </Box>
       </Box>

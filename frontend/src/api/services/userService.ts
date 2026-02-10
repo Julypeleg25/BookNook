@@ -1,37 +1,37 @@
-import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
-import { UserDto } from "@shared/dtos/user.dto";
+import { UpdateUserRequestDTO, UserDto } from "@shared/dtos/user.dto";
 import { axiosClient } from "../axios/axiosClient";
 import { endpoints } from "../endpoints";
-import { ApiError } from "../apiError";
+
+interface UpdateUserResponse {
+  message: string;
+  user: UserDto;
+}
 
 export const userService = {
-  getCurrentUser(): Promise<UserDto> {
-    return axiosClient.get<UserDto>(endpoints.users.me).then((res) => res.data);
+  async getCurrentUser(): Promise<UserDto> {
+    const res = await axiosClient.get<UserDto>(endpoints.users.me);
+    return res.data;
   },
 
-  async updateCurrentUser(data: UpdateUserRequestDTO) {
-    try {
-      const formData = new FormData();
+  async updateCurrentUser(data: UpdateUserRequestDTO): Promise<UpdateUserResponse> {
+    const formData = new FormData();
 
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          formData.append(key, value as string | Blob);
-        }
-      });
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, String(value));
+      }
+    });
 
-      const res = await axiosClient.patch(
-        endpoints.users.updateMe,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+    const res = await axiosClient.patch<UpdateUserResponse>(
+      endpoints.users.updateMe,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
 
-      return res.data;
-    } catch (err) {
-      throw err as ApiError;
-    }
+    return res.data;
   },
 };

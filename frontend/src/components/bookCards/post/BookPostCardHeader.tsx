@@ -2,6 +2,7 @@ import { CardHeader, CardMedia, Typography, Box, Avatar } from "@mui/material";
 import type { BookPost } from "@models/Book";
 import { Link as RouterLink } from "react-router-dom";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
+import { formatDate } from "@/utils/dateUtils";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -14,7 +15,7 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
         avatar={
           <Avatar
             src={getAvatarSrcUrl(post.user.avatar)}
-            alt={post.user.name}
+            alt={post.user.username}
           />
         }
         title={
@@ -31,7 +32,7 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
         subheader={
           <Box gap={"0.3rem"} display={"grid"}>
             <div>@{post.user.username}</div>
-            {post.createdDate.toDateString()}
+            {formatDate(post.createdDate)}
           </Box>
         }
       />
@@ -41,11 +42,13 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
         to={`/posts/${post.id}`}
         sx={{ textDecoration: "none" }}
       >
-        <CardMedia
-          component="img"
-          image={post.imageUrl}
-          sx={{ height: "16rem", objectFit: "cover" }}
-        />
+        {post.imageUrl && (
+          <CardMedia
+            component="img"
+            image={post.imageUrl}
+            sx={{ height: "16rem", objectFit: "cover" }}
+          />
+        )}
       </Box>
     </>
   );

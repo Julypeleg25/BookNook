@@ -1,12 +1,16 @@
 import User, { IUser } from "@models/User";
 import { Types } from "mongoose";
-import { NotFoundError } from "@utils/errors";
 import { logger } from "@utils/logger";
+
+interface MongoError extends Error {
+  code?: number;
+  keyPattern?: Record<string, number>;
+}
 
 export class UserRepository {
   async findById(userId: Types.ObjectId | string): Promise<IUser | null> {
     try {
-      return await User.findById(new Types.ObjectId(userId));
+      return await User.findById(new Types.ObjectId(String(userId)));
     } catch (error) {
       logger.error(`Error finding user by ID ${userId}:`, error);
       throw error;
@@ -43,13 +47,13 @@ export class UserRepository {
   async create(userData: Partial<IUser>): Promise<IUser> {
     try {
       const user = new User(userData);
-
       return await user.save();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error creating user:", error);
-      
-      if (error.code === 11000) {
-        const field = Object.keys(error.keyPattern)[0];
+
+      const mongoError = error as MongoError;
+      if (mongoError.code === 11000 && mongoError.keyPattern) {
+        const field = Object.keys(mongoError.keyPattern)[0];
         throw new Error(`${field} already exists`);
       }
       throw error;
@@ -64,53 +68,27 @@ export class UserRepository {
       return await User.findByIdAndUpdate(
         userId,
         { $set: updateData },
-        { new: true }
+        { new: true, runValidators: true }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error(`Error updating user ${userId}:`, error);
-      if (error.code === 11000) {
-        const field = Object.keys(error.keyPattern)[0];
+
+      const mongoError = error as MongoError;
+      if (mongoError.code === 11000 && mongoError.keyPattern) {
+        const field = Object.keys(mongoError.keyPattern)[0];
         throw new Error(`${field} already exists`);
       }
       throw error;
     }
   }
 
- 
-
-    async updateRefreshToken(
-    userId: Types.ObjectId | string,
-    refreshToken: string | null
-  ): Promise<void> {
-    try {
-      await User.findByIdAndUpdate(userId, {  refreshToken });
-    } catch (error) {
-      logger.error(`Error updating refreshToken for user ${userId}:`, error);
-      throw error;
-    }
-  }
-
-      async updateAccessToken(
-    userId: Types.ObjectId | string,
-    accessToken: string | null
-  ): Promise<void> {
-    try {
-      await User.findByIdAndUpdate(userId, {  accessToken });
-    } catch (error) {
-      logger.error(`Error updating accessToken for user ${userId}:`, error);
-      throw error;
-    }
-  }
-
-   async updateTokens(
+  async updateTokens(
     userId: Types.ObjectId | string,
     accessToken: string | null,
     refreshToken: string | null
   ): Promise<void> {
     try {
-      await this.updateAccessToken(userId, accessToken)
-      await this.updateRefreshToken(userId, refreshToken)
-      
+      await User.findByIdAndUpdate(userId, { accessToken, refreshToken });
     } catch (error) {
       logger.error(`Error updating tokens for user ${userId}:`, error);
       throw error;
@@ -129,7 +107,7 @@ export class UserRepository {
         { $addToSet: { [field]: bookId } },
         { new: true }
       );
-      return updatedUser?.[field] || [];
+      return updatedUser?.[field] ?? [];
     } catch (error) {
       logger.error(
         `Error adding book to ${listType}list for user ${userId}:`,
@@ -146,7 +124,7 @@ export class UserRepository {
     try {
       const user = await User.findById(userId);
       const field = listType === "wish" ? "wishlist" : "readlist";
-      return user?.[field] || [];
+      return user?.[field] ?? [];
     } catch (error) {
       logger.error(`Error getting ${listType}list for user ${userId}:`, error);
       throw error;

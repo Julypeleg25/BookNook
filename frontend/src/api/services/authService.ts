@@ -1,72 +1,44 @@
 import {
   AuthResponseDto,
   LoginRequestDTO,
-  RegisterRequestDTO
+  RegisterRequestDTO,
 } from "@shared/dtos/auth.dto";
 import { endpoints } from "../endpoints";
-import { ApiError } from "../apiError";
 import { axiosClient, refreshTokenAxiosClient } from "../axios/axiosClient";
-
-import { AxiosResponse } from "axios";
-import { UserDto } from "@shared/index";
+import { UserDto } from "@shared/dtos/user.dto";
 
 export const AuthService = {
-  async login(payload: LoginRequestDTO): Promise<AxiosResponse<AuthResponseDto>> {
-    try {
-      const res = await axiosClient.post(endpoints.auth.login, payload);
-
-      return res;
-    } catch (err) {
-      throw err as ApiError;
-    }
+  async login(payload: LoginRequestDTO): Promise<AuthResponseDto> {
+    const res = await axiosClient.post<AuthResponseDto>(endpoints.auth.login, payload);
+    return res.data;
   },
 
-  async register(payload: RegisterRequestDTO): Promise<AxiosResponse<AuthResponseDto>> {
-    try {
-      const res = await axiosClient.post(endpoints.auth.register, payload);
-
-      return res;
-    } catch (err) {
-      throw err as ApiError;
-    }
+  async register(payload: RegisterRequestDTO): Promise<AuthResponseDto> {
+    const res = await axiosClient.post<AuthResponseDto>(endpoints.auth.register, payload);
+    return res.data;
   },
 
   async refreshToken(): Promise<string> {
-    try {
-      const res = await refreshTokenAxiosClient.post<{ accessToken: string }>(
-        endpoints.auth.refresh
-      );
-
-      return res.data.accessToken;
-    } catch (err) {
-      throw err as ApiError;
-    }
+    const res = await refreshTokenAxiosClient.post<{ accessToken: string }>(
+      endpoints.auth.refresh
+    );
+    return res.data.accessToken;
   },
 
-  async googleRegister(): Promise<string> {
-    try {
-      const res = await axiosClient.get(endpoints.auth.googleRegister);
-
-      return res.data.accessToken;
-    } catch (err) {
-      throw err as ApiError;
-    }
+  async googleLogin(token: string): Promise<AuthResponseDto> {
+    const res = await axiosClient.post<AuthResponseDto>(
+      endpoints.auth.googleRegister,
+      { token }
+    );
+    return res.data;
   },
 
-  logout() {
-    try {
-      return axiosClient.get(endpoints.auth.logout);
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
+  async logout(): Promise<void> {
+    await axiosClient.get(endpoints.auth.logout);
   },
 
-  async getCurrentUser() : Promise<UserDto>{
-     try {
-      const res = await axiosClient.get<UserDto>(endpoints.auth.me);
-      return res.data;
-    } catch (err) {
-      throw err as ApiError;
-    }
-}
-}
+  async getCurrentUser(): Promise<UserDto> {
+    const res = await axiosClient.get<UserDto>(endpoints.auth.me);
+    return res.data;
+  },
+};

@@ -11,12 +11,13 @@ import {
   forwardRef,
   useImperativeHandle,
   useState,
+  useRef,
   type ForwardedRef,
 } from "react";
 import { MdSend } from "react-icons/md";
 
 interface NewCommentProps {
-  avatarUrl: string;
+  avatarUrl?: string; // Made optional to match User model
 }
 
 export interface NewCommentRef {
@@ -27,11 +28,11 @@ const NewComment = forwardRef(
   ({ avatarUrl }: NewCommentProps, ref: ForwardedRef<NewCommentRef>) => {
     const [value, setValue] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const inputRef = useState<HTMLInputElement | null>(null)[0];
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
     useImperativeHandle(ref, () => ({
       focus: () => {
-        inputRef?.focus();
+        inputRef.current?.focus();
       },
     }));
 
@@ -40,7 +41,7 @@ const NewComment = forwardRef(
         setError("Required");
         return;
       }
-      // TODO: add comment
+      // TODO: add comment logic
     };
 
     return (
@@ -54,45 +55,49 @@ const NewComment = forwardRef(
           top: 0,
           backgroundColor: "white",
           zIndex: 1000,
+          alignItems: "center"
         }}
       >
-        <Avatar src={getAvatarSrcUrl(avatarUrl)} />
+        <Avatar src={getAvatarSrcUrl(avatarUrl)} alt="User Avatar" />
         <TextField
-          inputRef={(el) => {
-            if (el) inputRef?.focus();
-          }}
+          inputRef={inputRef}
           placeholder="Add comment..."
           sx={{
             borderRadius: "1rem",
             width: "90%",
             justifySelf: "center",
-            height: "6rem",
+            // Removed fixed height to allow growing
           }}
+          fullWidth
           value={value}
           onChange={(e) => {
             setValue(e.target.value);
             setError(null);
           }}
           error={Boolean(error)}
-          helperText={error ?? `${value?.length || 0}/500`}
+          helperText={error ?? `${value.length}/500`}
           multiline
           maxRows={3}
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={sendComment}
-                    disabled={!value.trim()}
-                    edge="end"
-                  >
-                    <MdSend />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
+          InputProps={{ // Changed slotProps to InputProps for better compatibility or ensure correct slot
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={sendComment}
+                  disabled={!value.trim()}
+                  edge="end"
+                  color="primary"
+                >
+                  <MdSend />
+                </IconButton>
+              </InputAdornment>
+            ),
           }}
-          onKeyDown={(e) => e.key === "Enter" && sendComment()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendComment();
+            }
+          }}
         />
       </Box>
     );

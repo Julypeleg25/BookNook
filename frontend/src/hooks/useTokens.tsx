@@ -1,20 +1,23 @@
+import { tokenService } from "@/api/services/tokenService";
+
+interface TokensState {
+  accessToken: string | null;
+  refreshToken: string | null;
+}
 
 function useTokens() {
-  const getTokens = () => ({
-    accessToken: localStorage.getItem('accessToken'),
-    refreshToken: localStorage.getItem('refreshToken')
+  const getTokens = (): TokensState => ({
+    accessToken: tokenService.getAccess(),
+    refreshToken: tokenService.getRefresh(),
   });
 
-  const setAccessToken = (
-    accessToken: string,
-  ) => {
-    localStorage.setItem('accessToken', accessToken);
+  const setAccessToken = (accessToken: string): void => {
+    tokenService.setAccess(accessToken);
   };
 
-  const clearTokens = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-};
+  const clearTokens = (): void => {
+    tokenService.clear();
+  };
 
   return { getTokens, setAccessToken, clearTokens };
 }

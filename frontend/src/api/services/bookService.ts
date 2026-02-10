@@ -1,19 +1,53 @@
 import { axiosClient } from "../axios/axiosClient";
 import { endpoints } from "../endpoints";
 
-export interface Book {
+export interface BookSummary {
   id: string;
   title: string;
-  author: string;
-  cover?: string;
+  authors: string[];
+  thumbnail?: string;
+  publishedDate?: string;
+}
+
+export interface BookDetail extends BookSummary {
+  subtitle?: string;
+  description?: string;
+  pageCount?: number;
+  categories: string[];
+  previewLink?: string;
+  avgRating?: number;
+  ratingCount?: number;
+}
+
+export interface BooksSearchParams {
+  title?: string;
+  author?: string;
+  subject?: string;
+  page?: number;
+  limit?: number;
+  rating?: number;
+  reviewCount?: number;
+}
+
+interface PaginatedBooksResponse {
+  page: number;
+  limit: number;
+  items: BookSummary[];
 }
 
 export const booksService = {
-  getAll(): Promise<Book[]> {
-    return axiosClient.get<Book[]>(endpoints.books.getAll).then((res) => res.data);
+  async search(params: BooksSearchParams): Promise<PaginatedBooksResponse> {
+    const res = await axiosClient.get<PaginatedBooksResponse>(
+      endpoints.books.search,
+      { params }
+    );
+    return res.data;
   },
 
-  getById(externalBookId: string): Promise<Book> {
-    return axiosClient.get<Book>(endpoints.books.byId(externalBookId)).then((res) => res.data);
+  async getById(externalBookId: string): Promise<{ book: BookDetail }> {
+    const res = await axiosClient.get<{ book: BookDetail }>(
+      endpoints.books.byId(externalBookId)
+    );
+    return res.data;
   },
 };

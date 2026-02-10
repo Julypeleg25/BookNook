@@ -1,122 +1,90 @@
 import { Types } from "mongoose";
 import { IUserReview } from "@models/UserReview";
-import { userReviewRepository } from "@repositories/userReviewRepository";
+import { userReviewRepository, PopulatedUserReview } from "@repositories/userReviewRepository";
 import { getOrCreateLocalBook } from "./bookService";
 import { recomputeBookRating } from "./ratingService";
-import { NotFoundError, ForbiddenError, ValidationError } from "@utils/errors";
-import { logger } from "@utils/logger";
+import { NotFoundError } from "@utils/errors";
 
-export async function createReview(
+export const createReview = async (
   userId: Types.ObjectId,
   externalBookId: string,
   rating: number,
   reviewText?: string,
   picturePath?: string
-): Promise<IUserReview> {
-  try {
-    const book = await getOrCreateLocalBook(externalBookId);
+): Promise<IUserReview> => {
+  const book = await getOrCreateLocalBook(externalBookId);
 
-    const newReview = await userReviewRepository.create({
-      user: userId,
-      book: book._id,
-      rating,
-      review: reviewText,
-      picturePath,
-    });
+  const newReview = await userReviewRepository.create({
+    user: userId,
+    book: book._id,
+    rating,
+    review: reviewText,
+    picturePath,
+  });
 
-    await recomputeBookRating(book._id.toString());
+  await recomputeBookRating(book._id.toString());
 
-    return newReview;
-  } catch (error) {
-    logger.error("Error creating review:", error);
-    throw error;
-  }
-}
+  return newReview;
+};
 
-export async function getAllReviews() {
+export const getAllReviews = async (): Promise<PopulatedUserReview[]> => {
   return await userReviewRepository.findAll();
-}
+};
 
-export async function getReviewsByUserId(userId: string) {
+export const getReviewsByUserId = async (
+  userId: string
+): Promise<PopulatedUserReview[]> => {
   return await userReviewRepository.findByUserId(userId);
-}
+};
 
-export async function getReviewById(reviewId: string): Promise<any> {
+export const getReviewById = async (
+  reviewId: string
+): Promise<PopulatedUserReview> => {
   const review = await userReviewRepository.findByIdWithUser(reviewId);
   if (!review) {
     throw new NotFoundError("Review not found");
   }
   return review;
+};
+
+interface UpdateReviewData {
+  review?: string;
+  rating?: number;
+  picturePath?: string;
 }
 
-export async function updateReview(
+export const updateReview = async (
   reviewId: string,
-  updateData: {
-    review?: string;
-    rating?: number;
-    picturePath?: string;
+  updateData: UpdateReviewData
+): Promise<IUserReview> => {
+  const updatedReview = await userReviewRepository.update(reviewId, updateData);
+  if (!updatedReview) {
+    throw new NotFoundError("Review not found");
   }
-): Promise<IUserReview> {
-  try {
-    const updatedReview = await userReviewRepository.update(reviewId, updateData);
-    if (!updatedReview) {
-      throw new NotFoundError("Review not found");
-    }
 
-    await recomputeBookRating(updatedReview.book.toString());
+  await recomputeBookRating(updatedReview.book.toString());
 
-    return updatedReview;
-  } catch (error) {
-    logger.error(`Error updating review ${reviewId}:`, error);
-    throw error;
+  return updatedReview;
+};
+
+export const deleteReview = async (reviewId: string): Promise<void> => {
+  const review = await userReviewRepository.findById(reviewId);
+  if (!review) {
+    throw new NotFoundError("Review not found");
   }
-}
 
-export async function deleteReview(reviewId: string): Promise<void> {
-  try {
-    const review = await userReviewRepository.findById(reviewId);
-    if (!review) {
-      throw new NotFoundError("Review not found");
-    }
+  await userReviewRepository.delete(reviewId);
+  await recomputeBookRating(review.book.toString());
+};
 
-    await userReviewRepository.delete(reviewId);
-    await recomputeBookRating(review.book.toString());
-  } catch (error) {
-    logger.error(`Error deleting review ${reviewId}:`, error);
-    throw error;
-  }
-}
-
-export async function likeReview(
+export const isReviewAuthor = async (
   reviewId: string,
-  userId: Types.ObjectId
-): Promise<number> {
-  try {
-    const review = await userReviewRepository.findById(reviewId);
-    if (!review) {
-      throw new NotFoundError("Review not found");
-    }
-
-    if (review.user.toString() === userId.toString()) {
-      throw new ForbiddenError("You can't like your own review");
-    }
-
-    await userReviewRepository.addLike(reviewId, userId);
-    const updatedReview = await userReviewRepository.findById(reviewId);
-    return updatedReview?.likes.length || 0;
-  } catch (error) {
-    logger.error(`Error liking review ${reviewId}:`, error);
-    throw error;
-  }
-}
-
-export async function isReviewAuthor(
-  reviewId: string,
-  userId: Types.ObjectId
-): Promise<boolean> {
+  userId: string
+): Promise<boolean> => {
   const review = await userReviewRepository.findById(reviewId);
   if (!review) {
     return false;
   }
-  return review.user.toString() === userId.toString();
-}
+  return review.user.toString() === userId;
+};
+

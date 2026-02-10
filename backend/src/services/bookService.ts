@@ -10,6 +10,7 @@ import { bookRepository } from "@repositories/bookRepository";
 import { NotFoundError } from "@utils/errors";
 import { logger } from "@utils/logger";
 import { ENV } from "@config/config";
+import { IBook } from "@models/Book";
 
 const GOOGLE_BOOKS_API = ENV.GOOGLE_BOOKS_API;
 const API_KEY = ENV.GOOGLE_BOOKS_API_KEY;
@@ -21,7 +22,7 @@ function normalizeBookSummary(volume: GoogleBooksVolume): BookSummary {
     title: info.title,
     authors: info.authors ?? [],
     thumbnail: info.imageLinks?.thumbnail,
-    publishedDate:info.publishedDate
+    publishedDate: info.publishedDate,
   };
 }
 
@@ -41,83 +42,86 @@ export function normalizeBookDetail(volume: GoogleBooksVolume): BookDetail {
   };
 }
 
-export async function searchBooks(query: BooksQuery): Promise<{
+function localBookToSummary(book: IBook): BookSummary {
+  return {
+    id: book.externalId,
+    title: book.title,
+    authors: book.authors,
+    thumbnail: book.thumbnail,
+    publishedDate: book.publishedDate,
+  };
+}
+
+interface PaginatedBooks {
   page: number;
   limit: number;
   items: BookSummary[];
-}> {
-  try {
-    const { title, author, subject, page = 1, limit = 20} = query;
-
-    const queryParts: string[] = [];
-    if (title) queryParts.push(`intitle:"${title}"`);
-    if (author) queryParts.push(`inauthor:"${author}"`);
-    if (subject) queryParts.push(`subject:"${subject}"`);
-
-    const q = queryParts.length ? queryParts.join("+") : '""';
-
-    const pageNumber = Math.max(1, Number(page));
-    const limitNumber = Math.min(Math.max(1, Number(limit)), 40); 
-    const startIndex = (pageNumber - 1) * limitNumber;
-
-    const fields = "items(id,volumeInfo(title,authors,imageLinks/thumbnail,publishedDate)),totalItems";
-
-    const response = await axios.get<GoogleBooksResponse>(GOOGLE_BOOKS_API, {
-      params: {
-        q,
-        startIndex,
-        maxResults: limitNumber,
-        fields,
-        key: API_KEY, 
-      },
-    });
-
-    const data = response.data;
-
-    return {
-      page: pageNumber,
-      limit: limitNumber,
-      items: data.items?.map(normalizeBookSummary) ?? [],
-    };
-  } catch (error) {
-    logger.error("Error searching books:", error);
-    throw error;
-  }
 }
 
-export async function localSearchBooks(query: BooksQuery): Promise<{
-  page: number;
-  limit: number
-  items: BookSummary[];
-}> {
+export async function searchBooks(query: BooksQuery): Promise<PaginatedBooks> {
+  const { title, author, subject, page = "1", limit = "20" } = query;
+
+  const queryParts: string[] = [];
+  if (title) queryParts.push(`intitle:"${title}"`);
+  if (author) queryParts.push(`inauthor:"${author}"`);
+  if (subject) queryParts.push(`subject:"${subject}"`);
+
+  const q = queryParts.length ? queryParts.join("+") : '""';
+
+  const pageNumber = Math.max(1, Number(page));
+  const limitNumber = Math.min(Math.max(1, Number(limit)), 40);
+  const startIndex = (pageNumber - 1) * limitNumber;
+
+  const fields =
+    "items(id,volumeInfo(title,authors,imageLinks/thumbnail,publishedDate)),totalItems";
+
+  const response = await axios.get<GoogleBooksResponse>(GOOGLE_BOOKS_API, {
+    params: {
+      q,
+      startIndex,
+      maxResults: limitNumber,
+      fields,
+      ...(API_KEY ? { key: API_KEY } : {}),
+    },
+  });
+
+  return {
+    page: pageNumber,
+    limit: limitNumber,
+    items: response.data.items?.map(normalizeBookSummary) ?? [],
+  };
+}
+
+export async function localSearchBooks(
+  query: BooksQuery
+): Promise<PaginatedBooks> {
   const {
-    page = 1,
-    limit = 20,
-    title, 
+    page = "1",
+    limit = "20",
+    title,
     author,
     rating,
     reviewCount,
-    subject
+    subject,
   } = query;
 
-  const { items, total } =
-    await bookRepository.localSearchBooks({  page: Number(page),
-    limit: Number(limit),
-    title, 
+  const pageNumber = Math.max(1, Number(page));
+  const limitNumber = Math.min(Math.max(1, Number(limit)), 40);
+
+  const { items } = await bookRepository.localSearchBooks({
+    page: pageNumber,
+    limit: limitNumber,
+    title,
     author,
     minRating: rating,
-    minReviews: reviewCount, subject});
+    minReviews: reviewCount,
+    subject,
+  });
 
   return {
-    page:  Number(page),
-    limit: Number(limit),
-    items: items.map((book) => ({
-      id: book.externalId,
-      title: book.title,
-      authors: book.authors,
-      thumbnail: book.thumbnail,
-      publishedDate: book.publishedDate,
-    })),
+    page: pageNumber,
+    limit: limitNumber,
+    items: items.map(localBookToSummary),
   };
 }
 
@@ -126,7 +130,10 @@ export async function getBookByGoogleIdFromGoogle(
 ): Promise<GoogleBooksVolume> {
   try {
     const response = await axios.get<GoogleBooksVolume>(
-      `${GOOGLE_BOOKS_API}/${googleId}`
+      `${GOOGLE_BOOKS_API}/${googleId}`,
+      {
+        params: API_KEY ? { key: API_KEY } : undefined,
+      }
     );
     return response.data;
   } catch (error) {
@@ -138,11 +145,15 @@ export async function getBookByGoogleIdFromGoogle(
   }
 }
 
-export async function getLocalBookByGoogleId(googleId: string) {
+export async function getLocalBookByGoogleId(
+  googleId: string
+): Promise<IBook | null> {
   return await bookRepository.findByExternalId(googleId);
 }
 
-export async function getLocalBookByLocalId(localId: string) {
+export async function getLocalBookByLocalId(
+  localId: string
+): Promise<IBook | null> {
   return await bookRepository.findById(localId);
 }
 
@@ -157,23 +168,18 @@ export async function getGoogleBookByLocalId(
 }
 
 export async function getBookDetails(googleId: string): Promise<BookDetail> {
-  try {
-    const googleBook = await getBookByGoogleIdFromGoogle(googleId);
-    const bookDetail = normalizeBookDetail(googleBook);
+  const googleBook = await getBookByGoogleIdFromGoogle(googleId);
+  const bookDetail = normalizeBookDetail(googleBook);
 
-    const localBook = await getLocalBookByGoogleId(googleId);
-    if (localBook) {
-      bookDetail.avgRating = localBook.avgRating;
-      bookDetail.ratingCount = localBook.ratingCount;
-    }
-
-    return bookDetail;
-  } catch (error) {
-    logger.error(`Error getting book details for ${googleId}:`, error);
-    throw error;
+  const localBook = await getLocalBookByGoogleId(googleId);
+  if (localBook) {
+    bookDetail.avgRating = localBook.avgRating;
+    bookDetail.ratingCount = localBook.ratingCount;
   }
+
+  return bookDetail;
 }
 
-export async function getOrCreateLocalBook(googleId: string) {
+export async function getOrCreateLocalBook(googleId: string): Promise<IBook> {
   return await bookRepository.getOrCreate(googleId);
 }

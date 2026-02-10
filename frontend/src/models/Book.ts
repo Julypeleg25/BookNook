@@ -4,31 +4,37 @@ import type { User } from "./User";
 interface Book {
   id: string;
   title: string;
-  author: string;
-  description: string;
-  thumbnail: string;
-  publishedDate: string;
-  genres: GenreOptionsType[];
+  authors: string[];
+  description?: string;
+  thumbnail?: string;
+  publishedDate?: string;
+  genres?: GenreOptionsType[];
+  pageCount?: number;
+  categories?: string[];
+  subtitle?: string;
+  previewLink?: string;
+  avgRating?: number;
+  ratingCount?: number;
 }
 
 interface BookPost {
   id: string;
   book: Book;
   user: User;
-  createdDate: Date;
+  createdDate: string;
   description: string;
   rating: number;
-  imageUrl: string;
-  likes: number;
-  comments: Comment[];
+  imageUrl?: string;
+  likes: string[]; // Updated to string[] (user IDs)
+  comments: PostComment[];
 }
 
-interface Comment {
+interface PostComment {
   id: string;
   user: User;
-  createdDate: Date;
+  createdDate: string;
   content: string;
-  bookPost: BookPost;
+  bookPost?: BookPost;
 }
 
-export type { Book, BookPost, Comment };
+export type { Book, BookPost, PostComment };
