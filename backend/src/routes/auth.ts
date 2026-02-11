@@ -4,11 +4,12 @@ import {
   register,
   login,
   refresh,
-  googleAuthenticate,
+  googleSignIn,
 } from "@controllers/authController";
 import { upload } from "@config/multerConfig";
 import { validateBody } from "@middlewares/validateRequest";
 import { RegisterSchema, LoginSchema } from "@shared/schemas/auth.schema";
+import { authenticate } from "@middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -16,8 +17,8 @@ router.post("/register", upload.single("avatar"), validateBody(RegisterSchema), 
 router.post("/login", validateBody(LoginSchema), login);
 router.post("/refresh", refresh);
 
-router.post("/google", googleAuthenticate);
+router.post("/google", googleSignIn);
 
-router.get("/logout", logout);
+router.post("/logout", authenticate, logout);
 
 export default router;

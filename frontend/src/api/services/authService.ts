@@ -25,16 +25,16 @@ export const AuthService = {
     return res.data.accessToken;
   },
 
-  async googleLogin(token: string): Promise<AuthResponseDto> {
+  async googleSignIn(credential: string): Promise<AuthResponseDto> {
     const res = await axiosClient.post<AuthResponseDto>(
       endpoints.auth.googleRegister,
-      { token }
+      { credential }
     );
     return res.data;
   },
 
   async logout(): Promise<void> {
-    await axiosClient.get(endpoints.auth.logout);
+    await axiosClient.post(endpoints.auth.logout);
   },
 
   async getCurrentUser(): Promise<UserDto> {

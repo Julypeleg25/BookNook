@@ -29,7 +29,7 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
             </IconButton>
           </Tooltip>
           <div>{bookPost.book.title}</div>
-          <div>({new Date(bookPost.book.publishedDate).getFullYear()})</div>
+          <div>{bookPost.book.publishedDate ? `(${new Date(bookPost.book.publishedDate).getFullYear()})` : ""}</div>
         </Typography>
         <Rating size="large" value={bookPost.rating} readOnly />
         <Typography variant="h5" style={{ display: "flex", gap: "1rem" }}>

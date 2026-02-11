@@ -28,11 +28,11 @@ const BookInfoSection = ({ book }: BookInfoSectionProps) => {
         mt="2rem"
       >
         <Box display="grid" gridTemplateColumns="1fr 1fr" gap="1.2rem">
-          <InfoRow label="Author" value={book.author} />
-          <InfoRow label="Pages" value={book.author} />
-          <InfoRow label="Language" value={book.author} />
-          <InfoRow label="Published" value={formatDate(book.publishedDate)} />
-          <InfoRow label="Format" value={book.author} />
+          <InfoRow label="Author" value={book.authors?.join(", ") ?? "Unknown"} />
+          <InfoRow label="Pages" value={book.pageCount ?? "N/A"} />
+          <InfoRow label="Categories" value={book.categories?.join(", ") ?? "N/A"} />
+          <InfoRow label="Published" value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"} />
+          <InfoRow label="Rating" value={book.avgRating ?? "N/A"} />
         </Box>
 
         <Box
@@ -58,11 +58,11 @@ const BookInfoSection = ({ book }: BookInfoSectionProps) => {
         </Box>
       </Box>
 
-      {book.genres?.length > 0 && (
+      {(book.genres?.length ?? 0) > 0 && (
         <>
           <Divider sx={{ my: "1.5rem" }} />
           <Box display="flex" gap={"1rem"} flexWrap="wrap">
-            {book.genres.map((genre) => (
+            {book.genres!.map((genre) => (
               <Chip key={genre} label={genre} />
             ))}
           </Box>

@@ -7,27 +7,24 @@ import {
   Typography,
 } from "@mui/material";
 import loginIcon from "@assets/login-icon.png";
-import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
-import { GoogleCredentialResponse } from "@react-oauth/google";
-import { FcGoogle } from "react-icons/fc";
+import { GoogleLogin } from "@react-oauth/google";
+import type { GoogleCredentialResponse } from "@react-oauth/google";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
-import { AuthResponseDto, LoginRequestDTO } from "@shared/dtos/auth.dto";
+import type { LoginRequestDTO } from "@shared/dtos/auth.dto";
 import { LoginSchema } from "@shared/schemas/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import env from "@/config/env";
-import { AxiosError, AxiosResponse } from "axios";
-import { axiosClient } from "@/api/axios/axiosClient";
+import { AuthService } from "@/api/services/authService";
 import useUserStore from "@/state/useUserStore";
 import { tokenService } from "@/api/services/tokenService";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { setUser, user } = useUserStore();
+  const { setUser } = useUserStore();
   const [loginError, setLoginError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const {
@@ -51,42 +48,31 @@ const Login = () => {
     try {
       await login(data);
       reset();
-    } catch (error) {
+    } catch {
       setError("root", { message: "Invalid username or password" });
     }
   };
-  const urlToFile = async (url: string, filename: string): Promise<File> => {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    return new File([blob], filename, { type: blob.type });
-  };
 
-   const handleGoogleSuccess = async (
+  const handleGoogleSuccess = async (
     credentialResponse: GoogleCredentialResponse
   ) => {
     try {
-      const response = (await axiosClient.post(`${env.API_BASE_URL}/google`, {
-        token: credentialResponse.credential,
-      })) as AxiosResponse<AuthResponseDto>;
+      if (!credentialResponse.credential) {
+        setLoginError("Google login failed — no credential received");
+        return;
+      }
 
-      const { user, accessToken } = response.data;
-      tokenService.setAccess(accessToken);
-      setUser(user);
-
+      const data = await AuthService.googleSignIn(credentialResponse.credential);
+      tokenService.setAccess(data.accessToken);
+      setUser(data.user);
       navigate("/posts");
-    } catch (err) {
-      const error = err as AxiosError;
-      setLoginError(error.response?.statusText || "Google login failed");
+    } catch {
+      setLoginError("Google login failed");
     }
   };
 
-   const handleGoogleFailure = () => {
+  const handleGoogleFailure = () => {
     setLoginError("Google login failed");
-  };
-
-  const loginWithGoogle = () => {
-    // await AuthService.googleRegister();
-    window.location.href = `${env.API_BASE_URL}/google`;
   };
 
   return (
@@ -181,13 +167,13 @@ const Login = () => {
                   )}
                 />
               </div>
-              {errors.root && (
+              {(errors.root || loginError) && (
                 <Typography
                   color="error"
                   textAlign="center"
                   sx={{ mb: "1rem" }}
                 >
-                  {errors.root.message}
+                  {errors.root?.message || loginError}
                 </Typography>
               )}
               <Button

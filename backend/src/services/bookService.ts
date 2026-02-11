@@ -66,7 +66,7 @@ export const searchBooks = async (query: BooksQuery): Promise<PaginatedBooks> =>
   if (author) queryParts.push(`inauthor:"${author}"`);
   if (subject) queryParts.push(`subject:"${subject}"`);
 
-  const q = queryParts.length ? queryParts.join("+") : '""';
+  const q = queryParts.length ? queryParts.join(" ") : '""';
 
   const pageNumber = Math.max(1, Number(page));
   const limitNumber = Math.min(Math.max(1, Number(limit)), 40);

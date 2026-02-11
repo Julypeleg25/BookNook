@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ReviewComment {
+  _id?: Types.ObjectId;
   user: Types.ObjectId;
   comment: string;
   createdAt: Date;

@@ -31,6 +31,12 @@ export const getUserByUsername = async (
   return await userRepository.findByUsername(username);
 };
 
+export const getUserByEmail = async (
+  email: string
+): Promise<IUser | null> => {
+  return await userRepository.findByEmail(email);
+};
+
 export const getUserByProviderId = async (
   providerId: string
 ): Promise<IUser | null> => {

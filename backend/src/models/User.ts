@@ -44,6 +44,7 @@ const userSchema = new Schema<IUser>(
       trim: true,
       minlength: 6,
       maxlength: 60,
+      required: false,
     },
     googleId: { type: String, unique: true, sparse: true },
     avatar: String,

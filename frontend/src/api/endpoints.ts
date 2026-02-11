@@ -1,11 +1,11 @@
 export const endpoints = {
   auth: {
-    register: "/register",
-    login: "/login",
-    refresh: "/refresh",
+    register: "/auth/register",
+    login: "/auth/login",
+    refresh: "/auth/refresh",
     me: "/api/users/me",
-    logout: "/logout",
-    googleRegister: "/google",
+    logout: "/auth/logout",
+    googleRegister: "/auth/google",
   },
 
   users: {

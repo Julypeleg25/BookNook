@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Divider,
   IconButton,
   TextField,
   Typography,
@@ -10,16 +9,15 @@ import {
   CircularProgress,
 } from "@mui/material";
 import loginIcon from "@assets/login-icon.png";
-import { FcGoogle } from "react-icons/fc";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RegisterRequestDTO } from "@shared/dtos/auth.dto";
+import type { RegisterRequestDTO } from "@shared/dtos/auth.dto";
 import { useAuth } from "@/hooks/useAuth";
 import { RegisterSchema } from "@shared/schemas/auth.schema";
-import env from "@/config/env";
+import { ApiError } from "@/api/apiError";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -37,7 +35,6 @@ const SignUp = () => {
     defaultValues: {
       username: "",
       password: "",
-      name: "",
       email: "",
     },
     resolver: zodResolver(RegisterSchema),
@@ -49,18 +46,15 @@ const SignUp = () => {
     try {
       await register(data);
       reset();
-
-    } catch (error: any) {
-      setError("root", {
-        message: error.details.error || "Invalid details, try again",
-      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Invalid details, try again";
+      setError("root", { message });
     } finally {
       setLoading(false);
     }
-  };
-
-  const registerWithGoogle = () => {
-    window.location.href = `${env.API_BASE_URL}/google`;
   };
 
   return (
@@ -83,41 +77,52 @@ const SignUp = () => {
             Sign up now
           </Typography>
 
-          
-
-
           <Stack spacing="1rem">
-            {[
-              {
-                name: "username",
-                label: "Username",
-                placeholder: "Choose a username",
-              },             
-              { name: "email", label: "Email", placeholder: "you@example.com" },
-            ].map((input) => (
-              <Box key={input.name}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ mb: "0.5rem", fontWeight: 600 }}
-                >
-                  {input.label}
-                </Typography>
-                <Controller
-                  name={input.name as any}
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      variant="outlined"
-                      placeholder={input.placeholder}
-                      error={!!(errors as any)[input.name]}
-                      helperText={(errors as any)[input.name]?.message}
-                    />
-                  )}
-                />
-              </Box>
-            ))}
+            <Box>
+              <Typography
+                variant="subtitle2"
+                sx={{ mb: "0.5rem", fontWeight: 600 }}
+              >
+                Username
+              </Typography>
+              <Controller
+                name="username"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Choose a username"
+                    error={!!errors.username}
+                    helperText={errors.username?.message}
+                  />
+                )}
+              />
+            </Box>
+
+            <Box>
+              <Typography
+                variant="subtitle2"
+                sx={{ mb: "0.5rem", fontWeight: 600 }}
+              >
+                Email
+              </Typography>
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    variant="outlined"
+                    placeholder="you@example.com"
+                    error={!!errors.email}
+                    helperText={errors.email?.message}
+                  />
+                )}
+              />
+            </Box>
 
             <Box>
               <Typography

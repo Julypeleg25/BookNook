@@ -1,38 +1,31 @@
 import { Request, Response, NextFunction } from "express";
 import { isReviewAuthor } from "@services/userReviewService";
-import { ForbiddenError } from "@utils/errors";
+import { ForbiddenError, ValidationError, UnauthorizedError } from "@utils/errors";
 import { logger } from "@utils/logger";
 
 export const isReviewAuthorMiddleware = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     const { id } = req.params;
     if (!id) {
-      res.status(400).json({ error: "Review ID is required" });
-      return;
+      throw new ValidationError("Review ID is required");
     }
 
     const userId = req.authenticatedUser?.id;
     if (!userId) {
-      res.status(401).json({ error: "User not authenticated" });
-      return;
+      throw new UnauthorizedError("User not authenticated");
     }
 
     const isAuthor = await isReviewAuthor(id, userId);
-
     if (!isAuthor) {
       throw new ForbiddenError("Not authorized to edit this review");
     }
 
     next();
-  } catch (error: unknown) {
-    if (error instanceof ForbiddenError) {
-      res.status(403).json({ error: error.message });
-      return;
-    }
+  } catch (error) {
     logger.error("Error checking review author:", error);
     next(error);
   }

@@ -76,7 +76,7 @@ export const getReadlist = async (
     const fullBooksOfReadlist = await Promise.all(
       user.readlist.map(async (bookId) => {
         try {
-          return await getBookByGoogleIdFromGoogle(bookId);
+          return await getBookByGoogleIdFromGoogle(bookId.toString());
         } catch (error) {
           logger.warn(`Error fetching book ${bookId} for readlist:`, error);
           return null;

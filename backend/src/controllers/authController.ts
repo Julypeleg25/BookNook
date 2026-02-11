@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import User from "@models/User";
 import {
   generateTokens,
   setAuthCookies,
@@ -11,6 +10,7 @@ import { generateUsernameFromEmail, sanitizeUser } from "@utils/userUtils";
 import {
   createUser,
   getUserByUsername,
+  getUserByEmail,
   updateUserTokens,
   getUserById,
 } from "@services/userService";
@@ -120,20 +120,20 @@ export const refresh = async (
 
 const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
 
-export const googleAuthenticate = async (
+export const googleSignIn = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { token } = req.body;
-    if (!token || typeof token !== "string") {
-      res.status(HttpStatusCode.BadRequest).json({ message: "Google token is required" });
+    const { credential } = req.body;
+    if (!credential || typeof credential !== "string") {
+      res.status(HttpStatusCode.BadRequest).json({ message: "Google credential is required" });
       return;
     }
 
     const ticket = await client.verifyIdToken({
-      idToken: token,
+      idToken: credential,
       audience: ENV.GOOGLE_CLIENT_ID,
     });
 
@@ -143,17 +143,17 @@ export const googleAuthenticate = async (
       return;
     }
 
-    const { email, sub, picture } = payload;
+    const { email, picture } = payload;
 
-    let user = await User.findOne({ email });
+    let user = await getUserByEmail(email);
 
     if (!user) {
-      user = await User.create({
+      user = await createUser({
         email,
         username: generateUsernameFromEmail(email),
-        googleId: sub,
         avatar: picture,
         provider: "google",
+        providerId: payload.sub,
       });
     }
 
@@ -179,6 +179,10 @@ export const logout = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (req.authenticatedUser?.id) {
+      await updateUserTokens(req.authenticatedUser.id, null, null);
+    }
+
     clearAuthCookies(res);
     res.status(HttpStatusCode.Ok).json({ success: true });
   } catch (error) {

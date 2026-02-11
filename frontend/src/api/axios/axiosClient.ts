@@ -4,7 +4,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 import env from "@/config/env";
-import { mapAxiosError } from "../apiError";
+import { mapAxiosError, ApiErrorResponseData } from "../apiError";
 import { AuthService } from "../services/authService";
 import { tokenService } from "../services/tokenService";
 import useUserStore from "@/state/useUserStore";
@@ -104,6 +104,6 @@ axiosClient.interceptors.response.use(
       }
     }
 
-    throw mapAxiosError(error);
+    throw mapAxiosError(error as AxiosError<ApiErrorResponseData>);
   }
 );
