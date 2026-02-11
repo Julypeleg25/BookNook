@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import AppBar from "@/components/AppBar";
+import FloatingAddButton from "@/components/common/FloatingAddButton";
 
 const AppLayout = () => {
   return (
@@ -8,6 +9,7 @@ const AppLayout = () => {
       <div>
         <Outlet />
       </div>
+      <FloatingAddButton />
     </div>
   );
 };

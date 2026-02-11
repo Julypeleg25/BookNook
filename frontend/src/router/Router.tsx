@@ -10,6 +10,7 @@ import NewPost from "@pages/NewPost";
 import MyLists from "@pages/MyLists";
 import Profile from "@pages/Profile";
 import NotFound from "@pages/NotFound";
+import SelectBookForPost from "@pages/SelectBookForPost";
 import AppLayout from "./AppLayout";
 import PublicLayout from "./layout/PublicLayout";
 import useUserStore from "@/state/useUserStore";
@@ -38,11 +39,13 @@ const Router = () => {
 
           <Route path="/books">
             <Route index element={<ExploreBooks />} />
+            <Route path="select" element={<SelectBookForPost />} />
             <Route path=":id" element={<BookInfo />} />
           </Route>
 
           <Route path="/post">
             <Route index element={<NewPost />} />
+            <Route path="create/:bookId" element={<NewPost />} />
             <Route path="edit/:id" element={<NewPost />} />
           </Route>
 

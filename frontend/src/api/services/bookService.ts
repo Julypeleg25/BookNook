@@ -33,6 +33,7 @@ interface PaginatedBooksResponse {
   page: number;
   limit: number;
   items: BookSummary[];
+  hasNextPage: boolean;
 }
 
 export const booksService = {

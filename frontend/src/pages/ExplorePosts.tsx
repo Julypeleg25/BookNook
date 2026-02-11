@@ -1,12 +1,10 @@
-import { Box, Fab } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import BookPostCard from "@components/bookCards/post/BookPostCard";
 import { bookPosts } from "../exampleData";
 import type { BookPost } from "@models/Book";
 import { useState } from "react";
 import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
 import SearchBar from "@components/searchFilters/SearchBar";
-import { MdAdd } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
 import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
 import type { ISearchFiltersForm } from "@components/searchFilters/models/SearchFiltersOptions";
 
@@ -22,18 +20,33 @@ const defaultFilters: ISearchFiltersForm = {
 };
 
 const ExplorePosts = () => {
-  const navigate = useNavigate();
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<ISearchFiltersForm>(defaultFilters);
 
+  // Filter posts based on search query and filters
+  const filteredPosts = bookPosts.filter((post) => {
+    // Search by book title or description
+    const matchesSearch = searchQuery.trim() === "" ||
+      post.book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Filter by rating
+    const matchesRating = filters.rating === 0 || post.rating >= filters.rating;
+
+    // Filter by likes amount
+    const matchesLikes = filters.likesAmount === 0 || post.likes.length >= filters.likesAmount;
+
+    return matchesSearch && matchesRating && matchesLikes;
+  });
+
   const { visibleItems, loaderRef } = useInfiniteLoader<BookPost>({
-    items: bookPosts,
+    items: filteredPosts,
     batchSize: 20,
   });
 
-  const handleSearch = () => {
-    // TODO: Implement search with searchTerm and filters
+  const handleSearch = (newSearchTerm: string) => {
+    setSearchQuery(newSearchTerm);
   };
 
   const handleApplyFilters = (data: ISearchFiltersForm) => {
@@ -44,8 +57,8 @@ const ExplorePosts = () => {
     <Box sx={{ p: "1rem", mt: "1.5rem" }}>
       <SearchBar
         onSearch={handleSearch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
+        searchTerm={searchQuery}
+        setSearchTerm={setSearchQuery}
         setIsFiltersModalOpen={setIsFiltersModalOpen}
       />
       <Box
@@ -62,6 +75,16 @@ const ExplorePosts = () => {
           <BookPostCard key={post.id} post={post} />
         ))}
       </Box>
+      {visibleItems.length === 0 && searchQuery.trim() !== "" && (
+        <Box sx={{ textAlign: "center", mt: 8 }}>
+          <Typography variant="h6" color="text.secondary">
+            No posts found
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Try adjusting your search or filters
+          </Typography>
+        </Box>
+      )}
       <Box ref={loaderRef} />
 
       <SearchFiltersModal
@@ -70,15 +93,6 @@ const ExplorePosts = () => {
         onApply={handleApplyFilters}
         currentFilters={filters}
       />
-      <Fab
-        color="primary"
-        sx={{ position: "fixed", bottom: 24, right: 24 }}
-        onClick={() => {
-          navigate("/post");
-        }}
-      >
-        <MdAdd size={"1.8rem"} />
-      </Fab>
     </Box>
   );
 };

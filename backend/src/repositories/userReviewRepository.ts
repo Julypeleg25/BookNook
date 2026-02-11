@@ -82,6 +82,19 @@ export class UserReviewRepository {
     }
   }
 
+  async findByBookId(bookId: Types.ObjectId | string): Promise<PopulatedUserReview[]> {
+    try {
+      const bookObjectId = typeof bookId === "string" ? new Types.ObjectId(bookId) : bookId;
+      return await UserReviewModel.find({ book: bookObjectId })
+        .sort({ createdAt: -1 })
+        .populate<{ user: IUser }>({ path: "user", select: "username avatar bio" })
+        .lean() as unknown as PopulatedUserReview[];
+    } catch (error) {
+      logger.error(`Error finding reviews by bookId ${bookId}:`, error);
+      throw error;
+    }
+  }
+
   async update(
     reviewId: Types.ObjectId | string,
     updateData: Partial<Pick<IUserReview, "review" | "rating" | "picturePath">>

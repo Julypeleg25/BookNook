@@ -5,6 +5,8 @@ import {
   Typography,
   Box,
   Rating,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   Controller,
@@ -13,25 +15,40 @@ import {
   type ControllerRenderProps,
 } from "react-hook-form";
 import PostImageUpload from "@components/common/PostImageUpload";
-import { useParams } from "react-router-dom";
-import { useMemo } from "react";
-import { bookPosts } from "../exampleData";
-import useNav from "@hooks/useNav";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { userReviewService } from "@/api/services/userReviewService";
+import { booksService } from "@/api/services/bookService";
+import { useQuery } from "@tanstack/react-query";
+import { useSnackbar } from "notistack";
 
 interface INewPostInputs {
-  description: string;
+  review: string;
   image: File | string;
   rating: number;
 }
 
 const NewPost = () => {
-  const { id } = useParams<{ id?: string }>();
-  const { goBack } = useNav();
+  const { bookId } = useParams<{ bookId?: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
 
-  const bookPost = useMemo(
-    () => bookPosts.find((bookPost) => bookPost.id === id),
-    [id]
-  );
+  // Get book from route state or fetch it
+  const bookFromState = location.state?.book;
+
+  const { data: bookData, isLoading: isLoadingBook } = useQuery({
+    queryKey: ["book", bookId],
+    queryFn: async () => {
+      if (!bookId) return null;
+      const response = await booksService.getById(bookId);
+      return response.book;
+    },
+    enabled: !!bookId && !bookFromState,
+  });
+
+  const book = bookFromState || bookData;
 
   const {
     control,
@@ -40,33 +57,67 @@ const NewPost = () => {
     reset,
   } = useForm<INewPostInputs>({
     defaultValues: {
-      description: bookPost?.description ?? "",
-      image: bookPost?.imageUrl ?? "",
-      rating: bookPost?.rating ?? 0,
+      review: "",
+      image: "",
+      rating: 0,
     },
     mode: "onSubmit",
   });
 
-  const description = useWatch({
+  const review = useWatch({
     control,
-    name: "description",
+    name: "review",
+  });
+
+  const createReviewMutation = useMutation({
+    mutationFn: userReviewService.createReview,
+    onSuccess: () => {
+      enqueueSnackbar("Review created successfully!", { variant: "success" });
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      if (bookId) {
+        queryClient.invalidateQueries({ queryKey: ["reviews", bookId] });
+      }
+      navigate("/posts");
+    },
+    onError: (error: any) => {
+      enqueueSnackbar(
+        error?.response?.data?.message || "Failed to create review",
+        { variant: "error" }
+      );
+    },
   });
 
   const onSubmit = (data: INewPostInputs) => {
-    if (!isDirty) return;
+    if (!isDirty || !bookId) return;
 
-    // TODO:
-    // if (post) updatePost(post.id, data)
-    // else createPost(data)
-
-    console.log("Submitted post:", data);
-    reset(data);
+    createReviewMutation.mutate({
+      bookId,
+      rating: data.rating,
+      review: data.review,
+      picture: data.image instanceof File ? data.image : undefined,
+    });
   };
 
   const onCancel = () => {
-    goBack();
+    navigate(-1);
     reset();
   };
+
+  if (isLoadingBook) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!bookId) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">No book selected. Please select a book to review.</Alert>
+      </Box>
+    );
+  }
 
   return (
     <Stack
@@ -78,8 +129,17 @@ const NewPost = () => {
       onSubmit={handleSubmit(onSubmit)}
     >
       <Typography fontSize="1.4rem" fontWeight={600}>
-        {bookPost ? "Edit post" : "Create new post"}
+        Create Review
       </Typography>
+
+      {book && (
+        <Box sx={{ p: 2, bgcolor: "background.paper", borderRadius: 1, border: 1, borderColor: "divider" }}>
+          <Typography variant="h6">{book.title}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {book.authors?.join(", ")}
+          </Typography>
+        </Box>
+      )}
 
       <Controller
         name="image"
@@ -92,31 +152,31 @@ const NewPost = () => {
       />
 
       <Controller
-        name="description"
+        name="review"
         control={control}
         rules={{
-          required: "Description is required",
-          minLength: { value: 10, message: "Minimum 10 characters" },
+          required: "Review is required",
+          minLength: { value: 5, message: "Minimum 5 characters" },
           maxLength: { value: 1500, message: "Max 1500 characters" },
         }}
         render={({
           field,
         }: {
-          field: ControllerRenderProps<INewPostInputs, "description">;
+          field: ControllerRenderProps<INewPostInputs, "review">;
         }) => (
           <TextField
             {...field}
             slotProps={{ htmlInput: { maxLength: 1500 } }}
-            label="Description"
+            label="Review"
             placeholder="Write your opinions on the book, help others find out if they'll like it!"
             multiline
             maxRows={10}
             fullWidth
-            error={!!errors.description}
+            error={!!errors.review}
             helperText={
-              errors.description
-                ? errors.description.message
-                : `${description?.length || 0}/1500`
+              errors.review
+                ? errors.review.message
+                : `${review?.length || 0}/1500`
             }
           />
         )}
@@ -126,7 +186,8 @@ const NewPost = () => {
         name="rating"
         control={control}
         rules={{
-          min: { value: 0.5, message: "Rating is required" },
+          min: { value: 1, message: "Rating is required (1-5)" },
+          max: { value: 5, message: "Rating must be between 1 and 5" },
         }}
         render={({
           field,
@@ -134,11 +195,12 @@ const NewPost = () => {
           field: ControllerRenderProps<INewPostInputs, "rating">;
         }) => (
           <Box>
-            <Typography mb={"1rem"}>Rating</Typography>
+            <Typography mb={"1rem"}>Rating (1-5 whole numbers)</Typography>
             <Rating
-              precision={0.5}
+              precision={1}
               value={field.value}
-              onChange={(_, value) => field.onChange(value)}
+              onChange={(_, value) => field.onChange(value || 0)}
+              max={5}
             />
             {errors.rating && (
               <Typography color="error" variant="caption">
@@ -150,11 +212,15 @@ const NewPost = () => {
       />
 
       <Stack direction="row" justifyContent="flex-end" spacing={2}>
-        <Button variant="outlined" onClick={onCancel}>
+        <Button variant="outlined" onClick={onCancel} disabled={createReviewMutation.isPending}>
           Cancel
         </Button>
-        <Button type="submit" variant="contained" disabled={!isDirty}>
-          {bookPost ? "Save changes" : "Publish"}
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={!isDirty || createReviewMutation.isPending}
+        >
+          {createReviewMutation.isPending ? "Publishing..." : "Publish"}
         </Button>
       </Stack>
     </Stack>

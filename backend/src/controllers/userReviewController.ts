@@ -3,6 +3,7 @@ import {
   createReview,
   getAllReviews,
   getReviewsByUserId,
+  getReviewsByBookId,
   getReviewById,
   updateReview,
   deleteReview,
@@ -108,6 +109,28 @@ export const getReviewsByUserIdHandler = async (
   } catch (error) {
     logger.error(
       `Error fetching reviews for user ${req.params.userId}:`,
+      error
+    );
+    next(error);
+  }
+};
+
+export const getReviewsByBookIdHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { bookId } = req.params;
+    if (!bookId) {
+      throw new ValidationError("Book ID is required");
+    }
+
+    const reviews = await getReviewsByBookId(bookId);
+    res.json(reviews);
+  } catch (error) {
+    logger.error(
+      `Error fetching reviews for book ${req.params.bookId}:`,
       error
     );
     next(error);

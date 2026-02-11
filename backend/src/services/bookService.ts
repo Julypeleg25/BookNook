@@ -56,6 +56,7 @@ interface PaginatedBooks {
   page: number;
   limit: number;
   items: BookSummary[];
+  hasNextPage: boolean;
 }
 
 export const searchBooks = async (query: BooksQuery): Promise<PaginatedBooks> => {
@@ -85,10 +86,13 @@ export const searchBooks = async (query: BooksQuery): Promise<PaginatedBooks> =>
     },
   });
 
+  const items = response.data.items?.map(normalizeBookSummary) ?? [];
+
   return {
     page: pageNumber,
     limit: limitNumber,
-    items: response.data.items?.map(normalizeBookSummary) ?? [],
+    items,
+    hasNextPage: items.length === limitNumber,
   };
 };
 
@@ -118,10 +122,13 @@ export const localSearchBooks = async (
     subject,
   });
 
+  const bookSummaries = items.map(localBookToSummary);
+
   return {
     page: pageNumber,
     limit: limitNumber,
-    items: items.map(localBookToSummary),
+    items: bookSummaries,
+    hasNextPage: bookSummaries.length === limitNumber,
   };
 };
 

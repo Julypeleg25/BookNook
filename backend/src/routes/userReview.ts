@@ -4,6 +4,7 @@ import {
   createReviewHandler,
   getAllReviewsHandler,
   getReviewsByUserIdHandler,
+  getReviewsByBookIdHandler,
   getReviewByIdHandler as getReviewById,
   updateReviewHandler,
   deleteReviewHandler,
@@ -18,6 +19,7 @@ const router = Router();
 router.post("/", upload.single("picture"), createReviewHandler);
 router.get("/", getAllReviewsHandler);
 router.get("/user/:userId", getReviewsByUserIdHandler);
+router.get("/book/:bookId", getReviewsByBookIdHandler);
 router.get("/:id", getReviewById);
 router.patch("/:id", isReviewAuthorMiddleware, upload.single("picture"), updateReviewHandler);
 router.post("/:id/like", likeReviewHandler);

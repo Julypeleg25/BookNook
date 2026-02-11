@@ -1,121 +1,164 @@
-import { Box, Button, CircularProgress, Typography } from "@mui/material";
-import { useState, useEffect } from "react";
+import { Box, CircularProgress, Typography, Skeleton } from "@mui/material";
+import { useRef, useCallback, useEffect } from "react";
 import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
 import SearchBar from "@components/searchFilters/SearchBar";
 import BookInfoCard from "@components/bookCards/BookInfoCard";
 import { ISearchFiltersForm } from "@/components/searchFilters/models/SearchFiltersOptions";
-import { useQuery } from "@tanstack/react-query";
-import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { booksService } from "@/api/services/bookService";
 import type { Book } from "@/models/Book";
+import { useState } from "react";
 
 const PAGE_SIZE = 20;
 
-const ExploreBooks = () => {
-  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
-  const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
+interface ExploreBooksProps {
+  isSelectMode?: boolean;
+  onBookSelect?: (book: Book) => void;
+}
 
+const ExploreBooks = ({ isSelectMode = false, onBookSelect }: ExploreBooksProps) => {
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<ISearchFiltersForm>({
-    language: "", genre: "", author: "", yearPublishedFrom: "", 
+    language: "", genre: "", author: "", yearPublishedFrom: "",
     yearPublishedTo: "", rating: 0, likesAmount: 0, reviewsAmount: 0
   });
 
-  const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ["booksSearch", filters, searchTerm, page],
-    queryFn: async () => {
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Build search params from filters
+  const hasValidQuery = searchQuery.trim().length > 0 ||
+    filters.author.trim().length > 0 ||
+    filters.genre.trim().length > 0 ||
+    filters.rating > 0 ||
+    filters.reviewsAmount > 0;
+
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ["booksSearch", searchQuery, filters],
+    queryFn: async ({ pageParam = 1 }) => {
       return await booksService.search({
-          author: filters.author || undefined,
-          subject: filters.genre || undefined,
-          title: searchTerm,
-          reviewCount: filters.reviewsAmount || undefined,
-          rating: filters.rating || undefined,
-          page,
-          limit: PAGE_SIZE 
+        author: filters.author || undefined,
+        subject: filters.genre || undefined,
+        title: searchQuery,
+        reviewCount: filters.reviewsAmount || undefined,
+        rating: filters.rating || undefined,
+        page: pageParam,
+        limit: PAGE_SIZE
       });
     },
-    enabled: false,
-    placeholderData: (previousData) => previousData, 
+    getNextPageParam: (lastPage) => {
+      return lastPage.hasNextPage ? lastPage.page + 1 : undefined;
+    },
+    initialPageParam: 1,
+    enabled: hasValidQuery, // Auto-enable when query is valid
   });
 
-  const handleSearch = () => {
-    setPage(1);
-    refetch();
+  const handleSearch = (newSearchTerm: string) => {
+    setSearchQuery(newSearchTerm);
   };
 
-  useEffect(() => {
-    // Only refetch if we have performed a search at least once (data exists) or we want initial load?
-    // Originally: if (data) refetch(); -> implies only refetch on page change if data loaded.
-    // Ideally, we might want initial load. The useQuery has enabled: false.
-    // Let's keep logic similar but safer.
-    if (data || searchTerm || Object.values(filters).some(Boolean)) {
-       refetch();
-    }
-  }, [page]); 
+  const handleFiltersApply = (newFilters: ISearchFiltersForm) => {
+    setFilters(newFilters);
+  };
 
-  const hasMore = (data?.items?.length || 0) === PAGE_SIZE;
+  // Intersection Observer for infinite scroll
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const [target] = entries;
+    if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  useEffect(() => {
+    const element = observerTarget.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(handleObserver, {
+      threshold: 0.1,
+    });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [handleObserver]);
+
+  const allBooks = data?.pages.flatMap(page => page.items) ?? [];
+  const hasSearched = hasValidQuery;
+  const showEmptyState = hasSearched && !isLoading && allBooks.length === 0;
 
   return (
-    <Box sx={{ p: 3 }}>
-      <SearchBar 
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        onSearch={handleSearch} 
-        setIsFiltersModalOpen={setIsFiltersModalOpen} 
-      />
-      
-      {(isLoading || isFetching) && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>
+    <Box sx={{ p: isSelectMode ? 0 : 3, pt: isSelectMode ? 0 : 3 }}>
+      <Box sx={{ px: isSelectMode ? 3 : 0, pt: isSelectMode ? 2 : 0 }}>
+        <SearchBar
+          searchTerm={searchQuery}
+          setSearchTerm={setSearchQuery}
+          onSearch={handleSearch}
+          setIsFiltersModalOpen={setIsFiltersModalOpen}
+        />
+      </Box>
+
+      {/* Initial Loading */}
+      {isLoading && !isFetchingNextPage && (
+        <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={3} mt={4} px={isSelectMode ? 3 : 0}>
+          {[...Array(8)].map((_, i) => (
+            <Box key={i}>
+              <Skeleton variant="rectangular" width="100%" height={288} sx={{ borderRadius: 2 }} />
+              <Skeleton width="80%" sx={{ mt: 1 }} />
+              <Skeleton width="60%" />
+            </Box>
+          ))}
+        </Box>
       )}
 
-      {!isLoading && !isFetching && data?.items && (
-        <>
+      {/* Results */}
+      {!isLoading && allBooks.length > 0 && (
+        <Box px={isSelectMode ? 3 : 0}>
           <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={3} mt={4}>
-            {data.items.map((bookSummary) => (
-              // BookSummary is compatible with Book interface (with optional fields)
-              <BookInfoCard key={bookSummary.id} book={bookSummary as Book} isOnlyInfo={true} />
+            {allBooks.map((bookSummary) => (
+              <BookInfoCard
+                key={bookSummary.id}
+                book={bookSummary as Book}
+                isOnlyInfo={true}
+                onSelect={isSelectMode ? () => onBookSelect?.(bookSummary as Book) : undefined}
+              />
             ))}
           </Box>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 6, gap: 3 }}>
-            <Button
-              variant="outlined"
-              startIcon={<HiChevronLeft />}
-              onClick={() => setPage((old) => Math.max(old - 1, 1))}
-              disabled={page === 1}
-            >
-              Previous
-            </Button>
 
-            <Typography sx={{ fontWeight: 'bold' }}>Page {page}</Typography>
+          {/* Sentinel for infinite scroll */}
+          <div ref={observerTarget} style={{ height: '20px', margin: '20px 0' }} />
 
-            {/* We don't know total count from API strictly (Google returns estimates), 
-                but we can guess if full page returned */}
-            <Button
-              variant="outlined"
-              endIcon={<HiChevronRight />}
-              onClick={() => setPage((old) => old + 1)}
-              disabled={!hasMore} 
-            >
-              Next
-            </Button>
-          </Box>
-        </>
+          {/* Loading More */}
+          {isFetchingNextPage && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
+              <CircularProgress size={24} />
+              <Typography sx={{ ml: 2 }}>Loading more...</Typography>
+            </Box>
+          )}
+        </Box>
       )}
 
-      {isError && <Typography color="error" sx={{ mt: 4 }}>Error in search, please try again.</Typography>}
-      
-      {data?.items?.length === 0 && !isFetching && (
-        <Typography sx={{ mt: 4 }}>No books found.</Typography>
+      {/* Empty State */}
+      {showEmptyState && (
+        <Box sx={{ textAlign: 'center', mt: 8 }}>
+          <Typography variant="h6" color="text.secondary">
+            No books found
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Try adjusting your search or filters
+          </Typography>
+        </Box>
+      )}
+
+      {/* Error State */}
+      {isError && (
+        <Typography color="error" sx={{ mt: 4, textAlign: 'center' }}>
+          Error in search, please try again.
+        </Typography>
       )}
 
       <SearchFiltersModal
         open={isFiltersModalOpen}
         onClose={() => setIsFiltersModalOpen(false)}
-        onApply={(newData) => {
-          setFilters(newData);
-          setPage(1);
-        }}
+        onApply={handleFiltersApply}
         currentFilters={filters}
       />
     </Box>

@@ -14,12 +14,15 @@ export const createReview = async (
 ): Promise<IUserReview> => {
   const book = await getOrCreateLocalBook(externalBookId);
 
+  // Fallback image logic: if no picturePath provided, use book thumbnail
+  const finalPicturePath = picturePath || book.thumbnail;
+
   const newReview = await userReviewRepository.create({
     user: userId,
     book: book._id,
     rating,
     review: reviewText,
-    picturePath,
+    picturePath: finalPicturePath,
   });
 
   await recomputeBookRating(book._id.toString());
@@ -35,6 +38,12 @@ export const getReviewsByUserId = async (
   userId: string
 ): Promise<PopulatedUserReview[]> => {
   return await userReviewRepository.findByUserId(userId);
+};
+
+export const getReviewsByBookId = async (
+  bookId: string
+): Promise<PopulatedUserReview[]> => {
+  return await userReviewRepository.findByBookId(bookId);
 };
 
 export const getReviewById = async (

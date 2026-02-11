@@ -24,11 +24,12 @@ export const endpoints = {
     readlist: "/api/lists/readlist",
   },
 
-  reviews: {
+  userReviews: {
     getAll: "/userReviews",
+    create: "/userReviews",
     byId: (reviewId: string) => `/userReviews/${reviewId}`,
     byUser: (userId: string) => `/userReviews/user/${userId}`,
+    byBook: (bookId: string) => `/userReviews/book/${bookId}`,
     like: (reviewId: string) => `/userReviews/${reviewId}/like`,
-    create: "/userReviews",
   },
 } as const;
