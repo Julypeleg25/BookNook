@@ -6,12 +6,14 @@ import "./index.css";
 import App from "./App.tsx";
 import theme from "./theme/theme.ts";
 import { BrowserRouter } from "react-router-dom";
+import ScrollToTop from "./router/ScrollToTop.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
+        <ScrollToTop />
         <App />
       </BrowserRouter>
     </ThemeProvider>

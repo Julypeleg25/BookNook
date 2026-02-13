@@ -1,23 +1,36 @@
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { bookPosts } from "../exampleData";
-import { useMemo } from "react";
-import NotFound from "./NotFound";
+import { useMemo, useEffect, useRef } from "react";
 import { Box, Typography } from "@mui/material";
-import CommentsSection from "../components/post/comments/CommentsSection";
+import CommentsSection, {
+  type CommentsSectionRef,
+} from "../components/post/comments/CommentsSection";
 import BookPostHeader from "../components/bookHeaders/BookPostHeader";
 import BookInfoSection from "../components/post/BookInfoSection";
 import AiBookRecommendation from "../components/post/AiBookRecommendation";
+import NotFound from "./NotFound";
 
 const AI_RESPONSE =
   "Based on your prompt and this review, I believe this book will fit you perfectly";
 
 const BookPost = () => {
   const { id } = useParams<{ id: string }>();
+  const { hash } = useLocation();
+  const commentsRef = useRef<CommentsSectionRef>(null);
 
   const bookPost = useMemo(
     () => bookPosts.find((post) => post.id === id),
     [id]
   );
+
+  useEffect(() => {
+    if (hash === "#comments" && commentsRef.current) {
+      commentsRef.current.focusInput();
+      document
+        .getElementById("comments-section")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [hash]);
 
   if (!bookPost) return <NotFound />;
 
@@ -29,15 +42,15 @@ const BookPost = () => {
         gap="2rem"
         gridTemplateColumns="60% 40%"
         width="100%"
-        alignItems={"center"}
+        alignItems="center"
       >
-        <Typography marginTop={"1.5rem"} variant="subtitle1">
+        <Typography marginTop="1.5rem" variant="subtitle1">
           {bookPost.description}
         </Typography>
         <img
           src={bookPost.imageUrl}
           style={{ borderRadius: "1rem" }}
-          width={"100%"}
+          width="100%"
         />
       </Box>
       <Box
@@ -49,7 +62,9 @@ const BookPost = () => {
         <BookInfoSection book={bookPost.book} />
         <AiBookRecommendation response={AI_RESPONSE} />
       </Box>
-      <CommentsSection bookPost={bookPost} />
+      <div id="comments-section">
+        <CommentsSection ref={commentsRef} bookPost={bookPost} />
+      </div>
     </div>
   );
 };

@@ -12,6 +12,7 @@ import BookInfo from "../pages/BookInfo";
 import Profile from "../pages/Profile";
 import MyPosts from "../pages/MyPosts";
 import NewPost from "../pages/NewPost";
+import MyLists from "../pages/MyLists";
 
 const Router = () => {
   return (
@@ -41,6 +42,7 @@ const Router = () => {
           <Route index element={<NewPost />} />
           <Route path=":id" element={<NewPost />} />
         </Route>
+        <Route path="/lists" element={<MyLists />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFound />} />
