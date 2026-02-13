@@ -1,18 +1,17 @@
-import { SnackbarProvider } from "notistack";
-import "./App.css";
-import { AuthProvider } from "./auth/AuthProvider";
-import AppBar from "./components/AppBar";
-import Router from "./router/Router";
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+import Login from './pages/Login'
 
 function App() {
+  const [count, setCount] = useState(0)
+
   return (
-    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
-      <AuthProvider>
-        <AppBar />
-        <Router />
-      </AuthProvider>
-    </SnackbarProvider>
-  );
+    <>
+      <Login/>
+    </>
+  )
 }
 
-export default App;
+export default App
