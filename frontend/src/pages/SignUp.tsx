@@ -1,8 +1,8 @@
 import {
   Box,
   Button,
+  Divider,
   IconButton,
-  InputAdornment,
   TextField,
   Typography,
 } from "@mui/material";
@@ -12,12 +12,13 @@ import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 
-interface ILoginForm {
+interface ISignUpForm {
   username: string;
   password: string;
+  name: string;
 }
 
-const Login = () => {
+const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -25,29 +26,35 @@ const Login = () => {
     control,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<ILoginForm>({
+  } = useForm<ISignUpForm>({
     defaultValues: {
       username: "",
       password: "",
+      name: "",
     },
     mode: "onSubmit",
   });
 
-  const onSubmit = (data: ILoginForm) => {
+  const onSubmit = (data: ISignUpForm) => {
     console.log("Form data:", data);
     reset();
   };
 
   return (
-    <Box display="flex" marginTop={"8rem"}>
+    <Box display="flex" marginTop={"5rem"}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Box flex={1} display="flex" marginLeft={"4rem"}>
+        <Box flex={1} display="flex" marginLeft={"8rem"}>
           <div>
             <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
-              <Typography variant="h4">Welcome to BookNook</Typography>
-              <Typography style={{ justifySelf: "start" }} variant="body2">
-                Please Enter your details
-              </Typography>
+              <Typography variant="h4">Sign up now</Typography>
+              <Button
+                style={{ width: "23rem", display: "flex" }}
+                variant="outlined"
+                startIcon={<FcGoogle />}
+              >
+                Sign up with Google
+              </Button>
+              <Divider>or</Divider>
             </div>
             <div
               style={{
@@ -72,7 +79,7 @@ const Login = () => {
                   control={control}
                   rules={{
                     required: "Username is required",
-                    // minLength: { value: 3, message: "Minimum 3 characters" }, TODO: for sign up
+                    minLength: { value: 3, message: "Minimum 3 characters" },
                   }}
                   render={({ field }) => (
                     <TextField
@@ -81,6 +88,32 @@ const Login = () => {
                       error={!!errors.username}
                       style={{ width: "23rem" }}
                       placeholder="Enter your username"
+                    />
+                  )}
+                />
+              </div>
+              <div
+                style={{
+                  gap: "1rem",
+                  marginTop: "1rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                <Typography style={{ justifySelf: "start" }}>Name</Typography>
+                <Controller
+                  name="name"
+                  control={control}
+                  rules={{
+                    required: "Name is required",
+                    minLength: { value: 3, message: "Minimum 3 characters" },
+                  }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      helperText={errors.name?.message}
+                      error={!!errors.name}
+                      style={{ width: "23rem" }}
+                      placeholder="Enter your name"
                     />
                   )}
                 />
@@ -143,20 +176,8 @@ const Login = () => {
                 }}
                 type="submit"
               >
-                Log in
+                Sign up
               </Button>
-              <Typography
-                style={{
-                  marginTop: "1.6rem",
-                  display: "flex",
-                  justifySelf: "center",
-                  alignItems: "center",
-                  gap: "1rem",
-                }}
-              >
-                Log in with
-                <FcGoogle />
-              </Typography>
             </div>
           </div>
         </Box>
@@ -169,12 +190,30 @@ const Login = () => {
         display={"grid"}
       >
         <img src={loginIcon} style={{ width: "50%", height: "90%" }} />
-        <Typography variant="body2">
-          Don't have an account? <Button href="/register">Sign up</Button>
+        <Typography
+          variant="body2"
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          Already have an account?
+          <div
+            onClick={() => (window.location.href = "/register")}
+            style={{
+              color: "blue",
+              textDecoration: "underline",
+              cursor: "pointer",
+            }}
+          >
+            Log in
+          </div>
         </Typography>
       </Box>
     </Box>
   );
 };
 
-export default Login;
+export default SignUp;
