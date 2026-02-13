@@ -9,7 +9,8 @@ const SearchBar = ({
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
       <TextField
-        label="Search books by title or author"
+        label="Search"
+        placeholder="Search books by title or author"
         variant="outlined"
         style={{ width: "40%" }}
       />

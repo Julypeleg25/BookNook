@@ -1,7 +1,7 @@
 import { Box, Button } from "@mui/material";
-import { bookPosts } from "../exampleData";
-import type { BookPost } from "../models/Book";
-import MyBookPostCard from "./bookCards/MyBookPostCard";
+import { bookPosts } from "../../exampleData";
+import type { BookPost } from "../../models/Book";
+import MyBookPostCard from "../bookCards/MyBookPostCard";
 import { useNavigate } from "react-router-dom";
 
 const user_id = "u1"; //TODO: Example user ID

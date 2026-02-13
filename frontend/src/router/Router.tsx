@@ -11,6 +11,7 @@ import ExploreBooks from "../pages/ExploreBooks";
 import BookInfo from "../pages/BookInfo";
 import Profile from "../pages/Profile";
 import MyPosts from "../pages/MyPosts";
+import NewPost from "../pages/NewPost";
 
 const Router = () => {
   return (
@@ -26,7 +27,7 @@ const Router = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/booksPosts">
+        <Route path="/posts">
           <Route index element={<ExplorePosts />} />
           <Route path=":id" element={<BookPost />} />
         </Route>
@@ -35,7 +36,11 @@ const Router = () => {
           <Route path=":id" element={<BookInfo />} />
         </Route>
         <Route path="/profile" element={<Profile />} />
-        <Route path='/myPosts' element={<MyPosts />} />
+        <Route path="/myPosts" element={<MyPosts />} />
+        <Route path="/post">
+          <Route index element={<NewPost />} />
+          <Route path=":id" element={<NewPost />} />
+        </Route>
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFound />} />

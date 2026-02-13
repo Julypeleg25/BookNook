@@ -1,3 +1,4 @@
+import { Typography } from "@mui/material";
 import type { Book } from "../../models/Book";
 import BookHeader from "./BookHeaderButtons";
 
@@ -22,15 +23,10 @@ const BookInfoHeader = ({ book }: BookInfoHeaderProps) => {
             alignItems: "center",
           }}
         >
-          <div style={{ fontSize: "3rem" }}>{book.title}</div>
-          <div
-            style={{
-              fontSize: "2.5rem",
-              marginRight: "1rem",
-            }}
-          >
-            ({new Date(book.publishedDate).getFullYear()})
-          </div>
+         <Typography variant="h4" style={{ gap: "0.5rem", display: "flex" }}>
+          <div>{book.title}</div>
+          <div>({new Date(book.publishedDate).getFullYear()})</div>
+        </Typography>
         </div>
         <BookHeader id={book.id} />
       </div>

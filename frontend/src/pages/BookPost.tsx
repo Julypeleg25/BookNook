@@ -2,9 +2,14 @@ import { useParams } from "react-router-dom";
 import { bookPosts } from "../exampleData";
 import { useMemo } from "react";
 import NotFound from "./NotFound";
-import { Box, Paper, Typography } from "@mui/material";
-import CommentsSection from "../components/searchFilters/sections/CommentsSection";
+import { Box, Typography } from "@mui/material";
+import CommentsSection from "../components/post/comments/CommentsSection";
 import BookPostHeader from "../components/bookHeaders/BookPostHeader";
+import BookInfoSection from "../components/post/BookInfoSection";
+import AiBookRecommendation from "../components/post/AiBookRecommendation";
+
+const AI_RESPONSE =
+  "Based on your prompt and this review, I believe this book will fit you perfectly";
 
 const BookPost = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,7 +31,7 @@ const BookPost = () => {
         width="100%"
         alignItems={"center"}
       >
-        <Typography marginTop={"1.5rem"} fontSize={"1.2rem"}>
+        <Typography marginTop={"1.5rem"} variant="subtitle1">
           {bookPost.description}
         </Typography>
         <img
@@ -35,28 +40,16 @@ const BookPost = () => {
           width={"100%"}
         />
       </Box>
-      <CommentsSection bookPost={bookPost} />
-      <Paper
-        elevation={2}
-        sx={{
-          marginTop: "4rem",
-          padding: "2rem",
-          borderRadius: "1rem",
-        }}
+      <Box
+        display="grid"
+        gridTemplateColumns={{ xs: "1fr", md: "1fr 1fr" }}
+        gap="2rem"
+        mt="2rem"
       >
-        <Typography
-          sx={{ fontSize: "1.2rem", fontWeight: 600, marginBottom: "0.8rem" }}
-        >
-          Not sure if this book fits you?
-        </Typography>
-
-        <Typography color="text.secondary">
-          Describe what you like in a few words and we’ll help you decide if
-          this book is right for you.
-        </Typography>
-
-        {/* future: input + action */}
-      </Paper>
+        <BookInfoSection book={bookPost.book} />
+        <AiBookRecommendation response={AI_RESPONSE} />
+      </Box>
+      <CommentsSection bookPost={bookPost} />
     </div>
   );
 };

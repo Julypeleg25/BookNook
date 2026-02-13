@@ -13,7 +13,7 @@ import type { BookPost } from "../../models/Book";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import { useState } from "react";
-import DeleteModal from "../DeleteModal";
+import DeleteModal from "../common/DeleteModal";
 import FullPostActions from "./FullPostActions";
 
 const FullBookPostCard = ({ post }: { post: BookPost }) => {
@@ -70,28 +70,22 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
                 setIsDeleteModalOpen={setIsDeleteModalOpen}
               />
             </Stack>
-
-            <Stack direction="row" alignItems="center" spacing="0.5rem">
-              <Typography fontWeight={500}>Your rating:</Typography>
-              <Rating value={post.rating} readOnly size="small" />
-            </Stack>
-
+            <Rating value={post.rating} readOnly size="small" />
             <Typography color="text.secondary">
               {post.description.slice(0, 260)}…
             </Typography>
 
             <Stack direction="row" spacing="1.2rem" alignItems="center">
               <Stack direction="row" gap="0.4rem" alignItems="center">
-                <FaRegComment /> {post.comments.length}
+                <FiHeart /> {post.likes}
               </Stack>
               <Stack direction="row" gap="0.4rem" alignItems="center">
-                <FiHeart /> {post.likes}
+                <FaRegComment /> {post.comments.length}
               </Stack>
             </Stack>
           </Stack>
         </Stack>
       </CardContent>
-
       <DeleteModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}

@@ -85,7 +85,7 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => {
         <Tooltip title="View post">
           <IconButton
             size="small"
-            onClick={() => navigate(`/booksPosts/${post.id}`)}
+            onClick={() => navigate(`/posts/${post.id}`)}
           >
             <BsEye />
           </IconButton>

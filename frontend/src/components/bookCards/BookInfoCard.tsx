@@ -11,6 +11,7 @@ import { formatDate } from "../../utils/dateUtils";
 import { BiBookmark } from "react-icons/bi";
 import { Link as RouterLink } from "react-router-dom";
 import { LuBookCheck } from "react-icons/lu";
+import BookInfoActions from "./BookInfoActions";
 
 interface BookInfoCardProps {
   book: Book;
@@ -19,6 +20,7 @@ interface BookInfoCardProps {
 const BookInfoCard = ({ book }: BookInfoCardProps) => {
   return (
     <Stack alignItems="center" spacing="0.6rem">
+      
       <Box
         component={RouterLink}
         to={`/books/${book.id}`}
@@ -35,6 +37,7 @@ const BookInfoCard = ({ book }: BookInfoCardProps) => {
             transform: "translateY(-0.2rem)",
           },
         }}
+        
       >
         <Box
           component="img"
@@ -58,9 +61,11 @@ const BookInfoCard = ({ book }: BookInfoCardProps) => {
             color: "text.primary",
             textDecoration: "none",
             lineHeight: 1.3,
-            "&:hover": {
-              textDecoration: "underline",
-            },
+           transition: "color 0.2s ease",
+          "&:hover": {
+            color: "primary.main",
+          },
+        
           }}
         >
           {book.title}
@@ -86,18 +91,7 @@ const BookInfoCard = ({ book }: BookInfoCardProps) => {
           readOnly
           size="small"
         />
-        <div style={{ display: "flex", gap: "1.6rem" }}>
-          <Tooltip title="Add to read list">
-            <IconButton size="small">
-              <LuBookCheck />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Add to wish list">
-            <IconButton size="small">
-              <BiBookmark />
-            </IconButton>
-          </Tooltip>
-        </div>
+        <BookInfoActions />
       </div>
     </Stack>
   );

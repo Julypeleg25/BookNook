@@ -17,7 +17,7 @@ const FullPostActions = ({
     <Stack direction="row" spacing="0.5rem">
       <Button
         component={Link}
-        to={`/booksPosts/${postId}`}
+        to={`/posts/${postId}`}
         size="small"
         variant="outlined"
         startIcon={<BsEye />}
@@ -26,7 +26,7 @@ const FullPostActions = ({
       </Button>
       <Button
         component={Link}
-        to="/profile"
+        to={`/post/${postId}`}
         size="small"
         variant="outlined"
         startIcon={<FiEdit />}

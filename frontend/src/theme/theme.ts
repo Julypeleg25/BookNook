@@ -6,41 +6,37 @@ const theme = createTheme({
 
     primary: {
       main: "#5B6F6A",
-      light: "#7F9590",
-      dark: "#3F524E",
-      contrastText: "#FFFFFF",
+      light: "#8FA5A0",
+      dark: "#3E514D",
     },
 
     secondary: {
-      main: "#619d80ff",
-      light: "#b2daacff",
-      dark: "#097a16ff",
-      contrastText: "#FFFFFF",
+      main: "#7FAF9B",
     },
 
     background: {
-      default: "#F6F2E9",
+      default: "#F5F4F1",
       paper: "#FFFFFF",
     },
 
     text: {
-      primary: "#000000ff",
-      secondary: "#425f80ff",
-      disabled: "#918c9eff",
+      primary: "#1F2933",
+      secondary: "#5B6472",
+      disabled: "#9CA3AF",
     },
 
-    divider: "#E2DDD3",
+    divider: "rgba(0,0,0,0.08)",
 
     success: {
-      main: "#7A9A7E",
+      main: "#6FAE8C",
     },
 
     warning: {
-      main: "#D4A05A",
+      main: "#E2B26F",
     },
 
     error: {
-      main: "#B94A48",
+      main: "#D0655C",
     },
 
     info: {
@@ -49,9 +45,9 @@ const theme = createTheme({
   },
 
   typography: {
-    fontFamily: `"Inter", sans-serif`,
+    fontFamily: `"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif`,
 
-    h1: { fontWeight: 700, color: "#2E2A36" },
+    h1: { fontWeight: 700 },
     h2: { fontWeight: 600 },
     h3: { fontWeight: 600 },
     h4: { fontWeight: 600 },
@@ -59,66 +55,34 @@ const theme = createTheme({
     subtitle1: { fontWeight: 500 },
     subtitle2: { fontWeight: 500 },
 
-    body1: { lineHeight: 1.6 },
-    body2: { color: "#6B6478" },
+    body1: {
+      lineHeight: 1.65,
+    },
+
+    body2: {
+      color: "#6B7280",
+    },
 
     button: {
       textTransform: "none",
       fontWeight: 600,
-      letterSpacing: "0.02em",
     },
   },
 
   shape: {
-    borderRadius: 12,
+    borderRadius: 14,
   },
 
   components: {
-    MuiLink: {
-      styleOverrides: {
-        root: {
-          textDecoration: "none",
-        },
-      },
-    },
-    MuiTypography: {
-      styleOverrides: {
-        root: {
-          "& a": {
-            color: "inherit",
-            textDecoration: "none",
-          },
-        },
-      },
-    },
     MuiButton: {
       defaultProps: {
         disableElevation: true,
-        variant: "contained",
       },
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          paddingInline: 12,
-        },
-        containedPrimary: {
-          backgroundColor: "#5ca9e4ff",
-          "&:hover": {
-            backgroundColor: "#5d8fbdff",
-          },
-          "&:focus": {
-            outline: "none",
-          },
-          "&:focus-visible": {
-            outline: "none",
-            boxShadow: "none",
-          },
-        },
-        containedSecondary: {
-          backgroundColor: "#5ed149ff",
-          "&:hover": {
-            backgroundColor: "#7ad74eff",
-          },
+          borderRadius: 10,
+          paddingInline: 16,
+          paddingBlock: 8,
         },
       },
     },
@@ -126,34 +90,9 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+          borderRadius: 20,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
           backgroundImage: "none",
-        },
-      },
-    },
-
-    MuiCardHeader: {
-      styleOverrides: {
-        title: {
-          fontWeight: 600,
-        },
-      },
-    },
-
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          backgroundColor: "#F6F2E9",
-          color: "#2E2A36",
-        },
-      },
-    },
-
-    MuiToolbar: {
-      styleOverrides: {
-        root: {
-          minHeight: 64,
         },
       },
     },
@@ -161,25 +100,18 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 16,
           backgroundImage: "none",
         },
       },
     },
 
-    MuiDialog: {
-      styleOverrides: {
-        paper: {
-          borderRadius: 20,
-          padding: 8,
-        },
-      },
-    },
-
-    MuiDialogTitle: {
+    MuiAppBar: {
       styleOverrides: {
         root: {
-          fontWeight: 600,
+          backgroundColor: "#FFFFFF",
+          color: "#1F2933",
+          boxShadow: "0 1px 0 rgba(0,0,0,0.06)",
         },
       },
     },
@@ -194,10 +126,10 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          backgroundColor: "#ffffffff",
+          backgroundColor: "#FFFFFF",
         },
         notchedOutline: {
-          borderColor: "#c1b49fff",
+          borderColor: "rgba(0,0,0,0.15)",
         },
       },
     },
@@ -205,44 +137,9 @@ const theme = createTheme({
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          color: "#6B6478",
+          color: "#6B7280",
           "&.Mui-focused": {
             color: "#5B6F6A",
-          },
-        },
-      },
-    },
-
-    MuiCheckbox: {
-      styleOverrides: {
-        root: {
-          color: "#5B6F6A",
-          "&.Mui-checked": {
-            color: "#5B6F6A",
-          },
-        },
-      },
-    },
-
-    MuiRadio: {
-      styleOverrides: {
-        root: {
-          color: "#5B6F6A",
-          "&.Mui-checked": {
-            color: "#5B6F6A",
-          },
-        },
-      },
-    },
-
-    MuiSwitch: {
-      styleOverrides: {
-        switchBase: {
-          "&.Mui-checked": {
-            color: "#5B6F6A",
-            "& + .MuiSwitch-track": {
-              backgroundColor: "#5B6F6A",
-            },
           },
         },
       },
@@ -253,7 +150,6 @@ const theme = createTheme({
         indicator: {
           height: 3,
           borderRadius: 3,
-          backgroundColor: "#C65A5A",
         },
       },
     },
@@ -270,7 +166,7 @@ const theme = createTheme({
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
+          borderRadius: 12,
           "&.Mui-selected": {
             backgroundColor: "rgba(91,111,106,0.12)",
           },
@@ -278,21 +174,12 @@ const theme = createTheme({
       },
     },
 
-    MuiAlert: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          fontWeight: 500,
-        },
-      },
-    },
-
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: "#2E2A36",
+          backgroundColor: "#111827",
           borderRadius: 8,
-          fontSize: "0.85rem",
+          fontSize: "0.8rem",
         },
       },
     },
@@ -300,7 +187,7 @@ const theme = createTheme({
     MuiDivider: {
       styleOverrides: {
         root: {
-          borderColor: "#151514ff",
+          borderColor: "rgba(0,0,0,0.08)",
         },
       },
     },

@@ -12,8 +12,9 @@ import useUserStore from "../state/useUserStore";
 import ProfileForm from "../components/profile/ProfileForm";
 import ProfileView from "../components/profile/ProfileView";
 import { MdEdit } from "react-icons/md";
-import MyPostsSection from "../components/MyPostsSection";
+import MyPostsSection from "../components/profile/MyPostsSection";
 import { bookPosts } from "../exampleData";
+import booksProfileLogo from "../assets/books-profile.png"
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -23,7 +24,15 @@ const Profile = () => {
 
   return (
     <Stack justifySelf="center" margin="1rem">
-      <Card sx={{ borderRadius: "1.5rem", p: "1rem", width: "40%" }}>
+      <img style={{top:100,right:500,position:'absolute'}} width='400rem' src={booksProfileLogo}/>
+      <Card
+        sx={{
+          borderRadius: "1.5rem",
+          p: "1rem",
+          maxWidth: "40%",
+          width: "40rem",
+        }}
+      >
         <CardContent>
           <Box
             display="flex"
@@ -37,7 +46,7 @@ const Profile = () => {
               </Typography>
 
               {!isEditing && (
-                <Stack direction="row" spacing='0.5rem' mt="1rem">
+                <Stack direction="row" spacing="0.5rem" mt="1rem">
                   <Typography variant="body2" color="text.secondary">
                     <strong>{postsCount}</strong> Posts
                   </Typography>

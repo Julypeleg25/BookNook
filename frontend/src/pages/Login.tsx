@@ -28,7 +28,7 @@ const Login = () => {
 
   const handleLogin = () => {
     login();
-    navigate("/booksPosts");
+    navigate("/posts");
   };
 
   const handleSignup = () => {

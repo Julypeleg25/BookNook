@@ -35,11 +35,8 @@ const SignUp = () => {
     },
     mode: "onSubmit",
   });
-  
-  const handleLogin = () => {
-    navigate("/login");
-  };
-  
+
+  const handleLogin = () => navigate("/login");
 
   const onSubmit = (data: ISignUpForm) => {
     console.log("Form data:", data);
@@ -47,7 +44,7 @@ const SignUp = () => {
   };
 
   return (
-    <Box display="flex" marginTop={"5rem"} marginLeft={'4rem'}>
+    <Box display="flex" marginTop={"5rem"} marginLeft={"4rem"}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Box flex={1} display="flex" marginLeft={"8rem"}>
           <div>
