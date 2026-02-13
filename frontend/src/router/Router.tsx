@@ -1,0 +1,53 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+import AuthLayout from "./AppLayout";
+import Login from "../pages/Login";
+import SignUp from "../pages/SignUp";
+import NotFound from "../pages/NotFound";
+import ProtectedRoute from "./ProtectedRoute";
+import AppLayout from "./AppLayout";
+import ExplorePosts from "../pages/ExplorePosts";
+import BookPost from "../pages/BookPost";
+import ExploreBooks from "../pages/ExploreBooks";
+import BookInfo from "../pages/BookInfo";
+import Profile from "../pages/Profile";
+import MyPosts from "../pages/MyPosts";
+import NewPost from "../pages/NewPost";
+import MyLists from "../pages/MyLists";
+
+const Router = () => {
+  return (
+    <Routes>
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<SignUp />} />
+      </Route>
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/posts">
+          <Route index element={<ExplorePosts />} />
+          <Route path=":id" element={<BookPost />} />
+        </Route>
+        <Route path="/books">
+          <Route index element={<ExploreBooks />} />
+          <Route path=":id" element={<BookInfo />} />
+        </Route>
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/myPosts" element={<MyPosts />} />
+        <Route path="/post">
+          <Route index element={<NewPost />} />
+          <Route path=":id" element={<NewPost />} />
+        </Route>
+        <Route path="/lists" element={<MyLists />} />
+      </Route>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+export default Router;
