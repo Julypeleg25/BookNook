@@ -27,7 +27,7 @@ const Login = () => {
 
   const handleLogin = () => {
     login();
-    navigate("/homePage");
+    navigate("/home");
   };
 
   const handleSignup = () => {
