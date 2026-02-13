@@ -1,17 +1,18 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import Login from './pages/Login'
+import { SnackbarProvider } from "notistack";
+import "./App.css";
+import { AuthProvider } from "./auth/AuthProvider";
+import AppBar from "./components/AppBar";
+import Router from "./router/Router";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <Login/>
-    </>
-  )
+    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+      <AuthProvider>
+        <AppBar />
+        <Router />
+      </AuthProvider>
+    </SnackbarProvider>
+  );
 }
 
-export default App
+export default App;
