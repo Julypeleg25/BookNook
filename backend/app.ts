@@ -1,6 +1,5 @@
 import express from "express";
 import passport from "passport";
-import passportGoogle from "passport-google-oauth20";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import session from "express-session";
@@ -12,6 +11,9 @@ import swaggerUi from 'swagger-ui-express';
 import booksRouter from './routes/books';
 
 import { swaggerSpec } from './swagger';
+// Import strategies
+import googleStrategy from "./services/googleStrategy";
+import localLoginStrategy from "./services/localStrategy";
 dotenv.config();
 
 const app = express();
@@ -38,49 +40,17 @@ app.use(
     secret: process.env.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }, // Set to true in production with HTTPS
+    cookie: { secure: true }, 
   })
 );
 app.use(passport.initialize());
 app.use(passport.session());
+passport.use(localLoginStrategy);
+passport.use(googleStrategy);
 
-// Passport configuration
-const GoogleStrategy = passportGoogle.Strategy;
-
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL:
-        process.env.GOOGLE_CALLBACK_URL ||
-        "http://localhost:3000/oauth2/redirect/google", // Changed to HTTP
-    },
-    async function (accessToken, refreshToken, profile, done) {
-      try {
-        let user = await User.findOne({ googleId: profile.id });
-        if (user) {
-          return done(null, user);
-        } else {
-          user = new User({
-            googleId: profile.id,
-            name: profile.displayName,
-            email: profile.emails?.[0].value,
-            avatar: profile.photos?.[0].value,
-          });
-          await user.save();
-          return done(null, user);
-        }
-      } catch (err) {
-        return done(err);
-      }
-    }
-  )
-);
-
-passport.serializeUser((user: any, done) => {
-  done(null, user.id);
-});
+passport.serializeUser(function(user, done) {
+               done(null, user.id);
+              });
 
 passport.deserializeUser(async (id: string, done) => {
   try {
