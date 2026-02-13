@@ -24,7 +24,7 @@ const theme = createTheme({
     },
 
     text: {
-      primary: "#525246ff",
+      primary: "#000000ff",
       secondary: "#425f80ff",
       disabled: "#918c9eff",
     },
@@ -77,7 +77,6 @@ const theme = createTheme({
     MuiLink: {
       styleOverrides: {
         root: {
-          color: "red",
           textDecoration: "none",
         },
       },

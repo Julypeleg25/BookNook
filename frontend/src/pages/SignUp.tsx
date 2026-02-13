@@ -21,12 +21,7 @@ interface ISignUpForm {
 
 const SignUp = () => {
   const navigate = useNavigate();
-
-  const handleLogin = () => {
-    navigate("/login");
-  };
   const [showPassword, setShowPassword] = useState(false);
-
   const {
     handleSubmit,
     control,
@@ -40,6 +35,11 @@ const SignUp = () => {
     },
     mode: "onSubmit",
   });
+  
+  const handleLogin = () => {
+    navigate("/login");
+  };
+  
 
   const onSubmit = (data: ISignUpForm) => {
     console.log("Form data:", data);
