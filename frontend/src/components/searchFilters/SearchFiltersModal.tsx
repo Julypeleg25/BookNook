@@ -7,7 +7,7 @@ import {
   Rating,
   TextField,
 } from "@mui/material";
-import Select from "../Select";
+import Select from "../common/Select";
 import SearchFiltersToggleButtonGroup from "./SearchFiltersToggleButtonGroup";
 import { Controller, useForm } from "react-hook-form";
 import {

@@ -9,12 +9,14 @@ import {
   IconButton,
   Rating,
   Typography,
+  Stack,
+  Box,
 } from "@mui/material";
 import { CgMoreVertical } from "react-icons/cg";
 import { GrFavorite } from "react-icons/gr";
-import type { BookPost } from "../../models/Book";
 import { MdComment } from "react-icons/md";
-import { Link } from "react-router-dom";
+import type { BookPost } from "../../models/Book";
+import { Link as RouterLink } from "react-router-dom";
 
 interface BookPostCardProps {
   book: BookPost;
@@ -25,61 +27,113 @@ const BookPostCard = ({ book }: BookPostCardProps) => {
     <Card
       sx={{
         width: "22rem",
-        cursor: "pointer",
-        transition: "box-shadow 0.2s ease, transform 0.2s ease",
+        borderRadius: "1rem",
         boxShadow: 1,
+        transition: "box-shadow 0.2s ease, transform 0.2s ease",
         "&:hover": {
           boxShadow: 6,
-          transform: "translateY(-2px)",
+          transform: "translateY(-0.15rem)",
         },
       }}
     >
-      <Link to={`/booksPosts/${book.id}`} style={{ textDecoration: "none" }}>
-        <CardHeader
-          avatar={
-            <Avatar>
-              <img src={book.user.avatarUrl} alt={book.user.name} />
-            </Avatar>
-          }
-          action={
-            <IconButton aria-label="settings">
-              <CgMoreVertical />
-            </IconButton>
-          }
-          title={book.book.title}
-          subheader={book.createdDate.toDateString()}
-        />
-        <CardMedia component="img" height="260rem" image={book.imageUrl} />
-        <CardContent>
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            {book.description.substring(0, 45)}...
+      <CardHeader
+        avatar={
+          <Avatar
+            src={book.user.avatarUrl}
+            alt={book.user.name}
+          />
+        }
+        action={
+          <IconButton>
+            <CgMoreVertical />
+          </IconButton>
+        }
+        title={
+          <Typography
+            component={RouterLink}
+            to={`/booksPosts/${book.id}`}
+            sx={{
+              fontWeight: 600,
+              color: "text.primary",
+              textDecoration: "none",
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
+          >
+            {book.book.title}
           </Typography>
-        </CardContent>
-      </Link>
+        }
+        subheader={book.createdDate.toDateString()}
+      />
+
+      <Box
+        component={RouterLink}
+        to={`/booksPosts/${book.id}`}
+        sx={{ textDecoration: "none" }}
+      >
+        <CardMedia
+          component="img"
+          image={book.imageUrl}
+          sx={{
+            height: "16rem",
+            objectFit: "cover",
+          }}
+        />
+      </Box>
+
+      <CardContent>
+        <Typography color="text.secondary">
+          {book.description.slice(0, 90)}…
+        </Typography>
+      </CardContent>
+
       <CardActions
-        style={{
+        sx={{
+          display: "flex",
           justifyContent: "space-between",
-          width: "100%",
+          alignItems: "center",
+          paddingX: "1rem",
         }}
       >
-        <div>
-          <IconButton>
-            <GrFavorite />
-          </IconButton>
-          {book.likes}
-        </div>
-        <div>
-          <IconButton>
-            <MdComment />
-          </IconButton>
-          {book.comments.length}
-        </div>
+        <Stack direction="row" spacing="1rem" alignItems="center">
+          <Stack direction="row" spacing="0.3rem" alignItems="center">
+            <IconButton size="small">
+              <GrFavorite />
+            </IconButton>
+            <Typography fontSize="0.85rem">
+              {book.likes}
+            </Typography>
+          </Stack>
 
-        <Rating value={book.rating} precision={0.5} readOnly />
-        {book.book.genres.map((genre) => (
-          <Chip key={genre} label={genre} />
-        ))}
+          <Stack direction="row" spacing="0.3rem" alignItems="center">
+            <IconButton size="small">
+              <MdComment />
+            </IconButton>
+            <Typography fontSize="0.85rem">
+              {book.comments.length}
+            </Typography>
+          </Stack>
+        </Stack>
+        <Rating
+          size="small"
+          value={book.rating}
+          precision={0.5}
+          readOnly
+        />
       </CardActions>
+
+      <Box px="1rem" pb="1rem">
+        <Stack direction="row" spacing="0.4rem" flexWrap="wrap">
+          {book.book.genres.map((genre) => (
+            <Chip
+              key={genre}
+              label={genre}
+              size="small"
+            />
+          ))}
+        </Stack>
+      </Box>
     </Card>
   );
 };

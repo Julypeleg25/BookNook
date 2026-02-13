@@ -3,7 +3,6 @@ import {
   Button,
   Divider,
   IconButton,
-  InputAdornment,
   TextField,
   Typography,
 } from "@mui/material";
@@ -14,6 +13,7 @@ import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import useUserStore from "../state/useUserStore";
 
 interface ILoginForm {
   username: string;
@@ -21,9 +21,10 @@ interface ILoginForm {
 }
 
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
+  const { setUsername, setName } = useUserStore();
 
   const handleLogin = () => {
     login();
@@ -37,7 +38,7 @@ const Login = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<ILoginForm>({
     defaultValues: {
@@ -48,6 +49,9 @@ const Login = () => {
   });
 
   const onSubmit = (data: ILoginForm) => {
+    setName(data.username);
+    setUsername(data.username);
+    //TODO: data from backend
     handleLogin();
     reset();
   };
@@ -175,16 +179,19 @@ const Login = () => {
         display={"grid"}
       >
         <img src={loginIcon} style={{ width: "50%", height: "90%" }} />
-        <Typography
-          variant="body2"
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          Don't have an account?
+        <Box>
+          <Typography
+            variant="body2"
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            Don't have an account?
+          </Typography>
+
           <div
             onClick={handleSignup}
             style={{
@@ -195,7 +202,7 @@ const Login = () => {
           >
             Sign up
           </div>
-        </Typography>
+        </Box>
       </Box>
     </Box>
   );

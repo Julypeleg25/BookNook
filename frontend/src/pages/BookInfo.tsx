@@ -4,9 +4,6 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import NotFound from "./NotFound";
 import BookInfoHeader from "../components/bookHeaders/BookInfoHeader";
-import { CgMenu } from "react-icons/cg";
-import { BsType } from "react-icons/bs";
-import { PiArrowsOutLineHorizontal } from "react-icons/pi";
 import { FaTheaterMasks } from "react-icons/fa";
 import { FaUserPen } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
@@ -23,7 +20,6 @@ const BookInfo = () => {
   return (
     <div
       style={{
-        // gridTemplateColumns: "90% 10%",
         display: "grid",
         gap: "2rem",
         margin: "3rem",
@@ -45,22 +41,23 @@ const BookInfo = () => {
               <MdMenuBook /> {book.description}
             </Typography>
             <Typography fontSize={"1.6rem"}>
-              <FaTheaterMasks /> 
+              <FaTheaterMasks />
               {book.genres.join(", ")}
             </Typography>
             <Typography fontSize={"1.6rem"}>
               <FaUserPen /> {book.author}
             </Typography>
-              <Typography fontSize={"1.6rem"}>
+            <Typography fontSize={"1.6rem"}>
               <FaUserPen /> {book.author}
-            </Typography>  <Typography fontSize={"1.6rem"}>
+            </Typography>
+            <Typography fontSize={"1.6rem"}>
               <FaUserPen /> {book.author}
             </Typography>
           </div>
           <img
             src={book.coverImage}
             style={{ borderRadius: "1rem" }}
-            width={"20%"}
+            width="20%"
             height="20%"
           />
         </div>

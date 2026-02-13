@@ -4,12 +4,14 @@ import {
   IconButton,
   AppBar as MuiAppBar,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import bookNookLogo from "../assets/booknook.png";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { BiUser } from "react-icons/bi";
+import useUserStore from "../state/useUserStore";
+import { getTimeOfDay } from "../utils/dateUtils";
 
 const navItemSx = {
   position: "relative",
@@ -41,6 +43,7 @@ const navItemSx = {
 
 const AppBar = () => {
   const { isAuthenticated } = useAuth();
+  const { avatar, username } = useUserStore();
   const navigate = useNavigate();
 
   return (
@@ -60,25 +63,28 @@ const AppBar = () => {
               <Typography component={NavLink} to="/booksPosts" sx={navItemSx}>
                 Posts
               </Typography>
-                <Typography component={NavLink} to="/books" sx={navItemSx}>
+              <Typography component={NavLink} to="/books" sx={navItemSx}>
                 Books
               </Typography>
               <Typography component={NavLink} to="/lists" sx={navItemSx}>
                 My Lists
               </Typography>
 
-              <Typography component={NavLink} to="/posts" sx={navItemSx}>
+              <Typography component={NavLink} to="/myPosts" sx={navItemSx}>
                 My Posts
               </Typography>
             </div>
           )}
         </Box>
         {isAuthenticated && (
-          <IconButton onClick={() => navigate("/profile")} color="inherit">
-            <Avatar sx={{ width: "2rem", height: "2rem" }}>
-              <BiUser />
-            </Avatar>
-          </IconButton>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+           Good {getTimeOfDay()}, {username}
+            <Tooltip title="Profile page">
+              <IconButton onClick={() => navigate("/profile")} color="inherit">
+                <Avatar sx={{ width: "3rem", height: "3rem" }} src={avatar} />
+              </IconButton>
+            </Tooltip>
+          </div>
         )}
       </Toolbar>
     </MuiAppBar>
