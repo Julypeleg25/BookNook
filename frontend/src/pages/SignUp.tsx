@@ -12,47 +12,34 @@ import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import useUserStore from "../state/useUserStore";
 
-interface ILoginForm {
+interface ISignUpForm {
   username: string;
   password: string;
+  name: string;
 }
 
-const Login = () => {
+const SignUp = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
-  const { setUsername, setName } = useUserStore();
-
-  const handleLogin = () => {
-    login();
-    navigate("/posts");
-  };
-
-  const handleSignup = () => {
-    navigate("/register");
-  };
-
   const {
     handleSubmit,
     control,
     formState: { errors },
     reset,
-  } = useForm<ILoginForm>({
+  } = useForm<ISignUpForm>({
     defaultValues: {
       username: "",
       password: "",
+      name: "",
     },
     mode: "onSubmit",
   });
 
-  const onSubmit = (data: ILoginForm) => {
-    setName(data.username);
-    setUsername(data.username);
-    //TODO: data from backend
-    handleLogin();
+  const handleLogin = () => navigate("/login");
+
+  const onSubmit = (data: ISignUpForm) => {
+    console.log("Form data:", data);
     reset();
   };
 
@@ -62,13 +49,13 @@ const Login = () => {
         <Box flex={1} display="flex" marginLeft={"8rem"}>
           <div>
             <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
-              <Typography variant="h4">Welcome to BookNook</Typography>
+              <Typography variant="h4">Sign up now</Typography>
               <Button
                 style={{ width: "23rem", display: "flex" }}
                 variant="outlined"
                 startIcon={<FcGoogle />}
               >
-                Log in with Google
+                Sign up with Google
               </Button>
               <Divider>or</Divider>
             </div>
@@ -95,6 +82,8 @@ const Login = () => {
                   control={control}
                   rules={{
                     required: "Username is required",
+                    minLength: { value: 3, message: "Minimum 3 characters" },
+                    maxLength: { value: 14, message: "Maximum 14 characters" },
                   }}
                   render={({ field }) => (
                     <TextField
@@ -114,6 +103,33 @@ const Login = () => {
                   marginBottom: "1rem",
                 }}
               >
+                <Typography style={{ justifySelf: "start" }}>Name</Typography>
+                <Controller
+                  name="name"
+                  control={control}
+                  rules={{
+                    required: "Name is required",
+                    minLength: { value: 3, message: "Minimum 3 characters" },
+                    maxLength: { value: 14, message: "Maximum 14 characters" },
+                  }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      helperText={errors.name?.message}
+                      error={!!errors.name}
+                      style={{ width: "23rem" }}
+                      placeholder="Enter your name"
+                    />
+                  )}
+                />
+              </div>
+              <div
+                style={{
+                  gap: "1rem",
+                  marginTop: "1rem",
+                  marginBottom: "1rem",
+                }}
+              >
                 <Typography style={{ justifySelf: "start" }}>
                   Password
                 </Typography>
@@ -122,6 +138,13 @@ const Login = () => {
                   control={control}
                   rules={{
                     required: "Password is required",
+                    minLength: { value: 6, message: "Minimum 6 characters" },
+                    maxLength: { value: 20, message: "Maximum 20 characters" },
+                    pattern: {
+                      value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
+                      message:
+                        "Password must contain at least one letter and one number",
+                    },
                   }}
                   render={({ field }) => (
                     <TextField
@@ -163,10 +186,9 @@ const Login = () => {
                   justifySelf: "center",
                   display: "flex",
                 }}
-                variant="outlined"
                 type="submit"
               >
-                Log in
+                Sign up
               </Button>
             </div>
           </div>
@@ -180,33 +202,30 @@ const Login = () => {
         display={"grid"}
       >
         <img src={loginIcon} style={{ width: "50%", height: "90%" }} />
-        <Box>
-          <Typography
-            variant="body2"
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            Don't have an account?
-          </Typography>
-
+        <Typography
+          variant="body2"
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          Already have an account?
           <div
-            onClick={handleSignup}
+            onClick={handleLogin}
             style={{
               color: "blue",
               textDecoration: "underline",
               cursor: "pointer",
             }}
           >
-            Sign up
+            Log in
           </div>
-        </Box>
+        </Typography>
       </Box>
     </Box>
   );
 };
 
-export default Login;
+export default SignUp;
