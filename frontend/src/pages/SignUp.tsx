@@ -11,6 +11,7 @@ import { FcGoogle } from "react-icons/fc";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface ISignUpForm {
   username: string;
@@ -19,6 +20,11 @@ interface ISignUpForm {
 }
 
 const SignUp = () => {
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -41,7 +47,7 @@ const SignUp = () => {
   };
 
   return (
-    <Box display="flex" marginTop={"5rem"}>
+    <Box display="flex" marginTop={"5rem"} marginLeft={'4rem'}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Box flex={1} display="flex" marginLeft={"8rem"}>
           <div>
@@ -106,6 +112,7 @@ const SignUp = () => {
                   rules={{
                     required: "Name is required",
                     minLength: { value: 3, message: "Minimum 3 characters" },
+                    maxLength: { value: 10, message: "Maximum 10 characters" },
                   }}
                   render={({ field }) => (
                     <TextField
@@ -133,6 +140,13 @@ const SignUp = () => {
                   control={control}
                   rules={{
                     required: "Password is required",
+                    minLength: { value: 6, message: "Minimum 6 characters" },
+                    maxLength: { value: 20, message: "Maximum 20 characters" },
+                    pattern: {
+                      value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
+                      message:
+                        "Password must contain at least one letter and one number",
+                    },
                   }}
                   render={({ field }) => (
                     <TextField
@@ -201,7 +215,7 @@ const SignUp = () => {
         >
           Already have an account?
           <div
-            onClick={() => (window.location.href = "/register")}
+            onClick={handleLogin}
             style={{
               color: "blue",
               textDecoration: "underline",
