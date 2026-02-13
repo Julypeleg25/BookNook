@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 import { IUserReview } from "@models/UserReview";
 import { userReviewRepository, PopulatedUserReview } from "@repositories/userReviewRepository";
-import { getOrCreateLocalBook } from "./bookService";
+import { getOrCreateLocalBook, getGoogleBookByLocalId } from "./bookService";
 import { recomputeBookRating } from "./ratingService";
 import { NotFoundError } from "@utils/errors";
 
@@ -30,8 +30,8 @@ export const createReview = async (
   return newReview;
 };
 
-export const getAllReviews = async (): Promise<PopulatedUserReview[]> => {
-  return await userReviewRepository.findAll();
+export const getAllReviews = async (minLikes?: number, searchQuery?: string): Promise<PopulatedUserReview[]> => {
+  return await userReviewRepository.findAll(minLikes, searchQuery);
 };
 
 export const getReviewsByUserId = async (
@@ -54,6 +54,32 @@ export const getReviewById = async (
     throw new NotFoundError("Review not found");
   }
   return review;
+};
+
+export const getPopulatedReviewById = async (
+  reviewId: string
+): Promise<any> => {
+  const review = await userReviewRepository.findByIdWithUser(reviewId);
+  if (!review) {
+    throw new NotFoundError("Review not found");
+  }
+
+  const reviewObj = review.toObject();
+  try {
+    // Use the helper from bookService to fetch full Google Book data per user request
+    const fullBook = await getGoogleBookByLocalId(reviewObj.book.toString());
+    return {
+      ...reviewObj,
+      book: fullBook
+    };
+  } catch (error) {
+    console.warn(`Error enriching review ${reviewId}:`, error);
+    // Fallback if book not found
+    return {
+      ...reviewObj,
+      book: { title: "Book Unavailable", authors: ["Unknown"], thumbnail: "", description: "Could not load book data." }
+    };
+  }
 };
 
 interface UpdateReviewData {

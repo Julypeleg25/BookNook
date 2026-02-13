@@ -5,15 +5,14 @@ import {
   getReviewsByUserId,
   getReviewsByBookId,
   getReviewById,
-  updateReview,
-  deleteReview,
 } from "@services/userReviewService";
 import { getGoogleBookByLocalId } from "@services/bookService";
-import { ValidationError } from "@utils/errors";
+import { ForbiddenError, ValidationError } from "@utils/errors";
 import { logger } from "@utils/logger";
 import { isImageFile, deleteFile } from "@utils/fileUtils";
 import { Types } from "mongoose";
 import { HttpStatusCode } from "axios";
+import { deleteReview, getPopulatedReviewById, isReviewAuthor, updateReview } from "@services/userReviewService";
 
 export const createReviewHandler = async (
   req: Request,
@@ -58,12 +57,13 @@ export const createReviewHandler = async (
 };
 
 export const getAllReviewsHandler = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const reviews = await getAllReviews();
+    const minLikes = req.query.minLikes ? Number(req.query.minLikes) : undefined;
+    const reviews = await getAllReviews(minLikes);
 
     const enriched = await Promise.all(
       reviews.map(async (r) => {
@@ -72,6 +72,7 @@ export const getAllReviewsHandler = async (
           const fullBookOfReview = await getGoogleBookByLocalId(
             reviewObj.book.toString()
           );
+          console.log(fullBookOfReview)
           return {
             ...reviewObj,
             book: fullBookOfReview,
@@ -81,7 +82,21 @@ export const getAllReviewsHandler = async (
             `Error enriching review ${reviewObj._id} with book data:`,
             error
           );
-          return reviewObj;
+          // Return placeholder book data if enrichment fails
+          return {
+            ...reviewObj,
+            book: {
+              id: reviewObj.book.toString(),
+              title: "Book Unavailable",
+              authors: ["Unknown"],
+              thumbnail: "",
+              publishedDate: "",
+              description: "Book information could not be retrieved.",
+              categories: [],
+              pageCount: 0,
+              previewLink: ""
+            }
+          };
         }
       })
     );
@@ -211,6 +226,13 @@ export const deleteReviewHandler = async (
     const { id } = req.params;
     if (!id) {
       throw new ValidationError("Review ID is required");
+    }
+
+    const userId = req.authenticatedUser!.id;
+    const isOwner = await isReviewAuthor(id, userId);
+
+    if (!isOwner) {
+      throw new ForbiddenError("You are not authorized to delete this review");
     }
 
     await deleteReview(id);

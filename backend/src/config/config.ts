@@ -21,7 +21,7 @@ export const ENV = {
   REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN ?? "7d",
   COOKIE_SECURE: process.env.NODE_ENV === "production",
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? "",
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "",
+  GOOGLE_CLIENT_ID: requireEnv('GOOGLE_CLIENT_ID'),
   GOOGLE_CALLBACK_URL:
     process.env.GOOGLE_CALLBACK_URL ??
     "http://localhost:3000/oauth2/redirect/google",

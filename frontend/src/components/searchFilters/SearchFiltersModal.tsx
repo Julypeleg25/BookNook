@@ -45,8 +45,8 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogTitle sx={{ fontWeight: 'bold' }}>Search Filters</DialogTitle>
         <DialogContent dividers >
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1, p:4 }}>
-             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap:2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1, p: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
               <Controller
                 name="genre"
                 control={control}
@@ -63,45 +63,45 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
                 )}
               />
 
-            <Controller
-              name="author"
-              control={control}
-              render={({ field }) => (
-                <TextField 
-                  {...field} 
-                  label="Author" 
-                  variant="outlined"
-                  error={!!errors.author} 
-                  helperText={errors.author?.message} 
-                />
-              )}
-            />
-            </Box>
-            
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', flexDirection:'column'}}>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>Minimum Rating</Typography>
               <Controller
-                name="rating"
+                name="author"
                 control={control}
                 render={({ field }) => (
-                  <Rating 
-                    {...field} 
-                    precision={0.5}
-                    value={Number(field.value)} 
-                    onChange={(_, val) => field.onChange(val)} 
+                  <TextField
+                    {...field}
+                    label="Author"
+                    variant="outlined"
+                    error={!!errors.author}
+                    helperText={errors.author?.message}
                   />
                 )}
               />
             </Box>
-            <Box sx={{ display: 'flex', flexDirection:'column'}}>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>Minimum Reviews</Typography>
-              <Controller
-                name="reviewsAmount"
-                control={control}
-                render={({ field }) => (
-                  
+
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>Minimum Rating</Typography>
+                <Controller
+                  name="rating"
+                  control={control}
+                  render={({ field }) => (
+                    <Rating
+                      {...field}
+                      precision={0.5}
+                      value={Number(field.value)}
+                      onChange={(_, val) => field.onChange(val)}
+                    />
+                  )}
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>Minimum Reviews</Typography>
+                <Controller
+                  name="reviewsAmount"
+                  control={control}
+                  render={({ field }) => (
                     <Slider
                       {...field}
                       value={field.value || 0}
@@ -109,31 +109,51 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
                       min={0}
                       max={500}
                       step={5}
-                      sx={{width: 240}}
                       marks={[
                         { value: 0, label: '0' },
                         { value: 500, label: '500+' },
                       ]}
                     />
-                )}
-              />
-            </Box>
+                  )}
+                />
+              </Box>
 
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, mt: 1 }}>Minimum Likes</Typography>
+                <Controller
+                  name="likesAmount"
+                  control={control}
+                  render={({ field }) => (
+                    <Slider
+                      {...field}
+                      value={field.value || 0}
+                      onChange={(_, value) => field.onChange(value)}
+                      min={0}
+                      max={100}
+                      step={1}
+                      marks={[
+                        { value: 0, label: '0' },
+                        { value: 100, label: '100+' },
+                      ]}
+                    />
+                  )}
+                />
+              </Box>
             </Box>
-            </Box>
+          </Box>
         </DialogContent>
 
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={onClose} color="inherit">Cancel</Button>
-          <Button 
-            type="submit" 
-            variant="contained" 
+          <Button
+            type="submit"
+            variant="contained"
             disabled={!isDirty}
             sx={{ px: 4 }}
           >
             Apply Filters
           </Button>
-          
+
         </DialogActions>
       </form>
     </Dialog>

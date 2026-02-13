@@ -28,8 +28,12 @@ export const endpoints = {
     getAll: "/userReviews",
     create: "/userReviews",
     byId: (reviewId: string) => `/userReviews/${reviewId}`,
+    getById: (reviewId: string) => `/userReviews/${reviewId}`,
     byUser: (userId: string) => `/userReviews/user/${userId}`,
     byBook: (bookId: string) => `/userReviews/book/${bookId}`,
     like: (reviewId: string) => `/userReviews/${reviewId}/like`,
+    unlike: (reviewId: string) => `/userReviews/${reviewId}/unlike`,
+    comments: (reviewId: string) => `/userReviews/${reviewId}/comments`,
+    delete: (reviewId: string) => `/userReviews/${reviewId}`,
   },
 } as const;

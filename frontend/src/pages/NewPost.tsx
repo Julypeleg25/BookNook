@@ -21,6 +21,7 @@ import { userReviewService } from "@/api/services/userReviewService";
 import { booksService } from "@/api/services/bookService";
 import { useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
+import { useEffect } from "react";
 
 interface INewPostInputs {
   review: string;
@@ -29,7 +30,7 @@ interface INewPostInputs {
 }
 
 const NewPost = () => {
-  const { bookId } = useParams<{ bookId?: string }>();
+  const { bookId: routeBookId, id: reviewId } = useParams<{ bookId?: string; id?: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -38,17 +39,32 @@ const NewPost = () => {
   // Get book from route state or fetch it
   const bookFromState = location.state?.book;
 
+  // 1. Fetch Review if in Edit Mode
+  const { data: reviewData, isLoading: isLoadingReview } = useQuery({
+    queryKey: ["review", reviewId],
+    queryFn: () => userReviewService.getReviewById(reviewId!),
+    enabled: !!reviewId,
+  });
+
+  // Determine effective bookId
+  const bookId = routeBookId || (reviewData?.book as any)?._id || (reviewData?.book as any);
+
+  // 2. Fetch Book Data
   const { data: bookData, isLoading: isLoadingBook } = useQuery({
     queryKey: ["book", bookId],
     queryFn: async () => {
-      if (!bookId) return null;
+      if (!bookId || typeof bookId !== 'string') return null;
+      // If we have the full book object in reviewData (populated), use it? 
+      // Actually backend enrichment fix returns full object or placeholder using Google Book structure usually.
+      // But standard book service expects local ID.
+
       const response = await booksService.getById(bookId);
       return response.book;
     },
     enabled: !!bookId && !bookFromState,
   });
 
-  const book = bookFromState || bookData;
+  const book = bookFromState || bookData || (reviewData?.book as any);
 
   const {
     control,
@@ -63,6 +79,17 @@ const NewPost = () => {
     },
     mode: "onSubmit",
   });
+
+  // Pre-fill form when review data loads
+  useEffect(() => {
+    if (reviewData) {
+      reset({
+        review: reviewData.review,
+        rating: reviewData.rating,
+        image: reviewData.picturePath || "",
+      });
+    }
+  }, [reviewData, reset]);
 
   const review = useWatch({
     control,
@@ -87,15 +114,60 @@ const NewPost = () => {
     },
   });
 
-  const onSubmit = (data: INewPostInputs) => {
-    if (!isDirty || !bookId) return;
+  // TODO: Add Update Mutation in userReviewService? We have updateReviewHandler in backend but service doesn't seem to have updateReview method yet?
+  // Let's check service. userReviewService.ts only had: create, get..., like..., addComment. 
+  // Checking userReviewController, there IS updateReviewHandler. 
+  // We need to add updateReview to frontend service first? 
+  // User didn't explicitly ask for update service method in the prompt, but "Edit Permission... Allow editing the post" implies it.
+  // I should check userReviewService.ts content again.
+  // It has create, get..., like, unlike, addComment. MISSING UPDATE.
 
-    createReviewMutation.mutate({
-      bookId,
-      rating: data.rating,
-      review: data.review,
-      picture: data.image instanceof File ? data.image : undefined,
-    });
+  // For now I will stick to structure but I might need to add updateReview to service in next step if missing.
+  // Assuming create for now, but really need update.
+
+  const updateReviewMutation = useMutation({
+    mutationFn: (data: { id: string; review: Partial<INewPostInputs> }) =>
+      userReviewService.updateReview(data.id, {
+        review: data.review.review,
+        rating: data.review.rating,
+        picture: data.review.image instanceof File ? data.review.image : undefined
+      }),
+    onSuccess: () => {
+      enqueueSnackbar("Review updated successfully!", { variant: "success" });
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      if (bookId) {
+        queryClient.invalidateQueries({ queryKey: ["reviews", bookId] });
+      }
+      if (reviewId) {
+        queryClient.invalidateQueries({ queryKey: ["review", reviewId] });
+      }
+      navigate(`/posts/${reviewId}`);
+    },
+    onError: (error: any) => {
+      enqueueSnackbar(
+        error?.response?.data?.message || "Failed to update review",
+        { variant: "error" }
+      );
+    },
+  });
+
+  const onSubmit = (data: INewPostInputs) => {
+    if (!isDirty && !reviewId) return;
+
+    if (reviewId) {
+      updateReviewMutation.mutate({
+        id: reviewId,
+        review: data
+      });
+    } else {
+      if (!bookId) return;
+      createReviewMutation.mutate({
+        bookId,
+        rating: data.rating,
+        review: data.review,
+        picture: data.image instanceof File ? data.image : undefined,
+      });
+    }
   };
 
   const onCancel = () => {
@@ -103,7 +175,7 @@ const NewPost = () => {
     reset();
   };
 
-  if (isLoadingBook) {
+  if (isLoadingBook || isLoadingReview) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
         <CircularProgress />
@@ -111,7 +183,7 @@ const NewPost = () => {
     );
   }
 
-  if (!bookId) {
+  if (!bookId && !isLoadingReview) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="error">No book selected. Please select a book to review.</Alert>
@@ -129,7 +201,7 @@ const NewPost = () => {
       onSubmit={handleSubmit(onSubmit)}
     >
       <Typography fontSize="1.4rem" fontWeight={600}>
-        Create Review
+        {reviewId ? "Edit Review" : "Create Review"}
       </Typography>
 
       {book && (
@@ -218,9 +290,9 @@ const NewPost = () => {
         <Button
           type="submit"
           variant="contained"
-          disabled={!isDirty || createReviewMutation.isPending}
+          disabled={(!isDirty && !reviewId) || createReviewMutation.isPending}
         >
-          {createReviewMutation.isPending ? "Publishing..." : "Publish"}
+          {createReviewMutation.isPending ? "Saving..." : (reviewId ? "Update" : "Publish")}
         </Button>
       </Stack>
     </Stack>

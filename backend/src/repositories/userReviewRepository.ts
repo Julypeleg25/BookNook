@@ -60,9 +60,19 @@ export class UserReviewRepository {
     }
   }
 
-  async findAll(): Promise<PopulatedUserReview[]> {
+  async findAll(minLikes?: number, searchQuery?: string): Promise<PopulatedUserReview[]> {
     try {
-      return await UserReviewModel.find()
+      const query: any = {};
+
+      if (minLikes && minLikes > 0) {
+        query[`likes.${minLikes - 1}`] = { $exists: true };
+      }
+
+      if (searchQuery) {
+        query.review = { $regex: searchQuery, $options: "i" };
+      }
+
+      return await UserReviewModel.find(query)
         .sort({ createdAt: -1 })
         .populate<{ user: IUser }>({ path: "user", select: "username avatar" }) as unknown as PopulatedUserReview[];
     } catch (error) {
