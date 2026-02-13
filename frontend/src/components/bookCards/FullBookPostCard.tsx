@@ -41,7 +41,7 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
               justifyContent="space-between"
               alignItems="flex-start"
             >
-              <Tooltip title="View book's details" arrow>
+              <Tooltip title="view book's details" arrow>
                 <MuiLink
                   component={RouterLink}
                   to={`/books/${post.book.id}`}

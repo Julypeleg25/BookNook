@@ -11,6 +11,7 @@ import PostImageUpload from "../components/common/PostImageUpload";
 import { useParams } from "react-router-dom";
 import { useMemo } from "react";
 import { bookPosts } from "../exampleData";
+import useNav from "../hooks/useNav";
 
 interface INewPostInputs {
   description: string;
@@ -20,6 +21,7 @@ interface INewPostInputs {
 
 const NewPost = () => {
   const { id } = useParams<{ id?: string }>();
+  const { goBack } = useNav();
 
   const bookPost = useMemo(
     () => bookPosts.find((bookPost) => bookPost.id === id),
@@ -54,6 +56,11 @@ const NewPost = () => {
 
     console.log("Submitted post:", data);
     reset(data);
+  };
+
+  const onCancel = () => {
+    goBack();
+    reset();
   };
 
   return (
@@ -128,7 +135,7 @@ const NewPost = () => {
       />
 
       <Stack direction="row" justifyContent="flex-end" spacing={2}>
-        <Button variant="outlined" onClick={() => reset()}>
+        <Button variant="outlined" onClick={onCancel}>
           Cancel
         </Button>
         <Button type="submit" variant="contained" disabled={!isDirty}>

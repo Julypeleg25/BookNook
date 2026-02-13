@@ -14,21 +14,15 @@ import ProfileView from "../components/profile/ProfileView";
 import { MdEdit } from "react-icons/md";
 import MyPostsSection from "../components/profile/MyPostsSection";
 import { bookPosts } from "../exampleData";
-import booksProfileLogo from "../assets/books-profile.png";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { name, username, avatar } = useUserStore();
 
-const postsCount = bookPosts.filter((post) => post.user.id === "u1").length;
+  const postsCount = bookPosts.filter((post) => post.user.id === "u1").length;
 
   return (
     <Stack justifySelf="center" margin="1rem">
-      <img
-        style={{ top: 100, right: 500, position: "absolute" }}
-        width="400rem"
-        src={booksProfileLogo}
-      />
       <Card
         sx={{
           borderRadius: "1.5rem",
@@ -62,7 +56,7 @@ const postsCount = bookPosts.filter((post) => post.user.id === "u1").length;
             </Box>
 
             {!isEditing && (
-              <Tooltip title="Edit profile">
+              <Tooltip title="edit profile">
                 <IconButton onClick={() => setIsEditing(true)}>
                   <MdEdit size="2rem" />
                 </IconButton>

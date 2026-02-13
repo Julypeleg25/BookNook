@@ -79,7 +79,7 @@ const AppBar = () => {
         {isAuthenticated && (
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
            Good {getTimeOfDay()}, {username}
-            <Tooltip title="Profile page">
+            <Tooltip title="Profile Page">
               <IconButton onClick={() => navigate("/profile")} color="inherit">
                 <Avatar sx={{ width: "3rem", height: "3rem" }} src={avatar} />
               </IconButton>

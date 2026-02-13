@@ -1,16 +1,18 @@
-import { Rating, Typography } from "@mui/material";
+import { IconButton, Rating, Tooltip, Typography } from "@mui/material";
 import { FaCalendar, FaUser } from "react-icons/fa6";
 import { formatDate } from "../../utils/dateUtils";
 import type { BookPost } from "../../models/Book";
 import BookHeader from "./BookHeaderButtons";
-import { MdCalculate, MdCalendarMonth, MdCalendarViewMonth } from "react-icons/md";
-import { SlCalender } from "react-icons/sl";
+import { BiArrowBack } from "react-icons/bi";
+import useNav from "../../hooks/useNav";
 
 interface BookPostHeaderProps {
   bookPost: BookPost;
 }
 
 const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
+  const { goBack } = useNav();
+  
   return (
     <div
       style={{
@@ -21,6 +23,11 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
     >
       <div style={{ display: "grid", gap: "1rem" }}>
         <Typography variant="h4" style={{ gap: "0.5rem", display: "flex" }}>
+          <Tooltip title="Go Back">
+            <IconButton onClick={goBack} sx={{ mb: "1rem" }}>
+              <BiArrowBack />
+            </IconButton>
+          </Tooltip>
           <div>{bookPost.book.title}</div>
           <div>({new Date(bookPost.book.publishedDate).getFullYear()})</div>
         </Typography>

@@ -163,6 +163,7 @@ const Login = () => {
                   justifySelf: "center",
                   display: "flex",
                 }}
+                variant="outlined"
                 type="submit"
               >
                 Log in
