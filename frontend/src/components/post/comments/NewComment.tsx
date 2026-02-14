@@ -18,6 +18,7 @@ import { MdSend } from "react-icons/md";
 
 interface NewCommentProps {
   avatarUrl?: string; // Made optional to match User model
+  onSubmit?: (comment: string) => void;
 }
 
 export interface NewCommentRef {
@@ -25,7 +26,7 @@ export interface NewCommentRef {
 }
 
 const NewComment = forwardRef(
-  ({ avatarUrl }: NewCommentProps, ref: ForwardedRef<NewCommentRef>) => {
+  ({ avatarUrl, onSubmit }: NewCommentProps, ref: ForwardedRef<NewCommentRef>) => {
     const [value, setValue] = useState("");
     const [error, setError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
@@ -41,7 +42,10 @@ const NewComment = forwardRef(
         setError("Required");
         return;
       }
-      // TODO: add comment logic
+      if (onSubmit) {
+        onSubmit(value);
+        setValue("");
+      }
     };
 
     return (

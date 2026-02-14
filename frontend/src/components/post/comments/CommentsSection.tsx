@@ -6,6 +6,8 @@ import NewComment, { type NewCommentRef } from "./NewComment";
 import CommentsHeader from "./CommentsHeader";
 import env from "@/config/env";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { userReviewService } from "@/api/services/userReviewService";
 
 interface CommentsSectionProps {
   bookPost: BookPost;
@@ -23,6 +25,19 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
       focusInput: () => newCommentRef.current?.focus(),
     }));
 
+    const queryClient = useQueryClient();
+    const { mutate: addComment } = useMutation({
+      mutationFn: (comment: string) =>
+        userReviewService.addComment(bookPost.id, comment),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["review", bookPost.id] });
+      },
+    });
+
+    const handleAddComment = (comment: string) => {
+      addComment(comment);
+    };
+
     return (
       <Box
         sx={{
@@ -37,7 +52,7 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
           style={{ backgroundColor: "white" }}
           width="100%"
         >
-          <NewComment ref={newCommentRef} avatarUrl={bookPost.user.avatar} />
+          <NewComment ref={newCommentRef} avatarUrl={bookPost.user.avatar} onSubmit={handleAddComment} />
           <Divider
             style={{ width: "93%", justifySelf: "center", opacity: 0.3 }}
           />

@@ -13,6 +13,7 @@ import { isImageFile, deleteFile } from "@utils/fileUtils";
 import { Types } from "mongoose";
 import { HttpStatusCode } from "axios";
 import { deleteReview, getPopulatedReviewById, isReviewAuthor, updateReview } from "@services/userReviewService";
+import { BookSummary } from "@models/ApiBook";
 
 export const createReviewHandler = async (
   req: Request,
@@ -163,7 +164,7 @@ export const getReviewByIdHandler = async (
       throw new ValidationError("Review ID is required");
     }
 
-    const review = await getReviewById(id);
+    const review = await getPopulatedReviewById(id);
     res.json(review);
   } catch (error) {
     logger.error(`Error fetching review ${req.params.id}:`, error);

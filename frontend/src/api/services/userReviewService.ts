@@ -8,6 +8,8 @@ export interface CreateReviewData {
     picture?: File;
 }
 
+import { Book } from "@/models/Book";
+
 export interface UserReview {
     _id: string;
     user: {
@@ -16,7 +18,7 @@ export interface UserReview {
         avatar?: string;
         bio?: string;
     };
-    book: string;
+    book: Book | string;
     review: string;
     rating: number;
     picturePath?: string;
@@ -76,11 +78,6 @@ export const userReviewService = {
     async deleteReview(reviewId: string): Promise<void> {
         await axiosClient.delete(endpoints.userReviews.delete(reviewId));
     },
-
-    async deleteReview(reviewId: string): Promise<void> {
-        await axiosClient.delete(endpoints.userReviews.delete(reviewId));
-    },
-
     async likeReview(reviewId: string): Promise<{ likes: number }> {
         const res = await axiosClient.post<{ likes: number }>(
             endpoints.userReviews.like(reviewId)

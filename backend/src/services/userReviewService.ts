@@ -68,16 +68,29 @@ export const getPopulatedReviewById = async (
   try {
     // Use the helper from bookService to fetch full Google Book data per user request
     const fullBook = await getGoogleBookByLocalId(reviewObj.book.toString());
+    // Normalize the book data to match BookDetail interface expected by frontend
+    const { normalizeBookDetail } = await import("./bookService");
+    const normalizedBook = normalizeBookDetail(fullBook);
+
     return {
       ...reviewObj,
-      book: fullBook
+      book: normalizedBook
     };
   } catch (error) {
     console.warn(`Error enriching review ${reviewId}:`, error);
     // Fallback if book not found
     return {
       ...reviewObj,
-      book: { title: "Book Unavailable", authors: ["Unknown"], thumbnail: "", description: "Could not load book data." }
+      book: {
+        id: reviewObj.book.toString(),
+        title: "Book Unavailable",
+        authors: ["Unknown"],
+        thumbnail: "",
+        description: "Could not load book data.",
+        categories: [],
+        pageCount: 0,
+        previewLink: ""
+      }
     };
   }
 };
