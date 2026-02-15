@@ -65,17 +65,17 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
       }}
     >
       <div style={{ display: "grid", gap: "1rem" }}>
-        <Typography variant="h4" style={{ gap: "0.5rem", display: "flex", alignItems: "center" }}>
+        <div style={{ gap: "0.5rem", display: "flex", alignItems: "center" }}>
           <Tooltip title="Go Back">
             <IconButton onClick={goBack}>
               <BiArrowBack />
             </IconButton>
           </Tooltip>
-          <div>{bookPost.book.title}</div>
+          <Typography variant="h4">{bookPost.book.title}</Typography>
           <Typography variant="h5" color="text.secondary">
             {bookPost.book.publishedDate ? `(${new Date(bookPost.book.publishedDate).getFullYear()})` : ""}
           </Typography>
-        </Typography>
+        </div>
 
         <Stack direction="row" spacing={3} alignItems="center">
           <Rating size="large" value={bookPost.rating} readOnly />

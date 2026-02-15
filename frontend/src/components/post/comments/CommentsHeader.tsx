@@ -4,9 +4,11 @@ import { TbArrowsSort } from "react-icons/tb";
 
 interface CommentsHeaderProps {
   length: number;
+  sortOrder: string;
+  onSortChange: (value: string) => void;
 }
 
-const CommentsHeader = ({ length }: CommentsHeaderProps) => {
+const CommentsHeader = ({ length, sortOrder, onSortChange }: CommentsHeaderProps) => {
   return (
     <div
       style={{
@@ -36,8 +38,8 @@ const CommentsHeader = ({ length }: CommentsHeaderProps) => {
         style={{ marginRight: "2.8rem" }}
         label=""
         startIcon={<TbArrowsSort size={"2rem"} />}
-        onChange={() => {}}
-        selectedValues={["mostRecent"]}
+        onChange={(values) => onSortChange(values[0] as string)}
+        selectedValues={[sortOrder]}
         menuItems={[
           { label: "Most recent", value: "mostRecent" },
           { label: "Least recent", value: "leastRecent" },

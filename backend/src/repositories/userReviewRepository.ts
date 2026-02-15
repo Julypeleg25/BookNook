@@ -3,8 +3,9 @@ import { Types } from "mongoose";
 import { IUser } from "@models/User";
 import { logger } from "@utils/logger";
 
-interface PopulatedUserReview extends Omit<IUserReview, "user"> {
+interface PopulatedUserReview extends Omit<IUserReview, "user" | "comments"> {
   user: Pick<IUser, "username" | "avatar" | "bio">;
+  comments: (Omit<ReviewComment, "user"> & { user: Pick<IUser, "username" | "avatar"> })[];
 }
 
 // Export the interface for use in services including the type for `user` which is populated
@@ -50,10 +51,15 @@ export class UserReviewRepository {
     reviewId: Types.ObjectId | string
   ): Promise<PopulatedUserReview | null> {
     try {
-      return await UserReviewModel.findById(reviewId).populate<{ user: IUser }>({
-        path: "user",
-        select: "username avatar bio",
-      }) as PopulatedUserReview | null;
+      return await UserReviewModel.findById(reviewId)
+        .populate<{ user: IUser }>({
+          path: "user",
+          select: "username avatar bio",
+        })
+        .populate({
+          path: "comments.user",
+          select: "username avatar",
+        }) as unknown as PopulatedUserReview | null;
     } catch (error) {
       logger.error(`Error finding review ${reviewId} with user:`, error);
       throw error;
