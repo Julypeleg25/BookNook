@@ -4,6 +4,8 @@ export interface BookSummary {
   authors: string[];
   thumbnail?: string;
   publishedDate?: string;
+  avgRating?: number;
+  ratingCount?: number;
 
 }
 
@@ -24,7 +26,7 @@ export interface BooksQuery {
   page?: string;
   limit?: string;
   rating?: number;
-  reviewCount?:number;
+  reviewCount?: number;
 }
 
 export interface GoogleBooksVolume {

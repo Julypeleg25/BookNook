@@ -66,9 +66,13 @@ export class UserReviewRepository {
     }
   }
 
-  async findAll(minLikes?: number, searchQuery?: string): Promise<PopulatedUserReview[]> {
+  async findAll(minLikes?: number, searchQuery?: string, userId?: Types.ObjectId | string): Promise<PopulatedUserReview[]> {
     try {
       const query: any = {};
+
+      if (userId) {
+        query.user = typeof userId === "string" ? new Types.ObjectId(userId) : userId;
+      }
 
       if (minLikes && minLikes > 0) {
         query[`likes.${minLikes - 1}`] = { $exists: true };

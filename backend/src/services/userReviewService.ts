@@ -30,8 +30,20 @@ export const createReview = async (
   return newReview;
 };
 
-export const getAllReviews = async (minLikes?: number, searchQuery?: string): Promise<PopulatedUserReview[]> => {
-  return await userReviewRepository.findAll(minLikes, searchQuery);
+import { userRepository } from "@repositories/userRepository";
+
+export const getAllReviews = async (minLikes?: number, searchQuery?: string, username?: string): Promise<PopulatedUserReview[]> => {
+  let userId: Types.ObjectId | undefined;
+
+  if (username) {
+    const user = await userRepository.findByUsername(username);
+    if (!user) {
+      return []; // Return empty if user not found
+    }
+    userId = user._id as Types.ObjectId;
+  }
+
+  return await userReviewRepository.findAll(minLikes, searchQuery, userId);
 };
 
 export const getReviewsByUserId = async (

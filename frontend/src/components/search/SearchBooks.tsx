@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Typography, Skeleton } from "@mui/material";
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect, useMemo, useState } from "react";
 import SearchBar from "@components/searchFilters/SearchBar";
 import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
 import BookInfoCard from "@components/bookCards/BookInfoCard";
@@ -7,7 +7,7 @@ import { ISearchFiltersForm } from "@/components/searchFilters/models/SearchFilt
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { booksService } from "@/api/services/bookService";
 import type { Book } from "@/models/Book";
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const PAGE_SIZE = 20;
 
@@ -17,29 +17,48 @@ interface SearchBooksProps {
 }
 
 const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [filters, setFilters] = useState<ISearchFiltersForm>({
-        language: "", genre: "", author: "", yearPublishedFrom: "",
-        yearPublishedTo: "", rating: 0, likesAmount: 0, reviewsAmount: 0
-    });
+
+    // URL State
+    const urlQuery = searchParams.get("q") || "";
+
+    // Local State for Input (initialized from URL)
+    const [localSearchQuery, setLocalSearchQuery] = useState(urlQuery);
+
+    // Sync local state if URL changes externally (e.g. back button)
+    useEffect(() => {
+        setLocalSearchQuery(urlQuery);
+    }, [urlQuery]);
+
+    const filters = useMemo<ISearchFiltersForm>(() => {
+        return {
+            language: searchParams.get("language") || "",
+            genre: searchParams.get("genre") || "",
+            author: searchParams.get("author") || "",
+            yearPublishedFrom: searchParams.get("yearPublishedFrom") || "",
+            yearPublishedTo: searchParams.get("yearPublishedTo") || "",
+            rating: Number(searchParams.get("rating")) || 0,
+            likesAmount: Number(searchParams.get("likesAmount")) || 0,
+            reviewsAmount: Number(searchParams.get("reviewsAmount")) || 0,
+        };
+    }, [searchParams]);
 
     const observerTarget = useRef<HTMLDivElement>(null);
 
-    // Build search params from filters
-    const hasValidQuery = searchQuery.trim().length > 0 ||
+    const hasValidQuery = urlQuery.trim().length > 0 ||
         filters.author.trim().length > 0 ||
         filters.genre.trim().length > 0 ||
         filters.rating > 0 ||
         filters.reviewsAmount > 0;
 
     const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-        queryKey: ["booksSearch", searchQuery, filters],
+        queryKey: ["booksSearch", urlQuery, filters],
         queryFn: async ({ pageParam = 1 }) => {
             return await booksService.search({
                 author: filters.author || undefined,
                 subject: filters.genre || undefined,
-                title: searchQuery,
+                title: urlQuery,
                 reviewCount: filters.reviewsAmount || undefined,
                 rating: filters.rating || undefined,
                 page: pageParam,
@@ -53,12 +72,27 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
         enabled: hasValidQuery,
     });
 
+    const updateSearchParams = (newParams: Record<string, string | number | undefined | null>) => {
+        const nextParams = new URLSearchParams(searchParams);
+        Object.entries(newParams).forEach(([key, value]) => {
+            if (value === undefined || value === null || value === "" || value === 0) {
+                nextParams.delete(key);
+            } else {
+                nextParams.set(key, String(value));
+            }
+        });
+        setSearchParams(nextParams);
+    };
+
     const handleSearch = (newSearchTerm: string) => {
-        setSearchQuery(newSearchTerm);
+        updateSearchParams({ q: newSearchTerm });
     };
 
     const handleFiltersApply = (newFilters: ISearchFiltersForm) => {
-        setFilters(newFilters);
+        updateSearchParams({
+            ...newFilters,
+            q: urlQuery
+        });
     };
 
     const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -87,13 +121,12 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
     return (
         <Box>
             <SearchBar
-                searchTerm={searchQuery}
-                setSearchTerm={setSearchQuery}
+                searchTerm={localSearchQuery}
+                setSearchTerm={setLocalSearchQuery}
                 onSearch={handleSearch}
                 setIsFiltersModalOpen={setIsFiltersModalOpen}
             />
 
-            {/* Initial Loading */}
             {isLoading && !isFetchingNextPage && (
                 <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={3} mt={4}>
                     {[...Array(8)].map((_, i) => (
@@ -106,7 +139,6 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 </Box>
             )}
 
-            {/* Results */}
             {!isLoading && allBooks.length > 0 && (
                 <Box>
                     <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={3} mt={4}>
@@ -120,10 +152,8 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                         ))}
                     </Box>
 
-                    {/* Sentinel for infinite scroll */}
                     <div ref={observerTarget} style={{ height: '20px', margin: '20px 0' }} />
 
-                    {/* Loading More */}
                     {isFetchingNextPage && (
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
                             <CircularProgress size={24} />
@@ -133,7 +163,6 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 </Box>
             )}
 
-            {/* Empty State */}
             {showEmptyState && (
                 <Box sx={{ textAlign: 'center', mt: 8 }}>
                     <Typography variant="h6" color="text.secondary">
@@ -145,7 +174,6 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 </Box>
             )}
 
-            {/* Error State */}
             {isError && (
                 <Typography color="error" sx={{ mt: 4, textAlign: 'center' }}>
                     Error in search, please try again.

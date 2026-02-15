@@ -101,6 +101,7 @@ const NewPost = () => {
     onSuccess: () => {
       enqueueSnackbar("Review created successfully!", { variant: "success" });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
       if (bookId) {
         queryClient.invalidateQueries({ queryKey: ["reviews", bookId] });
       }
@@ -135,6 +136,7 @@ const NewPost = () => {
     onSuccess: () => {
       enqueueSnackbar("Review updated successfully!", { variant: "success" });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
       if (bookId) {
         queryClient.invalidateQueries({ queryKey: ["reviews", bookId] });
       }

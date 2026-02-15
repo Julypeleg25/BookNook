@@ -2,14 +2,12 @@ import { IconButton, Tooltip, Typography } from "@mui/material";
 import type { Book } from "@models/Book";
 import BookHeader from "./BookHeaderButtons";
 import { BiArrowBack } from "react-icons/bi";
-import useNav from "@hooks/useNav";
 
 interface BookInfoHeaderProps {
   book: Book;
 }
 
 const BookInfoHeader = ({ book }: BookInfoHeaderProps) => {
-  const { goBack } = useNav();
   const year = book.publishedDate ? new Date(book.publishedDate).getFullYear() : "Unknown";
 
   return (
@@ -29,11 +27,6 @@ const BookInfoHeader = ({ book }: BookInfoHeaderProps) => {
           }}
         >
           <Typography variant="h4" style={{ gap: "0.5rem", display: "flex", alignItems: "center" }}>
-            <Tooltip title="Go Back">
-              <IconButton onClick={goBack}>
-                <BiArrowBack />
-              </IconButton>
-            </Tooltip>
             <div>{book.title}</div>
             <div style={{ color: "gray", fontSize: "1.5rem" }}>({year})</div>
           </Typography>

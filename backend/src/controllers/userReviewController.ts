@@ -64,7 +64,9 @@ export const getAllReviewsHandler = async (
 ): Promise<void> => {
   try {
     const minLikes = req.query.minLikes ? Number(req.query.minLikes) : undefined;
-    const reviews = await getAllReviews(minLikes);
+    const username = req.query.username ? String(req.query.username) : undefined;
+    const searchQuery = req.query.search ? String(req.query.search) : undefined;
+    const reviews = await getAllReviews(minLikes, searchQuery, username);
 
     const enriched = await Promise.all(
       reviews.map(async (r) => {

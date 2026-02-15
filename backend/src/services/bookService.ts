@@ -23,6 +23,9 @@ const normalizeBookSummary = (volume: GoogleBooksVolume): BookSummary => {
     authors: info.authors ?? [],
     thumbnail: info.imageLinks?.thumbnail,
     publishedDate: info.publishedDate,
+    // Google Books API typically puts averageRating in volumeInfo if available
+    avgRating: (info as any).averageRating,
+    ratingCount: (info as any).ratingsCount,
   };
 };
 
@@ -39,6 +42,8 @@ export const normalizeBookDetail = (volume: GoogleBooksVolume): BookDetail => {
     pageCount: info.pageCount,
     thumbnail: info.imageLinks?.thumbnail,
     previewLink: info.previewLink,
+    avgRating: (info as any).averageRating,
+    ratingCount: (info as any).ratingsCount,
   };
 };
 
@@ -49,6 +54,8 @@ const localBookToSummary = (book: IBook): BookSummary => {
     authors: book.authors,
     thumbnail: book.thumbnail,
     publishedDate: book.publishedDate,
+    avgRating: book.avgRating,
+    ratingCount: book.ratingCount,
   };
 };
 

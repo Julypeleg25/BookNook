@@ -7,6 +7,7 @@ export interface ISearchFiltersForm {
   likesAmount: number;
   reviewsAmount: number;
   rating: number;
+  username: string;
 }
 
 export const amountOptions = {

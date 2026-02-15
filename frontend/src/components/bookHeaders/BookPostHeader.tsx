@@ -4,8 +4,6 @@ import { FiHeart } from "react-icons/fi";
 import { formatDate } from "@utils/dateUtils";
 import type { BookPost } from "@models/Book";
 import BookHeader from "./BookHeaderButtons";
-import { BiArrowBack } from "react-icons/bi";
-import useNav from "@hooks/useNav";
 import { useState } from "react";
 import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
@@ -16,13 +14,11 @@ interface BookPostHeaderProps {
 }
 
 const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
-  const { goBack } = useNav();
   const { user, isAuthenticated } = useUserStore();
   const [likes, setLikes] = useState<string[]>(bookPost.likes);
   const { enqueueSnackbar } = useSnackbar();
 
   const isLiked = user?.id ? likes.includes(user.id) : false;
-  // Ensure we compare strings safely
   const isAuthor = user?.id && bookPost.user ? user.id === (bookPost.user as any).id || user.id === (bookPost.user as any)._id : false;
 
   const handleLikeClick = async () => {
@@ -66,11 +62,7 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
     >
       <div style={{ display: "grid", gap: "1rem" }}>
         <div style={{ gap: "0.5rem", display: "flex", alignItems: "center" }}>
-          <Tooltip title="Go Back">
-            <IconButton onClick={goBack}>
-              <BiArrowBack />
-            </IconButton>
-          </Tooltip>
+
           <Typography variant="h4">{bookPost.book.title}</Typography>
           <Typography variant="h5" color="text.secondary">
             {bookPost.book.publishedDate ? `(${new Date(bookPost.book.publishedDate).getFullYear()})` : ""}

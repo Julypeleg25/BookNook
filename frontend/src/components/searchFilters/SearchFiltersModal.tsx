@@ -27,7 +27,10 @@ interface SearchFiltersModalProps {
 
 const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFiltersModalProps) => {
   const { handleSubmit, control, reset, formState: { errors, isDirty } } = useForm<ISearchFiltersForm>({
-    defaultValues: currentFilters,
+    defaultValues: {
+      ...currentFilters,
+      username: currentFilters.username || "",
+    },
   });
 
   useEffect(() => {
@@ -77,6 +80,19 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
                 )}
               />
             </Box>
+
+            <Controller
+              name="username"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Username"
+                  variant="outlined"
+                  fullWidth
+                />
+              )}
+            />
 
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

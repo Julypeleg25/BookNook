@@ -7,6 +7,8 @@ export interface BookSummary {
   authors: string[];
   thumbnail?: string;
   publishedDate?: string;
+  avgRating?: number;
+  ratingCount?: number;
 }
 
 export interface BookDetail extends BookSummary {

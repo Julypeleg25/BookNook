@@ -43,29 +43,39 @@ export class BookRepository {
 
   async getOrCreate(externalId: string): Promise<IBook> {
     try {
-      const localBook = await this.findByExternalId(externalId);
+      let localBook = await this.findByExternalId(externalId);
 
-      if (localBook) {
-        return localBook;
-      }
-
+      // Normalize Google Book data
       const googleBook = await getBookByGoogleIdFromGoogle(externalId);
       const normalizedToBookModel = normalizeBookDetail(googleBook);
 
-      return await BookModel.findOneAndUpdate(
-        { externalId },
-        {
-          $set: {
-            externalId,
-            title: normalizedToBookModel.title,
-            authors: normalizedToBookModel.authors ?? [],
-            thumbnail: normalizedToBookModel.thumbnail,
-            publishedDate: normalizedToBookModel.publishedDate,
-            categories: normalizedToBookModel.categories,
-          },
-        },
-        { upsert: true, new: true }
-      ) as IBook;
+      if (localBook) {
+        // Update basic info
+        localBook.title = normalizedToBookModel.title;
+        localBook.authors = normalizedToBookModel.authors ?? [];
+        localBook.thumbnail = normalizedToBookModel.thumbnail;
+        localBook.publishedDate = normalizedToBookModel.publishedDate;
+        localBook.categories = normalizedToBookModel.categories;
+
+        // If local rating is missing valid value, backfill from Google
+        if (!localBook.avgRating && normalizedToBookModel.avgRating) {
+          localBook.avgRating = normalizedToBookModel.avgRating;
+          localBook.ratingCount = normalizedToBookModel.ratingCount || 0;
+        }
+
+        return await localBook.save();
+      } else {
+        return await BookModel.create({
+          externalId,
+          title: normalizedToBookModel.title,
+          authors: normalizedToBookModel.authors ?? [],
+          thumbnail: normalizedToBookModel.thumbnail,
+          publishedDate: normalizedToBookModel.publishedDate,
+          categories: normalizedToBookModel.categories,
+          avgRating: normalizedToBookModel.avgRating || 0,
+          ratingCount: normalizedToBookModel.ratingCount || 0,
+        });
+      }
     } catch (error) {
       logger.error(`Error getting or creating book ${externalId}:`, error);
       throw error;
