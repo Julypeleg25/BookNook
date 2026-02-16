@@ -41,6 +41,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
             rating: Number(searchParams.get("rating")) || 0,
             likesAmount: Number(searchParams.get("likesAmount")) || 0,
             reviewsAmount: Number(searchParams.get("reviewsAmount")) || 0,
+            username: "",
         };
     }, [searchParams]);
 
@@ -185,6 +186,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 onClose={() => setIsFiltersModalOpen(false)}
                 onApply={handleFiltersApply}
                 currentFilters={filters}
+                mode="books"
             />
         </Box>
     );

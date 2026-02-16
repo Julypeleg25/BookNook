@@ -32,11 +32,7 @@ const BookPost = () => {
 
   const bookPost: BookPost | null = review ? {
     id: review._id,
-    book: review.book as any, // Kept as any for now because Book type on frontend might not match backend normalization exactly yet, but the data is there. Actually, let's try to type it properly if possible, or leave as any if it's safe. 
-    // Wait, the backend now returns `BookDetail` compatible object. The keys should match.
-    // The `Book` interface in frontend has `authors`, `title`, etc.
-    // Let's remove `as any` and see if it compiles. The review.book is Book | string.
-    // We can cast to Book since we know it's populated.
+    book: review.book as any,
     user: {
       id: review.user._id,
       username: review.user.username,

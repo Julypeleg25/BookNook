@@ -1,3 +1,5 @@
+export type SearchMode = "books" | "posts";
+
 export interface ISearchFiltersForm {
   language: string;
   genre: string;

@@ -159,6 +159,7 @@ const SearchPosts = () => {
                 onClose={() => setIsFiltersModalOpen(false)}
                 onApply={handleApplyFilters}
                 currentFilters={filters}
+                mode="posts"
             />
         </Box>
     );

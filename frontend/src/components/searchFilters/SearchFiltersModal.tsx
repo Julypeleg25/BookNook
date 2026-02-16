@@ -16,6 +16,7 @@ import Select from "../common/Select";
 import {
   genreMenuItems,
   ISearchFiltersForm,
+  SearchMode,
 } from "./models/SearchFiltersOptions";
 
 interface SearchFiltersModalProps {
@@ -23,9 +24,10 @@ interface SearchFiltersModalProps {
   onClose: () => void;
   onApply: (data: ISearchFiltersForm) => void;
   currentFilters: ISearchFiltersForm;
+  mode: SearchMode;
 }
 
-const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFiltersModalProps) => {
+const SearchFiltersModal = ({ open, onClose, onApply, currentFilters, mode }: SearchFiltersModalProps) => {
   const { handleSubmit, control, reset, formState: { errors, isDirty } } = useForm<ISearchFiltersForm>({
     defaultValues: {
       ...currentFilters,
@@ -49,50 +51,54 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters }: SearchFi
         <DialogTitle sx={{ fontWeight: 'bold' }}>Search Filters</DialogTitle>
         <DialogContent dividers >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1, p: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
-              <Controller
-                name="genre"
-                control={control}
-                render={({ field }) => (
-                  <Box sx={{ flex: 1 }}>
-                    <Select
-                      label="Genre"
-                      fullWidth
-                      menuItems={genreMenuItems}
-                      selectedValues={field.value ? [field.value] : []}
-                      onChange={(val) => field.onChange(val.length > 0 ? val[0] : "")}
-                    />
-                  </Box>
-                )}
-              />
+            {mode === 'books' && (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                <Controller
+                  name="genre"
+                  control={control}
+                  render={({ field }) => (
+                    <Box sx={{ flex: 1 }}>
+                      <Select
+                        label="Genre"
+                        fullWidth
+                        menuItems={genreMenuItems}
+                        selectedValues={field.value ? [field.value] : []}
+                        onChange={(val) => field.onChange(val.length > 0 ? val[0] : "")}
+                      />
+                    </Box>
+                  )}
+                />
 
+                <Controller
+                  name="author"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Author"
+                      variant="outlined"
+                      error={!!errors.author}
+                      helperText={errors.author?.message}
+                    />
+                  )}
+                />
+              </Box>
+            )}
+
+            {mode === 'posts' && (
               <Controller
-                name="author"
+                name="username"
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Author"
+                    label="Username"
                     variant="outlined"
-                    error={!!errors.author}
-                    helperText={errors.author?.message}
+                    fullWidth
                   />
                 )}
               />
-            </Box>
-
-            <Controller
-              name="username"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Username"
-                  variant="outlined"
-                  fullWidth
-                />
-              )}
-            />
+            )}
 
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
