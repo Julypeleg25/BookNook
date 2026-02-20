@@ -16,7 +16,7 @@ export const useAuth = () => {
     navigate("/posts");
   };
 
-  const register = async (payload: RegisterRequestDTO) => {
+  const register = async (payload: RegisterRequestDTO | FormData) => {
     const data = await AuthService.register(payload);
 
     tokenService.setAccess(data.accessToken);

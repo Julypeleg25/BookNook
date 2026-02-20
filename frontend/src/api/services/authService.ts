@@ -13,7 +13,7 @@ export const AuthService = {
     return res.data;
   },
 
-  async register(payload: RegisterRequestDTO): Promise<AuthResponseDto> {
+  async register(payload: RegisterRequestDTO | FormData): Promise<AuthResponseDto> {
     const res = await axiosClient.post<AuthResponseDto>(endpoints.auth.register, payload);
     return res.data;
   },
