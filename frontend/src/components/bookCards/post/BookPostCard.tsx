@@ -1,9 +1,7 @@
-import { Card, CardActionArea, CardContent, Chip, Typography, Stack, Box, Collapse } from "@mui/material";
+import { Card, CardActionArea, CardContent, Chip, Typography, Stack, Box } from "@mui/material";
 import type { BookPost } from "@models/Book";
 import BookPostCardActions from "./BookPostCardActions";
 import BookPostCardHeader from "./BookPostCardHeader";
-import CommentsSection from "./CommentsSection";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface BookPostCardProps {
@@ -13,12 +11,12 @@ interface BookPostCardProps {
 const MAX_DESCRIPTION_LENGTH = 90;
 
 const BookPostCard = ({ post }: BookPostCardProps) => {
-  const [showComments, setShowComments] = useState(false);
   const navigate = useNavigate();
 
-  const handleToggleComments = (e: React.MouseEvent) => {
+  // Navigate to the full review page; #comments anchor auto-focuses the comment input
+  const handleCommentsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowComments(!showComments);
+    navigate(`/posts/${post.id}#comments`);
   };
 
   const handleCardClick = () => {
@@ -28,7 +26,8 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
   return (
     <Card
       sx={{
-        width: "22rem",
+        width: "100%",
+        maxWidth: "25rem",
         borderRadius: "1rem",
         boxShadow: 1,
         transition: "box-shadow 0.2s ease, transform 0.2s ease",
@@ -49,7 +48,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         </CardContent>
       </CardActionArea>
 
-      <BookPostCardActions post={post} onCommentsClick={handleToggleComments} />
+      <BookPostCardActions post={post} onCommentsClick={handleCommentsClick} />
 
       <Box px="1rem" pb="1rem" onClick={handleCardClick} sx={{ cursor: 'pointer' }}>
         <Stack direction="row" spacing="0.4rem" flexWrap="wrap">
@@ -58,10 +57,6 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
           ))}
         </Stack>
       </Box>
-
-      <Collapse in={showComments} timeout="auto" unmountOnExit>
-        <CommentsSection postId={post.id} comments={post.comments} />
-      </Collapse>
     </Card>
   );
 };

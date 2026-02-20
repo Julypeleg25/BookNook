@@ -3,12 +3,26 @@ import type { BookPost } from "@models/Book";
 import { Link as RouterLink } from "react-router-dom";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { formatDate } from "@/utils/dateUtils";
+import env from "@/config/env";
+import { useState } from "react";
 
 interface BookPostCardProps {
   post: BookPost;
 }
 
 const BookPostCardHeader = ({ post }: BookPostCardProps) => {
+  const [imgSrc, setImgSrc] = useState<string | undefined>(() => {
+    if (!post.imageUrl) return post.book.thumbnail;
+    if (post.imageUrl.startsWith("http")) return post.imageUrl;
+    return `${env.API_BASE_URL}${post.imageUrl}`;
+  });
+
+  const handleImageError = () => {
+    if (imgSrc !== post.book.thumbnail) {
+      setImgSrc(post.book.thumbnail);
+    }
+  };
+
   return (
     <>
       <CardHeader
@@ -42,10 +56,11 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
         to={`/posts/${post.id}`}
         sx={{ textDecoration: "none" }}
       >
-        {post.imageUrl && (
+        {imgSrc && (
           <CardMedia
             component="img"
-            image={post.imageUrl}
+            image={imgSrc}
+            onError={handleImageError}
             sx={{ height: "16rem", objectFit: "cover" }}
           />
         )}
