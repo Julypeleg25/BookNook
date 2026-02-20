@@ -1,16 +1,15 @@
 import { Box, Typography } from "@mui/material";
 import BookPostCard from "@components/bookCards/post/BookPostCard";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import SearchHeader from "./SearchHeader";
 import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
-import SearchBar from "@components/searchFilters/SearchBar";
 import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
-import type { ISearchFiltersForm } from "@components/searchFilters/models/SearchFiltersOptions";
-import { userReviewService, UserReview } from "@/api/services/userReviewService";
+import { userReviewService } from "@/api/services/userReviewService";
 import type { BookPost } from "@models/Book";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParamsState } from "@/hooks/useSearchParamsState";
 
-const defaultFilters: ISearchFiltersForm = {
+const defaultFilters = {
     genre: "",
     author: "",
     rating: 0,
@@ -23,38 +22,35 @@ const defaultFilters: ISearchFiltersForm = {
 };
 
 const SearchPosts = () => {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const {
+        filters,
+        urlQuery,
+        localSearchQuery,
+        setLocalSearchQuery,
+        handleSearch,
+        handleApplyFilters,
+        handleClear,
+        setGenre
+    } = useSearchParamsState();
+
     const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
 
-    // URL State
-    const urlQuery = searchParams.get("q") || "";
-
-    // Local State for Input (initialized from URL)
-    const [localSearchQuery, setLocalSearchQuery] = useState(urlQuery);
-
-    // Sync local state if URL changes externally
-    useEffect(() => {
-        setLocalSearchQuery(urlQuery);
-    }, [urlQuery]);
-
-    const filters = useMemo<ISearchFiltersForm>(() => {
-        return {
-            language: searchParams.get("language") || "",
-            genre: searchParams.get("genre") || "",
-            author: searchParams.get("author") || "",
-            yearPublishedFrom: searchParams.get("yearPublishedFrom") || "",
-            yearPublishedTo: searchParams.get("yearPublishedTo") || "",
-            rating: Number(searchParams.get("rating")) || 0,
-            likesAmount: Number(searchParams.get("likesAmount")) || 0,
-            reviewsAmount: Number(searchParams.get("reviewsAmount")) || 0,
-            username: searchParams.get("username") || "",
-        };
-    }, [searchParams]);
-
     const { data: reviews = [], isLoading, isError, refetch } = useQuery({
-        queryKey: ["allReviews", filters.likesAmount, urlQuery, filters.username],
-        queryFn: () => userReviewService.getAllReviews(filters.likesAmount, urlQuery, filters.username),
+        queryKey: ["allReviews", urlQuery, filters],
+        queryFn: () => userReviewService.getAllReviews(
+            filters.likesAmount, 
+            urlQuery, 
+            filters.username,
+            filters.rating,
+            filters.genre
+        ),
     });
+
+    const hasActiveFilters =
+        filters.likesAmount > 0 ||
+        filters.rating > 0 ||
+        filters.genre.trim().length > 0 ||
+        filters.username.trim().length > 0;
 
     // Map backend UserReview to frontend BookPost
     const bookPosts: BookPost[] = useMemo(() => reviews.map((r: any) => ({
@@ -76,45 +72,26 @@ const SearchPosts = () => {
 
     const filteredPosts = useMemo(() => bookPosts.filter((post) => {
         const matchesRating = filters.rating === 0 || post.rating >= filters.rating;
-        // Add other client-side filters here if needed
-        return matchesRating;
-    }), [bookPosts, filters.rating]);
+        const matchesGenre = filters.genre === "" || (post.book.genres ?? []).includes(filters.genre as any);
+        return matchesRating && matchesGenre;
+    }), [bookPosts, filters.rating, filters.genre]);
 
     const { visibleItems, loaderRef } = useInfiniteLoader<BookPost>({
         items: filteredPosts,
         batchSize: 20,
     });
 
-    const updateSearchParams = (newParams: Record<string, string | number | undefined | null>) => {
-        const nextParams = new URLSearchParams(searchParams);
-        Object.entries(newParams).forEach(([key, value]) => {
-            if (value === undefined || value === null || value === "" || value === 0) {
-                nextParams.delete(key);
-            } else {
-                nextParams.set(key, String(value));
-            }
-        });
-        setSearchParams(nextParams);
-    };
-
-    const handleSearch = (newSearchTerm: string) => {
-        updateSearchParams({ q: newSearchTerm });
-    };
-
-    const handleApplyFilters = (newFilters: ISearchFiltersForm) => {
-        updateSearchParams({
-            ...newFilters,
-            q: urlQuery
-        });
-    };
-
     return (
         <Box>
-            <SearchBar
-                onSearch={handleSearch}
+            <SearchHeader
                 searchTerm={localSearchQuery}
                 setSearchTerm={setLocalSearchQuery}
+                onSearch={handleSearch}
+                onClear={handleClear}
+                onToggleGenre={setGenre}
+                selectedGenre={filters.genre}
                 setIsFiltersModalOpen={setIsFiltersModalOpen}
+                hasActiveFilters={hasActiveFilters}
             />
             <Box
                 display="grid"

@@ -60,10 +60,16 @@ export const userReviewService = {
         return res.data;
     },
 
-    async getAllReviews(minLikes?: number, searchQuery?: string, username?: string): Promise<UserReview[]> {
+    async getAllReviews(
+        minLikes?: number, 
+        searchQuery?: string, 
+        username?: string,
+        rating?: number,
+        genre?: string
+    ): Promise<UserReview[]> {
         const res = await axiosClient.get<UserReview[]>(
             endpoints.userReviews.getAll,
-            { params: { minLikes, search: searchQuery, username } }
+            { params: { minLikes, search: searchQuery, username, rating, genre } }
         );
         return res.data;
     },
