@@ -32,7 +32,6 @@ const BookInfoSection = ({ book }: BookInfoSectionProps) => {
           <InfoRow label="Pages" value={book.pageCount ?? "N/A"} />
           <InfoRow label="Categories" value={book.categories?.join(", ") ?? "N/A"} />
           <InfoRow label="Published" value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"} />
-          <InfoRow label="Rating" value={book.avgRating ?? "N/A"} />
         </Box>
 
         <Box

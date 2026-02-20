@@ -13,6 +13,7 @@ import { userReviewService } from "@/api/services/userReviewService";
 import type { BookPost } from "@models/Book";
 import useUserStore from "@/state/useUserStore";
 import { FaEdit } from "react-icons/fa";
+import env from "@/config/env";
 
 const AI_RESPONSE =
   "Based on your prompt and this review, I believe this book will fit you perfectly";
@@ -102,13 +103,23 @@ const BookPost = () => {
         <Typography variant="subtitle1" sx={{ whiteSpace: 'pre-wrap' }}>
           {bookPost.description}
         </Typography>
-        {bookPost.imageUrl && (
-          <img
-            src={bookPost.imageUrl}
-            style={{ borderRadius: "1rem", maxWidth: '100%' }}
-            alt="Review visual"
-          />
-        )}
+        {(() => {
+          // Resolve image: absolute URLs pass through; /uploads/* get the API base prepended;
+          // fall back to the book's thumbnail when no image was uploaded.
+          const rawUrl = bookPost.imageUrl;
+          const resolvedUrl = rawUrl
+            ? rawUrl.startsWith('http')
+              ? rawUrl
+              : `${env.API_BASE_URL}${rawUrl}`
+            : (bookPost.book as any)?.thumbnail ?? null;
+          return resolvedUrl ? (
+            <img
+              src={resolvedUrl}
+              style={{ borderRadius: "1rem", maxWidth: '100%' }}
+              alt="Review visual"
+            />
+          ) : null;
+        })()}
       </Box>
       <Box
         display="grid"
