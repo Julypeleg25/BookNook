@@ -5,6 +5,7 @@ import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { formatDate } from "@/utils/dateUtils";
 import env from "@/config/env";
 import { useState } from "react";
+import PostActionsMenu from "./PostActionsMenu";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -32,6 +33,7 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             alt={post.user.username}
           />
         }
+        action={<PostActionsMenu post={post} />}
         title={
           <Typography
             sx={{

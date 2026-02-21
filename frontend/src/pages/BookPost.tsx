@@ -12,9 +12,8 @@ import { useQuery } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import type { BookPost } from "@models/Book";
 import useUserStore from "@/state/useUserStore";
-import { FaEdit } from "react-icons/fa";
 import env from "@/config/env";
-import FullPostActions from "@/components/bookCards/FullPostActions";
+import PostActionsMenu from "@components/bookCards/post/PostActionsMenu";
 
 const AI_RESPONSE =
   "Based on your prompt and this review, I believe this book will fit you perfectly";
@@ -99,16 +98,7 @@ const BookPost = () => {
         }}
       >
         <BookPostHeader bookPost={bookPost} />
-        {isAuthor && (
-          <Button
-            variant="outlined"
-            startIcon={<FaEdit />}
-            onClick={() => navigate(`/post/edit/${bookPost.id}`)}
-            sx={{ mt: 1 }}
-          >
-            Edit Post
-          </Button>
-        )}
+        <PostActionsMenu post={bookPost} />
       </Box>
       <Box
         display="grid"

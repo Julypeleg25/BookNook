@@ -12,31 +12,9 @@ import { Link as RouterLink } from "react-router-dom";
 import type { BookPost } from "@models/Book";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
-import { useState } from "react";
-import DeleteModal from "../common/DeleteModal";
-import FullPostActions from "./FullPostActions";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { userReviewService } from "@/api/services/userReviewService";
-import { enqueueSnackbar } from "notistack";
+import PostActionsMenu from "./post/PostActionsMenu";
 
 const FullBookPostCard = ({ post }: { post: BookPost }) => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const queryClient = useQueryClient();
-
-  const deleteReviewMutation = useMutation({
-    mutationFn: (post: BookPost) => userReviewService.deleteReview(post.id),
-    onSuccess: () => {
-      enqueueSnackbar("Review deleted successfully!", { variant: "success" });
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
-    },
-    onError: (error) => {
-      enqueueSnackbar(error.message || "Failed to delete review", {
-        variant: "error",
-      });
-    },
-  });
-
   return (
     <Card elevation={2} sx={{ borderRadius: "1.2rem", padding: "1.2rem" }}>
       <CardContent sx={{ padding: 0 }}>
@@ -83,10 +61,7 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
                   </Typography>
                 </MuiLink>
               </Tooltip>
-              <FullPostActions
-                postId={post.id}
-                setIsDeleteModalOpen={setIsDeleteModalOpen}
-              />
+              <PostActionsMenu post={post} />
             </Stack>
             <Rating value={post.rating} readOnly size="small" />
             <Typography color="text.secondary">
@@ -104,14 +79,6 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
           </Stack>
         </Stack>
       </CardContent>
-      <DeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={() => {
-          deleteReviewMutation.mutate(post);
-          setIsDeleteModalOpen(false);
-        }}
-      />
     </Card>
   );
 };

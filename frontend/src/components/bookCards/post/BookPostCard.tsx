@@ -11,7 +11,6 @@ import type { BookPost } from "@models/Book";
 import BookPostCardActions from "./BookPostCardActions";
 import BookPostCardHeader from "./BookPostCardHeader";
 import { useNavigate } from "react-router-dom";
-import FullPostActions from "../FullPostActions";
 
 interface BookPostCardProps {
   post: BookPost;
