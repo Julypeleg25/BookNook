@@ -22,6 +22,7 @@ import { booksService } from "@/api/services/bookService";
 import { useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { useEffect } from "react";
+import { getAvatarSrcUrl } from "@/utils/userUtils";
 
 interface INewPostInputs {
   review: string;
@@ -54,10 +55,6 @@ const NewPost = () => {
     queryKey: ["book", bookId],
     queryFn: async () => {
       if (!bookId || typeof bookId !== 'string') return null;
-      // If we have the full book object in reviewData (populated), use it? 
-      // Actually backend enrichment fix returns full object or placeholder using Google Book structure usually.
-      // But standard book service expects local ID.
-
       const response = await booksService.getById(bookId);
       return response.book;
     },
@@ -115,16 +112,7 @@ const NewPost = () => {
     },
   });
 
-  // TODO: Add Update Mutation in userReviewService? We have updateReviewHandler in backend but service doesn't seem to have updateReview method yet?
-  // Let's check service. userReviewService.ts only had: create, get..., like..., addComment. 
-  // Checking userReviewController, there IS updateReviewHandler. 
-  // We need to add updateReview to frontend service first? 
-  // User didn't explicitly ask for update service method in the prompt, but "Edit Permission... Allow editing the post" implies it.
-  // I should check userReviewService.ts content again.
-  // It has create, get..., like, unlike, addComment. MISSING UPDATE.
 
-  // For now I will stick to structure but I might need to add updateReview to service in next step if missing.
-  // Assuming create for now, but really need update.
 
   const updateReviewMutation = useMutation({
     mutationFn: (data: { id: string; review: Partial<INewPostInputs> }) =>
@@ -207,12 +195,29 @@ const NewPost = () => {
       </Typography>
 
       {book && (
-        <Box sx={{ p: 2, bgcolor: "background.paper", borderRadius: 1, border: 1, borderColor: "divider" }}>
-          <Typography variant="h6">{book.title}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {book.authors?.join(", ")}
-          </Typography>
-        </Box>
+        <Stack direction="row" spacing={2} sx={{ p: 2, bgcolor: "background.paper", borderRadius: 1, border: 1, borderColor: "divider" }}>
+          <Box
+            component="img"
+            src={getAvatarSrcUrl(book.thumbnail)}
+            onError={(e: any) => {
+              e.target.src = "https://via.placeholder.com/150x200?text=No+Cover";
+            }}
+            alt={book.title}
+            sx={{
+              width: "5rem",
+              height: "7rem",
+              objectFit: "cover",
+              borderRadius: 0.5,
+              flexShrink: 0
+            }}
+          />
+          <Box>
+            <Typography variant="h6">{book.title}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {book.authors?.join(", ")}
+            </Typography>
+          </Box>
+        </Stack>
       )}
 
       <Controller

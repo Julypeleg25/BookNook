@@ -101,12 +101,19 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect }: BookInfoCardProps) => {
           width: "100%",
         }}
       >
-        <Rating
-          value={book.avgRating ?? 0}
-          precision={0.5}
-          readOnly
-          size="small"
-        />
+        {book.ratingCount && book.ratingCount > 0 ? (
+          <Stack alignItems="center">
+            <Rating
+              value={book.avgRating ?? 0}
+              precision={0.5}
+              readOnly
+              size="small"
+            />
+            <Typography variant="caption" color="text.secondary">
+              ({book.avgRating?.toFixed(1)})
+            </Typography>
+          </Stack>
+        ) : null}
         {isOnlyInfo && onSelect && (
           <Button
             variant="contained"

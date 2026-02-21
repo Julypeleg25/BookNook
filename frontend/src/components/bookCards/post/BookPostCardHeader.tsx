@@ -40,7 +40,7 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
               transition: "text-decoration 0.2s ease",
             }}
           >
-            {post.book.title}
+            {post.book?.title || "Book Unavailable"}
           </Typography>
         }
         subheader={

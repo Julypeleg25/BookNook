@@ -7,6 +7,7 @@ export interface BookSummary {
   avgRating?: number;
   ratingCount?: number;
 
+  genres?: string[];
 }
 
 export interface BookDetail extends BookSummary {
@@ -17,6 +18,7 @@ export interface BookDetail extends BookSummary {
   previewLink?: string;
   avgRating?: number;
   ratingCount?: number;
+  genres?: string[];
 }
 
 export interface BooksQuery {

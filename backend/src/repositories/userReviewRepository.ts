@@ -1,4 +1,4 @@
-import { UserReviewModel, IUserReview } from "@models/UserReview";
+import { UserReviewModel, IUserReview, ReviewComment } from "@models/UserReview";
 import { Types } from "mongoose";
 import { IUser } from "@models/User";
 import { logger } from "@utils/logger";
@@ -8,7 +8,6 @@ interface PopulatedUserReview extends Omit<IUserReview, "user" | "comments"> {
   comments: (Omit<ReviewComment, "user"> & { user: Pick<IUser, "username" | "avatar"> })[];
 }
 
-// Export the interface for use in services including the type for `user` which is populated
 export type { PopulatedUserReview };
 
 interface CreateReviewData {
@@ -66,20 +65,59 @@ export class UserReviewRepository {
     }
   }
 
-  async findAll(minLikes?: number, searchQuery?: string, userId?: Types.ObjectId | string): Promise<PopulatedUserReview[]> {
+  async findAll(
+    minLikes?: number, 
+    searchQuery?: string, 
+    userId?: Types.ObjectId | Types.ObjectId[] | string,
+    bookIds?: Types.ObjectId[],
+    rating?: number,
+    genre?: string,
+    genreBookIds?: Types.ObjectId[]
+  ): Promise<PopulatedUserReview[]> {
     try {
       const query: any = {};
 
       if (userId) {
-        query.user = typeof userId === "string" ? new Types.ObjectId(userId) : userId;
+        if (Array.isArray(userId)) {
+          query.user = { $in: userId };
+        } else {
+          query.user = typeof userId === "string" && Types.ObjectId.isValid(userId) ? new Types.ObjectId(userId) : userId;
+        }
       }
 
       if (minLikes && minLikes > 0) {
         query[`likes.${minLikes - 1}`] = { $exists: true };
       }
 
+      if (rating && rating > 0) {
+        query.rating = { $gte: rating };
+      }
+
+      // 1. Handle Genre filtering (strict AND)
+      if (genreBookIds) {
+        query.book = { $in: genreBookIds };
+      }
+
+      // 2. Handle Search Query (OR: review text OR book title)
       if (searchQuery) {
-        query.review = { $regex: searchQuery, $options: "i" };
+        const searchConditions = [
+          { review: { $regex: searchQuery, $options: "i" } }
+        ];
+
+        if (bookIds && bookIds.length > 0) {
+          searchConditions.push({ book: { $in: bookIds } } as any);
+        }
+
+        if (query.book) {
+          // If already filtered by genreBookIds, we need to AND it with the search OR
+          query.$and = [
+            { book: query.book },
+            { $or: searchConditions }
+          ];
+          delete query.book;
+        } else {
+          query.$or = searchConditions;
+        }
       }
 
       return await UserReviewModel.find(query)
@@ -104,7 +142,7 @@ export class UserReviewRepository {
 
   async findByBookId(bookId: Types.ObjectId | string): Promise<PopulatedUserReview[]> {
     try {
-      const bookObjectId = typeof bookId === "string" ? new Types.ObjectId(bookId) : bookId;
+      const bookObjectId = typeof bookId === "string" && Types.ObjectId.isValid(bookId) ? new Types.ObjectId(bookId) : bookId;
       return await UserReviewModel.find({ book: bookObjectId })
         .sort({ createdAt: -1 })
         .populate<{ user: IUser }>({ path: "user", select: "username avatar bio" })

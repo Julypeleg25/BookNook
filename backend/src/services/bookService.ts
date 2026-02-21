@@ -26,6 +26,7 @@ const normalizeBookSummary = (volume: GoogleBooksVolume): BookSummary => {
     // Google Books API typically puts averageRating in volumeInfo if available
     avgRating: (info as any).averageRating,
     ratingCount: (info as any).ratingsCount,
+    genres: info.categories ?? [],
   };
 };
 
@@ -44,6 +45,7 @@ export const normalizeBookDetail = (volume: GoogleBooksVolume): BookDetail => {
     previewLink: info.previewLink,
     avgRating: (info as any).averageRating,
     ratingCount: (info as any).ratingsCount,
+    genres: info.categories ?? [],
   };
 };
 
@@ -56,6 +58,7 @@ const localBookToSummary = (book: IBook): BookSummary => {
     publishedDate: book.publishedDate,
     avgRating: book.avgRating,
     ratingCount: book.ratingCount,
+    genres: book.categories,
   };
 };
 
@@ -174,6 +177,9 @@ export const getLocalBookByLocalId = async (
 export const getGoogleBookByLocalId = async (
   localId: string
 ): Promise<GoogleBooksVolume> => {
+  if (!localId || localId === "[object Object]") {
+    throw new Error(`Invalid localId provided: ${localId}`);
+  }
   const localBook = await bookRepository.findById(localId);
   if (!localBook) {
     throw new NotFoundError("Book not found");

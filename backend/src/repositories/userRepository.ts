@@ -26,6 +26,15 @@ export class UserRepository {
     }
   }
 
+  async findByUsernamePartial(username: string): Promise<IUser[]> {
+    try {
+      return await User.find({ username: { $regex: username, $options: "i" } });
+    } catch (error) {
+      logger.error(`Error finding users by partial username ${username}:`, error);
+      throw error;
+    }
+  }
+
   async findByEmail(email: string): Promise<IUser | null> {
     try {
       return await User.findOne({ email: email.toLowerCase() });

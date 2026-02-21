@@ -52,7 +52,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
 
       <Box px="1rem" pb="1rem" onClick={handleCardClick} sx={{ cursor: 'pointer' }}>
         <Stack direction="row" spacing="0.4rem" flexWrap="wrap">
-          {(post.book.genres ?? []).map((genre) => (
+          {(post.book?.genres ?? []).map((genre) => (
             <Chip key={genre} label={genre} size="small" />
           ))}
         </Stack>

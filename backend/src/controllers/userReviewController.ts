@@ -12,13 +12,18 @@ import { logger } from "@utils/logger";
 import { isImageFile, deleteFile } from "@utils/fileUtils";
 import { Types } from "mongoose";
 import { HttpStatusCode } from "axios";
-import { deleteReview, getPopulatedReviewById, isReviewAuthor, updateReview } from "@services/userReviewService";
-import { BookSummary } from "@models/ApiBook";
+import {
+  deleteReview,
+  getPopulatedReviewById,
+  isReviewAuthor,
+  updateReview,
+  getEnrichedReviews,
+} from "@services/userReviewService";
 
 export const createReviewHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { bookId, review, rating } = req.body;
@@ -46,7 +51,7 @@ export const createReviewHandler = async (
       bookId,
       parsedRating,
       review,
-      picturePath
+      picturePath,
     );
 
     res.status(HttpStatusCode.Created).json(newReview);
@@ -60,49 +65,20 @@ export const createReviewHandler = async (
 export const getAllReviewsHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    const minLikes = req.query.minLikes ? Number(req.query.minLikes) : undefined;
-    const username = req.query.username ? String(req.query.username) : undefined;
+    const minLikes = req.query.minLikes
+      ? Number(req.query.minLikes)
+      : undefined;
+    const username = req.query.username
+      ? String(req.query.username)
+      : undefined;
     const searchQuery = req.query.search ? String(req.query.search) : undefined;
-    const reviews = await getAllReviews(minLikes, searchQuery, username);
-
-    const enriched = await Promise.all(
-      reviews.map(async (r) => {
-        const reviewObj = r.toObject();
-        try {
-          const fullBookOfReview = await getGoogleBookByLocalId(
-            reviewObj.book.toString()
-          );
-          console.log(fullBookOfReview)
-          return {
-            ...reviewObj,
-            book: fullBookOfReview,
-          };
-        } catch (error) {
-          logger.warn(
-            `Error enriching review ${reviewObj._id} with book data:`,
-            error
-          );
-          // Return placeholder book data if enrichment fails
-          return {
-            ...reviewObj,
-            book: {
-              id: reviewObj.book.toString(),
-              title: "Book Unavailable",
-              authors: ["Unknown"],
-              thumbnail: "",
-              publishedDate: "",
-              description: "Book information could not be retrieved.",
-              categories: [],
-              pageCount: 0,
-              previewLink: ""
-            }
-          };
-        }
-      })
-    );
+    const rating = req.query.rating ? Number(req.query.rating) : undefined;
+    const genre = req.query.genre ? String(req.query.genre) : undefined;
+    const reviews = await getAllReviews(minLikes, searchQuery, username, rating, genre);
+    const enriched = await getEnrichedReviews(reviews);
 
     res.json(enriched);
   } catch (error) {
@@ -114,7 +90,7 @@ export const getAllReviewsHandler = async (
 export const getReviewsByUserIdHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { userId } = req.params;
@@ -123,11 +99,12 @@ export const getReviewsByUserIdHandler = async (
     }
 
     const reviews = await getReviewsByUserId(userId);
-    res.json(reviews);
+    const enriched = await getEnrichedReviews(reviews);
+    res.json(enriched);
   } catch (error) {
     logger.error(
       `Error fetching reviews for user ${req.params.userId}:`,
-      error
+      error,
     );
     next(error);
   }
@@ -136,7 +113,7 @@ export const getReviewsByUserIdHandler = async (
 export const getReviewsByBookIdHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { bookId } = req.params;
@@ -145,11 +122,12 @@ export const getReviewsByBookIdHandler = async (
     }
 
     const reviews = await getReviewsByBookId(bookId);
-    res.json(reviews);
+    const enriched = await getEnrichedReviews(reviews);
+    res.json(enriched);
   } catch (error) {
     logger.error(
       `Error fetching reviews for book ${req.params.bookId}:`,
-      error
+      error,
     );
     next(error);
   }
@@ -158,7 +136,7 @@ export const getReviewsByBookIdHandler = async (
 export const getReviewByIdHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -177,7 +155,7 @@ export const getReviewByIdHandler = async (
 export const updateReviewHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -223,7 +201,7 @@ export const updateReviewHandler = async (
 export const deleteReviewHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { id } = req.params;

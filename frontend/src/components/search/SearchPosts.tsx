@@ -70,14 +70,8 @@ const SearchPosts = () => {
         })),
     })), [reviews]);
 
-    const filteredPosts = useMemo(() => bookPosts.filter((post) => {
-        const matchesRating = filters.rating === 0 || post.rating >= filters.rating;
-        const matchesGenre = filters.genre === "" || (post.book.genres ?? []).includes(filters.genre as any);
-        return matchesRating && matchesGenre;
-    }), [bookPosts, filters.rating, filters.genre]);
-
     const { visibleItems, loaderRef } = useInfiniteLoader<BookPost>({
-        items: filteredPosts,
+        items: bookPosts,
         batchSize: 20,
     });
 
