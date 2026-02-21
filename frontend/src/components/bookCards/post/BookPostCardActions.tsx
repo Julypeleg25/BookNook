@@ -19,12 +19,7 @@ interface BookPostCardProps {
 }
 
 const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
-  const { 
-    likes, 
-    isLiked, 
-    isAuthor, 
-    handleLikeToggle 
-  } = usePostActions(post);
+  const { likes, isLiked, isAuthor, handleLikeToggle } = usePostActions(post);
 
   return (
     <CardActions
@@ -41,7 +36,7 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
             size="small"
             onClick={handleLikeToggle}
             disabled={isAuthor}
-            sx={{ color: isLiked ? 'red' : 'inherit' }}
+            sx={{ color: isLiked ? "red" : "inherit" }}
           >
             {isLiked ? <FaHeart /> : <FiHeart />}
           </IconButton>

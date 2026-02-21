@@ -1,5 +1,4 @@
 import FullBookPostCard from "@components/bookCards/FullBookPostCard";
-import { bookPosts } from "../exampleData";
 import { Box } from "@mui/material";
 import { useMemo } from "react";
 import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
@@ -8,39 +7,37 @@ import { useQuery } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
 
-const user_id = "u1";
 const BATCH_SIZE = 5;
 
-
 const MyPosts = () => {
-  const {user: {username
-    }} = useUserStore()
- const { data: reviews = [], isLoading, isError, refetch } = useQuery({
-        queryKey: ["allReviews", username],
-        queryFn: () => userReviewService.getAllReviews(
-          0, 
-          "", 
-          username,
-          0,
-          ""
-        )})
+  const {
+    user: { username },
+  } = useUserStore();
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["allReviews", username],
+    queryFn: () => userReviewService.getAllReviews(0, "", username, 0, ""),
+  });
 
-        const bookPosts: BookPost[] = useMemo(() => reviews.map((r: any) => ({
-              id: r._id,
-              book: r.book,
-              user: r.user,
-              createdDate: r.createdDate,
-              description: r.review,
-              rating: r.rating,
-              imageUrl: r.picturePath,
-              likes: r.likes,
-              comments: r.comments.map((c: any) => ({
-                  id: c._id,
-                  user: c.user,
-                  createdDate: c.createdAt,
-                  content: c.comment
-              })),
-          })), [reviews]);
+  const bookPosts: BookPost[] = useMemo(
+    () =>
+      reviews.map((r: any) => ({
+        id: r._id,
+        book: r.book,
+        user: r.user,
+        createdDate: r.createdDate,
+        description: r.review,
+        rating: r.rating,
+        imageUrl: r.picturePath,
+        likes: r.likes,
+        comments: r.comments.map((c: any) => ({
+          id: c._id,
+          user: c.user,
+          createdDate: c.createdAt,
+          content: c.comment,
+        })),
+      })),
+    [reviews],
+  );
   const { visibleItems, loaderRef } = useInfiniteLoader<BookPost>({
     items: bookPosts,
     batchSize: BATCH_SIZE,

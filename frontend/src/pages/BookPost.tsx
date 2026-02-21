@@ -14,6 +14,7 @@ import type { BookPost } from "@models/Book";
 import useUserStore from "@/state/useUserStore";
 import { FaEdit } from "react-icons/fa";
 import env from "@/config/env";
+import FullPostActions from "@/components/bookCards/FullPostActions";
 
 const AI_RESPONSE =
   "Based on your prompt and this review, I believe this book will fit you perfectly";
@@ -25,36 +26,42 @@ const BookPost = () => {
   const commentsRef = useRef<CommentsSectionRef>(null);
   const { user } = useUserStore();
 
-  const { data: review, isLoading, isError } = useQuery({
+  const {
+    data: review,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["review", id],
     queryFn: () => userReviewService.getReviewById(id!),
     enabled: !!id,
   });
 
-  const bookPost: BookPost | null = review ? {
-    id: review._id,
-    book: review.book as any,
-    user: {
-      id: review.user._id,
-      username: review.user.username,
-      avatar: review.user.avatar,
-    },
-    createdDate: review.createdAt,
-    description: review.review,
-    rating: review.rating,
-    imageUrl: review.picturePath || review.imageUrl,
-    likes: review.likes || [],
-    comments: (review.comments || []).map((c: any) => ({
-      id: c._id,
-      user: {
-        id: c.user?._id || c.user,
-        username: c.user?.username || "Unknown",
-        avatar: c.user?.avatar,
-      },
-      createdDate: c.createdAt,
-      content: c.comment
-    })),
-  } : null;
+  const bookPost: BookPost | null = review
+    ? {
+        id: review._id,
+        book: review.book as any,
+        user: {
+          id: review.user._id,
+          username: review.user.username,
+          avatar: review.user.avatar,
+        },
+        createdDate: review.createdAt,
+        description: review.review,
+        rating: review.rating,
+        imageUrl: review.picturePath || review.imageUrl,
+        likes: review.likes || [],
+        comments: (review.comments || []).map((c: any) => ({
+          id: c._id,
+          user: {
+            id: c.user?._id || c.user,
+            username: c.user?.username || "Unknown",
+            avatar: c.user?.avatar,
+          },
+          createdDate: c.createdAt,
+          content: c.comment,
+        })),
+      }
+    : null;
 
   useEffect(() => {
     if (hash === "#comments" && commentsRef.current) {
@@ -67,7 +74,12 @@ const BookPost = () => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="80vh"
+      >
         <CircularProgress />
       </Box>
     );
@@ -79,7 +91,13 @@ const BookPost = () => {
 
   return (
     <div style={{ margin: "3rem" }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
         <BookPostHeader bookPost={bookPost} />
         {isAuthor && (
           <Button
@@ -100,7 +118,7 @@ const BookPost = () => {
         alignItems="center"
         mt="2rem"
       >
-        <Typography variant="subtitle1" sx={{ whiteSpace: 'pre-wrap' }}>
+        <Typography variant="subtitle1" sx={{ whiteSpace: "pre-wrap" }}>
           {bookPost.description}
         </Typography>
         {(() => {
@@ -108,14 +126,14 @@ const BookPost = () => {
           // fall back to the book's thumbnail when no image was uploaded.
           const rawUrl = bookPost.imageUrl;
           const resolvedUrl = rawUrl
-            ? rawUrl.startsWith('http')
+            ? rawUrl.startsWith("http")
               ? rawUrl
               : `${env.API_BASE_URL}${rawUrl}`
-            : (bookPost.book as any)?.thumbnail ?? null;
+            : ((bookPost.book as any)?.thumbnail ?? null);
           return resolvedUrl ? (
             <img
               src={resolvedUrl}
-              style={{ borderRadius: "1rem", maxWidth: '100%' }}
+              style={{ borderRadius: "1rem", maxWidth: "100%" }}
               alt="Review visual"
             />
           ) : null;

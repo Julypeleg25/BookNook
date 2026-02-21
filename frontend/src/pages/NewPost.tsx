@@ -48,7 +48,7 @@ const NewPost = () => {
   });
 
   // Determine effective bookId
-  const bookId = routeBookId || (reviewData?.book as any)?._id || (reviewData?.book as any);
+  const bookId = routeBookId || (reviewData?.book)?._id || (reviewData?.book as any);
 
   // 2. Fetch Book Data
   const { data: bookData, isLoading: isLoadingBook } = useQuery({

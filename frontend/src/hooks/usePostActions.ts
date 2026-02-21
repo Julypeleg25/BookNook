@@ -11,13 +11,36 @@ export const usePostActions = (post: BookPost) => {
   const { enqueueSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
 
-  const isLiked = user?.id ? likes.includes(user.id) : false;
-  
-  // Safely compare user IDs
-  const isAuthor = user?.id && post.user 
-    ? user.id === (post.user as any).id || user.id === (post.user as any)._id 
-    : false;
+  const { mutate: deleteReview } = useMutation({
+    mutationFn: (post: BookPost) => userReviewService.deleteReview(post.id),
+    onSuccess: () => {
+      enqueueSnackbar("Review deleted successfully!", { variant: "success" });
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
+    },
+    onError: (error) => {
+      enqueueSnackbar(error.message || "Failed to delete review", {
+        variant: "error",
+      });
+    },
+  });
 
+  const isLiked = user?.id ? likes.includes(user.id) : false;
+
+  const isAuthor =
+    user?.id && post.user
+      ? user.id === (post.user as any).id || user.id === (post.user as any)._id
+      : false;
+
+  const handleDelete = () => {
+    if (!isAuthor) {
+      enqueueSnackbar("You can only delete your own posts", {
+        variant: "warning",
+      });
+      return;
+    }
+    deleteReview(post);
+  };
   const handleLikeToggle = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
 
@@ -33,10 +56,10 @@ export const usePostActions = (post: BookPost) => {
 
     const previousLikes = [...likes];
     const newLikes = isLiked
-      ? likes.filter(id => id !== user.id)
+      ? likes.filter((id) => id !== user.id)
       : [...likes, user.id];
 
-    setLikes(newLikes); // Optimistic update
+    setLikes(newLikes);
 
     try {
       if (isLiked) {
@@ -44,10 +67,9 @@ export const usePostActions = (post: BookPost) => {
       } else {
         await userReviewService.likeReview(post.id);
       }
-      // Optional: Invalidate queries if we want server-side sync
-      // queryClient.invalidateQueries({ queryKey: ["allReviews"] });
+      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
     } catch (error) {
-      setLikes(previousLikes); // Rollback
+      setLikes(previousLikes);
       enqueueSnackbar("Error updating like", { variant: "error" });
     }
   };
@@ -62,7 +84,7 @@ export const usePostActions = (post: BookPost) => {
     },
     onError: () => {
       enqueueSnackbar("Failed to add comment", { variant: "error" });
-    }
+    },
   });
 
   return {
@@ -72,6 +94,7 @@ export const usePostActions = (post: BookPost) => {
     handleLikeToggle,
     addComment,
     isAddingComment,
-    isAuthenticated
+    isAuthenticated,
+    handleDelete,
   };
 };

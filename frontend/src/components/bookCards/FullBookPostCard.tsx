@@ -15,9 +15,27 @@ import { FiHeart } from "react-icons/fi";
 import { useState } from "react";
 import DeleteModal from "../common/DeleteModal";
 import FullPostActions from "./FullPostActions";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { userReviewService } from "@/api/services/userReviewService";
+import { enqueueSnackbar } from "notistack";
 
 const FullBookPostCard = ({ post }: { post: BookPost }) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const deleteReviewMutation = useMutation({
+    mutationFn: (post: BookPost) => userReviewService.deleteReview(post.id),
+    onSuccess: () => {
+      enqueueSnackbar("Review deleted successfully!", { variant: "success" });
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
+    },
+    onError: (error) => {
+      enqueueSnackbar(error.message || "Failed to delete review", {
+        variant: "error",
+      });
+    },
+  });
 
   return (
     <Card elevation={2} sx={{ borderRadius: "1.2rem", padding: "1.2rem" }}>
@@ -89,7 +107,10 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
       <DeleteModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => {
+          deleteReviewMutation.mutate(post);
+          setIsDeleteModalOpen(false);
+        }}
       />
     </Card>
   );

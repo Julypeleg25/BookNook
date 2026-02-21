@@ -1,8 +1,17 @@
-import { Card, CardActionArea, CardContent, Chip, Typography, Stack, Box } from "@mui/material";
+import {
+  Card,
+  CardActionArea,
+  CardContent,
+  Chip,
+  Typography,
+  Stack,
+  Box,
+} from "@mui/material";
 import type { BookPost } from "@models/Book";
 import BookPostCardActions from "./BookPostCardActions";
 import BookPostCardHeader from "./BookPostCardHeader";
 import { useNavigate } from "react-router-dom";
+import FullPostActions from "../FullPostActions";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -13,7 +22,6 @@ const MAX_DESCRIPTION_LENGTH = 90;
 const BookPostCard = ({ post }: BookPostCardProps) => {
   const navigate = useNavigate();
 
-  // Navigate to the full review page; #comments anchor auto-focuses the comment input
   const handleCommentsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigate(`/posts/${post.id}#comments`);
@@ -37,7 +45,10 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         },
       }}
     >
-      <CardActionArea onClick={handleCardClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+      <CardActionArea
+        onClick={handleCardClick}
+        sx={{ display: "flex", flexDirection: "column", alignItems: "stretch" }}
+      >
         <BookPostCardHeader post={post} />
 
         <CardContent>
@@ -50,7 +61,12 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
 
       <BookPostCardActions post={post} onCommentsClick={handleCommentsClick} />
 
-      <Box px="1rem" pb="1rem" onClick={handleCardClick} sx={{ cursor: 'pointer' }}>
+      <Box
+        px="1rem"
+        pb="1rem"
+        onClick={handleCardClick}
+        sx={{ cursor: "pointer" }}
+      >
         <Stack direction="row" spacing="0.4rem" flexWrap="wrap">
           {(post.book?.genres ?? []).map((genre) => (
             <Chip key={genre} label={genre} size="small" />
