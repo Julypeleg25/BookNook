@@ -139,6 +139,28 @@ export class UserRepository {
       throw error;
     }
   }
+
+  async removeBookFromList(
+    userId: Types.ObjectId | string,
+    bookId: string,
+    listType: "wish" | "read"
+  ): Promise<string[]> {
+    try {
+      const field = listType === "wish" ? "wishlist" : "readlist";
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $pull: { [field]: bookId } },
+        { new: true }
+      );
+      return updatedUser?.[field] ?? [];
+    } catch (error) {
+      logger.error(
+        `Error removing book from ${listType}list for user ${userId}:`,
+        error
+      );
+      throw error;
+    }
+  }
 }
 
 export const userRepository = new UserRepository();

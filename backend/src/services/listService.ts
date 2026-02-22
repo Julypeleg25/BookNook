@@ -25,3 +25,14 @@ export const getUserReadlist = async (
 ): Promise<string[]> => {
   return await userRepository.getList(userId, "read");
 };
+
+export const removeBookFromUserList = async (
+  userId: Types.ObjectId | string,
+  bookId: string,
+  listType: "wish" | "read"
+): Promise<string[]> => {
+  if (listType !== "wish" && listType !== "read") {
+    throw new ValidationError("Invalid list type");
+  }
+  return await userRepository.removeBookFromList(userId, bookId, listType);
+};

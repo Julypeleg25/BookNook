@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { addBookToUserList } from "@services/listService";
+import { addBookToUserList, removeBookFromUserList } from "@services/listService";
 import { getBookByGoogleIdFromGoogle } from "@services/bookService";
 import { getUserById } from "@services/userService";
 import { logger } from "@utils/logger";
@@ -33,6 +33,28 @@ export const addBookToList = async (
     res.json({ updatedList });
   } catch (error) {
     logger.error("Error adding book to list:", error);
+    next(error);
+  }
+};
+
+export const removeBookFromList = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.authenticatedUser!.id;
+    const { bookId } = req.params;
+    const { listType } = req.body;  
+
+    if (!isValidListType(listType)) {
+      throw new ValidationError("Invalid list type. Must be 'wish' or 'read'");
+    }
+
+    const updatedList = await removeBookFromUserList(userId, bookId, listType);
+    res.json({ updatedList });
+  } catch (error) {
+    logger.error("Error removing book from list:", error);
     next(error);
   }
 };

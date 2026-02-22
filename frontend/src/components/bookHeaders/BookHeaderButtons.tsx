@@ -1,4 +1,7 @@
+import { ListsService } from "@/api/services/ListsService";
+import { userReviewService } from "@/api/services/userReviewService";
 import { Button } from "@mui/material";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BiBookAdd } from "react-icons/bi";
 import { BsBook } from "react-icons/bs";
 import { LiaBookmark } from "react-icons/lia";
@@ -12,6 +15,22 @@ interface BookHeaderProps {
 
 const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
   const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const { mutate: addBookToList } = useMutation({
+      mutationFn: (listType: "wish" | "read") =>
+        ListsService.addBookToList(id, listType),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['lists', id] });
+      },
+    });
+
+    const handleAddToWishlist = () => {
+      addBookToList("wish");
+    };
+
+    const handleAddToReadlist = () => {
+      addBookToList("read");
+    };
 
   return (
     <div
@@ -46,7 +65,7 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
       <Button
         variant="contained"
         color="primary"
-        onClick={() => navigate(`/books/${id}`)}
+        onClick={handleAddToWishlist}
         startIcon={<LiaBookmark />}
       >
         Add to my wish list
@@ -54,7 +73,7 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
       <Button
         variant="contained"
         color="primary"
-        onClick={() => navigate(`/books/${id}`)}
+        onClick={handleAddToReadlist}
         startIcon={<LuBookCheck />}
       >
         Add to my read list
