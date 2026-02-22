@@ -37,19 +37,6 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
               justifyContent="space-between"
               alignItems="flex-start"
             >
-              <Tooltip title="view book's details" arrow>
-                <MuiLink
-                  component={RouterLink}
-                  to={`/books/${post.book.id}`}
-                  underline="none"
-                  color="inherit"
-                  sx={{
-                    transition: "color 0.2s ease",
-                    "&:hover": {
-                      color: "primary.main",
-                    },
-                  }}
-                >
                   <Typography
                     sx={{
                       fontSize: "1.4rem",
@@ -59,8 +46,6 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
                   >
                     {post.book.title}
                   </Typography>
-                </MuiLink>
-              </Tooltip>
               <PostActionsMenu post={post} />
             </Stack>
             <Rating value={post.rating} readOnly size="small" />

@@ -6,8 +6,9 @@ import type { BookPost } from "@models/Book";
 import { useQuery } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
+import BookPostCard from "@/components/bookCards/post/BookPostCard";
 
-const BATCH_SIZE = 5;
+const BATCH_SIZE = 8;
 
 const MyPosts = () => {
   const {
@@ -51,16 +52,26 @@ const MyPosts = () => {
         gap: "1.25rem",
         borderRadius: "1rem",
         padding: "1rem",
-        maxWidth: "70rem",
         width: "100%",
-        margin: "0.75rem auto",
+        margin: "0.75rem",
       }}
     >
       <h2>My posts</h2>
 
-      {visibleItems.map((post) => (
-        <FullBookPostCard key={post.id} post={post} />
+ <Box
+        display="grid"
+        gridTemplateColumns={{
+          xs: "1fr",
+          sm: "1fr 1fr",
+          md: "1fr 1fr 1fr 1fr",
+        }}
+        gap={"2rem"}
+      >
+         {visibleItems.map((post) => (
+        <BookPostCard key={post.id} post={post} />
       ))}
+      </Box>
+     
 
       {visibleItems.length < bookPosts.length && <Box ref={loaderRef} />}
     </Box>

@@ -44,10 +44,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         },
       }}
     >
-      <CardActionArea
-        onClick={handleCardClick}
-        sx={{ display: "flex", flexDirection: "column", alignItems: "stretch" }}
-      >
+   
         <BookPostCardHeader post={post} />
 
         <CardContent>
@@ -56,7 +53,6 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
             {post.description.length > MAX_DESCRIPTION_LENGTH ? "…" : ""}
           </Typography>
         </CardContent>
-      </CardActionArea>
 
       <BookPostCardActions post={post} onCommentsClick={handleCommentsClick} />
 
