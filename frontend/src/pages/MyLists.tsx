@@ -9,40 +9,33 @@ import { BsBookmark } from "react-icons/bs";
 import { LuBookCheck } from "react-icons/lu";
 import { Book } from "@/models/Book";
 
-const exampleUserRead = bookPosts
-  .filter((b) => b)
-  .map((p) => p.book);
-const exampleUserRead2 = bookPosts
-  .filter((b) => b.user.id === "u1")
-  .map((p) => p.book);
-
 const MyLists = () => {
-  const {user:{username}} = useUserStore();
-    const { data: wishlistBooks = [] } = useQuery({
-      queryKey: ["wishlist", 'lists', username],
-      queryFn: async () => {
-        const res = await axiosClient.get<Book[]>(
-              endpoints.lists.wishlist
-          )
+  const {
+    user: { username },
+  } = useUserStore();
+  const { data: wishlistBooks = [] } = useQuery({
+    queryKey: ["wishlist", "lists", username],
+    queryFn: async () => {
+      const res = await axiosClient.get<Book[]>(endpoints.lists.wishlist);
 
-        return res.data
-    }});
+      return res.data;
+    },
+  });
 
-       const { data: readlistBooks = [] } = useQuery({
-      queryKey: ["readlist", 'lists', username],
-      queryFn: async () => {
-        const res = await axiosClient.get<Book[]>(
-              endpoints.lists.readlist
-          )
+  const { data: readlistBooks = [] } = useQuery({
+    queryKey: ["readlist", "lists", username],
+    queryFn: async () => {
+      const res = await axiosClient.get<Book[]>(endpoints.lists.readlist);
 
-        return res.data
-    }});
+      return res.data;
+    },
+  });
   return (
     <Stack margin="2rem">
       <BooksList
         title={
           <Stack direction="row" alignItems="center" spacing={1}>
-            <LuBookCheck size="1.3rem"/>
+            <LuBookCheck size="1.3rem" />
             <h2>My read list</h2>
           </Stack>
         }

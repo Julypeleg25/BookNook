@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import { enqueueSnackbar } from "notistack";
-import type { BookPost } from "@models/Book";
 
 export const usePostActions = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

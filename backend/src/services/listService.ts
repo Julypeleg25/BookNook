@@ -1,12 +1,16 @@
-
 import { Types } from "mongoose";
 import { userRepository } from "@repositories/userRepository";
 import { ValidationError } from "@utils/errors";
+import {
+  getBookByGoogleIdFromGoogle,
+  normalizeBookSummary,
+} from "./bookService";
+import { BookSummary } from "@models/ApiBook";
 
 export const addBookToUserList = async (
   userId: Types.ObjectId | string,
   bookId: string,
-  listType: "wish" | "read"
+  listType: "wish" | "read",
 ): Promise<string[]> => {
   if (listType !== "wish" && listType !== "read") {
     throw new ValidationError("Invalid list type");
@@ -14,22 +18,24 @@ export const addBookToUserList = async (
   return await userRepository.addBookToList(userId, bookId, listType);
 };
 
-export const getUserWishlist = async (
-  userId: Types.ObjectId | string
-): Promise<string[]> => {
-  return await userRepository.getList(userId, "wish");
-};
+export const getUserWishOrReadlist = async (
+  userId: Types.ObjectId | string,
+  listType: "wish" | "read",
+): Promise<BookSummary[]> => {
+  const googleIds = await userRepository.getList(userId, listType);
 
-export const getUserReadlist = async (
-  userId: Types.ObjectId | string
-): Promise<string[]> => {
-  return await userRepository.getList(userId, "read");
+  return Promise.all(
+    googleIds.map(async (googleId) => {
+      const res = await getBookByGoogleIdFromGoogle(googleId);
+      return normalizeBookSummary(res);
+    }),
+  );
 };
 
 export const removeBookFromUserList = async (
   userId: Types.ObjectId | string,
   bookId: string,
-  listType: "wish" | "read"
+  listType: "wish" | "read",
 ): Promise<string[]> => {
   if (listType !== "wish" && listType !== "read") {
     throw new ValidationError("Invalid list type");
