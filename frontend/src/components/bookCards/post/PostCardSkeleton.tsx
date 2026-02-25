@@ -19,6 +19,7 @@ const PostCardSkeleton = () => {
                     </Box>
                 </Stack>
             </Box>
+            <Skeleton variant="rectangular" height="16rem" />
             <CardContent>
                 <Skeleton variant="text" />
                 <Skeleton variant="text" />

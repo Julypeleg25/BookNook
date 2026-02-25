@@ -7,6 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
 import BookPostCard from "@/components/bookCards/post/BookPostCard";
+import PostCardSkeleton from "@/components/bookCards/post/PostCardSkeleton";
+import { Typography } from "@mui/material";
 
 const BATCH_SIZE = 8;
 
@@ -14,7 +16,7 @@ const MyPosts = () => {
   const {
     user: { username },
   } = useUserStore();
-  const { data: reviews = [] } = useQuery({
+  const { data: reviews = [], isLoading, isError } = useQuery({
     queryKey: ["allReviews", username],
     queryFn: () => userReviewService.getAllReviews(0, "", username, 0, ""),
   });
@@ -58,7 +60,7 @@ const MyPosts = () => {
     >
       <h2>My posts</h2>
 
- <Box
+      <Box
         display="grid"
         gridTemplateColumns={{
           xs: "1fr",
@@ -67,11 +69,24 @@ const MyPosts = () => {
         }}
         gap={"2rem"}
       >
-         {visibleItems.map((post) => (
-        <BookPostCard key={post.id} post={post} />
-      ))}
+        {isLoading
+          ? [...Array(BATCH_SIZE)].map((_, i) => <PostCardSkeleton key={i} />)
+          : visibleItems.map((post) => (
+            <BookPostCard key={post.id} post={post} />
+          ))}
       </Box>
-     
+
+      {isError && (
+        <Typography color="error" sx={{ textAlign: "center", mt: 4 }}>
+          Error loading posts. Please try again.
+        </Typography>
+      )}
+
+      {!isLoading && bookPosts.length === 0 && (
+        <Typography sx={{ textAlign: "center", mt: 4 }} color="text.secondary">
+          No posts yet
+        </Typography>
+      )}
 
       {visibleItems.length < bookPosts.length && <Box ref={loaderRef} />}
     </Box>

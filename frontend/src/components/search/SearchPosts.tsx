@@ -94,27 +94,12 @@ const SearchPosts = () => {
         }}
         gap={"2rem"}
       >
-        {visibleItems.map((post: BookPost) => (
-          <BookPostCard key={post.id} post={post} />
-        ))}
-      </Box>
-
-      {isLoading && (
-        <Box
-          display="grid"
-          marginTop={"3rem"}
-          gridTemplateColumns={{
-            xs: "1fr",
-            sm: "1fr 1fr",
-            md: "1fr 1fr 1fr 1fr",
-          }}
-          gap={"2rem"}
-        >
-          {[...Array(8)].map((_, i) => (
-            <PostCardSkeleton key={i} />
+        {isLoading
+          ? [...Array(8)].map((_, i) => <PostCardSkeleton key={i} />)
+          : visibleItems.map((post: BookPost) => (
+            <BookPostCard key={post.id} post={post} />
           ))}
-        </Box>
-      )}
+      </Box>
 
       {!isLoading && bookPosts.length === 0 && (
         <Box sx={{ textAlign: "center", mt: 8 }}>
