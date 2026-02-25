@@ -13,7 +13,7 @@ const MyLists = () => {
   const {
     user: { username },
   } = useUserStore();
-  const { data: wishlistBooks = [] } = useQuery({
+  const { data: wishlistBooks = [], isLoading: isWishlistLoading } = useQuery({
     queryKey: ["wishlist", "lists", username],
     queryFn: async () => {
       const res = await axiosClient.get<Book[]>(endpoints.lists.wishlist);
@@ -22,7 +22,7 @@ const MyLists = () => {
     },
   });
 
-  const { data: readlistBooks = [] } = useQuery({
+  const { data: readlistBooks = [], isLoading: isReadlistLoading } = useQuery({
     queryKey: ["readlist", "lists", username],
     queryFn: async () => {
       const res = await axiosClient.get<Book[]>(endpoints.lists.readlist);
@@ -40,6 +40,8 @@ const MyLists = () => {
           </Stack>
         }
         booksList={readlistBooks}
+        loading={isReadlistLoading}
+        listType="read"
       />
       <BooksList
         title={
@@ -48,6 +50,8 @@ const MyLists = () => {
           </Stack>
         }
         booksList={wishlistBooks}
+        loading={isWishlistLoading}
+        listType="wish"
       />
     </Stack>
   );

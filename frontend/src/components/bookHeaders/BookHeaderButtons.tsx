@@ -1,12 +1,13 @@
 import { ListsService } from "@/api/services/ListsService";
 import { userReviewService } from "@/api/services/userReviewService";
-import { Button } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BiBookAdd } from "react-icons/bi";
 import { BsBook } from "react-icons/bs";
 import { LiaBookmark } from "react-icons/lia";
 import { LuBookCheck } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
+import useUserStore from "@/state/useUserStore";
 
 interface BookHeaderProps {
   id: string;
@@ -15,70 +16,76 @@ interface BookHeaderProps {
 
 const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
   const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    const { mutate: addBookToList } = useMutation({
-      mutationFn: (listType: "wish" | "read") =>
-        ListsService.addBookToList(id, listType),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['lists', id] });
-      },
-    });
+  const queryClient = useQueryClient();
+  const { user } = useUserStore();
 
-    const handleAddToWishlist = () => {
-      addBookToList("wish");
-    };
+  const { mutate: addBookToList } = useMutation({
+    mutationFn: (listType: "wish" | "read") =>
+      ListsService.addBookToList(id, listType),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [variables === "wish" ? "wishlist" : "readlist", "lists", user.username],
+      });
+      navigate("/lists");
+    },
+  });
 
-    const handleAddToReadlist = () => {
-      addBookToList("read");
-    };
+  const handleAddToWishlist = () => {
+    addBookToList("wish");
+  };
+
+  const handleAddToReadlist = () => {
+    addBookToList("read");
+  };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "40%",
+    <Stack
+      direction={{ xs: "column", sm: "row" }}
+      spacing={2}
+      alignItems={{ xs: "stretch", sm: "center" }}
+      justifyContent="flex-end"
+      sx={{
+        width: { xs: "100%", md: "auto" },
+        mt: { xs: 2, md: 0 }
       }}
     >
       {isBookPost ? (
         <Button
           variant="contained"
-          color="primary"
           onClick={() => navigate(`/books/${id}`)}
           startIcon={<BsBook />}
+          sx={{ borderRadius: "2rem", px: 3 }}
         >
           Go to book page
         </Button>
       ) : (
         <Button
           variant="contained"
-          color="primary"
           onClick={() => navigate(`/post/create/${id}`)}
           startIcon={<BiBookAdd />}
+          sx={{ borderRadius: "2rem", px: 3 }}
         >
           Write a review
         </Button>
-      )
-      }
+      )}
 
       <Button
-        variant="contained"
-        color="primary"
+        variant="outlined"
         onClick={handleAddToWishlist}
         startIcon={<LiaBookmark />}
+        sx={{ borderRadius: "2rem", px: 3 }}
       >
-        Add to my wish list
+        Add to Wishlist
       </Button>
       <Button
-        variant="contained"
-        color="primary"
+        variant="outlined"
         onClick={handleAddToReadlist}
         startIcon={<LuBookCheck />}
+        sx={{ borderRadius: "2rem", px: 3 }}
       >
-        Add to my read list
+        Add to Read List
       </Button>
-    </div >
+    </Stack>
   );
 };
 export default BookHeader;
