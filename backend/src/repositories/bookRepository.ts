@@ -56,6 +56,7 @@ export class BookRepository {
         localBook.thumbnail = normalizedToBookModel.thumbnail;
         localBook.publishedDate = normalizedToBookModel.publishedDate;
         localBook.categories = normalizedToBookModel.categories;
+        localBook.description = normalizedToBookModel.description;
 
         // If local rating is missing valid value, backfill from Google
         if (!localBook.avgRating && normalizedToBookModel.avgRating) {
@@ -72,6 +73,7 @@ export class BookRepository {
           thumbnail: normalizedToBookModel.thumbnail,
           publishedDate: normalizedToBookModel.publishedDate,
           categories: normalizedToBookModel.categories,
+          description: normalizedToBookModel.description,
           avgRating: normalizedToBookModel.avgRating || 0,
           ratingCount: normalizedToBookModel.ratingCount || 0,
         });

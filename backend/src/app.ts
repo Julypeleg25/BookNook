@@ -14,6 +14,8 @@ import cookieParser from "cookie-parser";
 import { authenticate } from "@middlewares/authMiddleware";
 import { errorHandler } from "@middlewares/errorHandler";
 import { logger } from "@utils/logger";
+import ragRoutes from "@routes/ragRoutes";
+import { initCollections } from "@services/qdrantService";
 
 const app = express();
 const PORT = ENV.PORT;
@@ -35,6 +37,7 @@ app.use("/userReviews", authenticate, userReviewsRouter);
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/lists", authenticate, listRouter);
 app.use("/api/users", userRouter);
+app.use("/api/rag", ragRoutes);
 
 // Uploads should be publicly accessible for img tags to work (since they don't send Bearer tokens)
 // If privacy is required, a different strategy (signed URLs or blob fetching) is needed.
@@ -44,8 +47,17 @@ app.use(errorHandler);
 
 mongoose
   .connect(ENV.MONGODB_URL)
-  .then(() => {
+  .then(async () => {
     logger.info("Connected to MongoDB");
+    
+    // Initialize Vector DB
+    try {
+      await initCollections();
+      logger.info("Qdrant collections initialized");
+    } catch (err) {
+      logger.error("Failed to initialize Qdrant:", err);
+    }
+
     app.listen(PORT, () => {
       logger.info(`Server is running on http://localhost:${PORT}`);
     });

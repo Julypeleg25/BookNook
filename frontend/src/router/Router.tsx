@@ -9,6 +9,7 @@ import MyPosts from "@pages/MyPosts";
 import NewPost from "@pages/NewPost";
 import MyLists from "@pages/MyLists";
 import Profile from "@pages/Profile";
+import AiAssistant from "@pages/AiAssistant";
 import NotFound from "@pages/NotFound";
 import SelectBookForPost from "@pages/SelectBookForPost";
 import AppLayout from "./AppLayout";
@@ -52,6 +53,7 @@ const Router = () => {
           <Route path="/myPosts" element={<MyPosts />} />
           <Route path="/lists" element={<MyLists />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/ai-assistant" element={<AiAssistant />} />
         </Route>
       </Route>
 
