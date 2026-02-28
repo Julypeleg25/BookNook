@@ -7,7 +7,7 @@ import { processRagQuery, RAGMode } from "@services/ragService";
 export const handleRagQuery = async (req: Request, res: Response) => {
   try {
     const { query, mode = RAGMode.GLOBAL } = req.body;
-    const userId = (req as any).user?._id?.toString();
+    const userId = (req as any).authenticatedUser?._id?.toString();
 
     if (mode === RAGMode.PERSONAL && !userId) {
       return res.status(401).json({ error: "Authentication required for PERSONAL mode" });

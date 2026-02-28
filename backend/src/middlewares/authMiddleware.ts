@@ -31,3 +31,33 @@ export const authenticate = async (
     res.status(401).json({ message: "Unauthorized" });
   }
 };
+
+export const optionalAuthenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      next();
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      next();
+      return;
+    }
+
+    const decoded = verifyAccessToken(token);
+    const user = await getUserById(decoded._id);
+
+    if (user) {
+      req.authenticatedUser = sanitizeUser(user);
+    }
+    next();
+  } catch {
+    next();
+  }
+};
