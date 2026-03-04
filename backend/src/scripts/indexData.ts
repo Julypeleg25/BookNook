@@ -103,7 +103,9 @@ async function indexUsers(tasteMap: Map<string, string[]>): Promise<void> {
       u.username,
       u.readlist || [],
       u.wishlist || [],
-      tasteMap.get(u._id.toString()) || [], [], []
+      [],
+      [],
+      tasteMap.get(u._id.toString()) || []
     ));
     const embeddings = await generateEmbeddingsBatch(texts);
 

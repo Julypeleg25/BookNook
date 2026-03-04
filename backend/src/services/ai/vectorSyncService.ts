@@ -127,15 +127,19 @@ export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
     try {
         const userId = user._id.toString();
 
-        const likedReviews = await UserReviewModel.find({ likes: userId });
+        const [likedReviews, ownReviews] = await Promise.all([
+            UserReviewModel.find({ likes: userId }),
+            UserReviewModel.find({ user: userId })
+        ]);
 
         const inferredInterests: Set<string> = new Set();
         const dislikes: Set<string> = new Set();
         const interestThemes: Record<string, number> = {};
 
-        for (const review of likedReviews) {
+        // Helper to process a review for interests/dislikes
+        const processReview = async (review: IUserReview) => {
             const book = await bookRepository.findById(review.book.toString());
-            if (!book) continue;
+            if (!book) return;
 
             const bookIdentifier = `${book.title} (by ${book.authors?.join(", ")})`;
 
@@ -148,7 +152,10 @@ export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
             else if (review.rating <= 2) {
                 dislikes.add(`Avoid books like ${bookIdentifier}`);
             }
-        }
+        };
+
+        for (const review of likedReviews) await processReview(review);
+        for (const review of ownReviews) await processReview(review);
 
         const topThemes = Object.entries(interestThemes)
             .sort((a, b) => b[1] - a[1])

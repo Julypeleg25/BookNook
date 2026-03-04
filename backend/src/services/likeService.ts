@@ -3,7 +3,9 @@
 
 import { Types } from "mongoose";
 import { UserReviewModel } from "@models/UserReview";
+import User from "@models/User";
 import { NotFoundError, ForbiddenError } from "@utils/errors";
+import { syncUserProfileToVector } from "@services/ai/vectorSyncService";
 
 export const likeReview = async (
   reviewId: string,
@@ -24,6 +26,11 @@ export const likeReview = async (
     { new: true }
   );
 
+  const user = await User.findById(userId);
+  if (user) {
+    syncUserProfileToVector(user).catch(err => console.error("Profile sync failed", err));
+  }
+
   return updatedReview?.likes.length ?? 0;
 };
 
@@ -41,6 +48,11 @@ export const unlikeReview = async (
     { $pull: { likes: userId } },
     { new: true }
   );
+
+  const user = await User.findById(userId);
+  if (user) {
+    syncUserProfileToVector(user).catch(err => console.error("Profile sync failed", err));
+  }
 
   return updatedReview?.likes.length ?? 0;
 };

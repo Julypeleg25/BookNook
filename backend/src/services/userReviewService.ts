@@ -7,7 +7,8 @@ import { NotFoundError } from "@utils/errors";
 import { bookRepository } from "@repositories/bookRepository";
 import { IUser } from "@models/User";
 import { IBook } from "@models/Book";
-import { syncReviewToVector, deleteReviewFromVector } from "@services/ai/vectorSyncService";
+import { syncReviewToVector, deleteReviewFromVector, syncUserProfileToVector } from "@services/ai/vectorSyncService";
+import User from "@models/User";
 
 
 export const createReview = async (
@@ -32,6 +33,11 @@ export const createReview = async (
   await recomputeBookRating(book._id.toString());
 
   await syncReviewToVector(newReview);
+
+  const user = await User.findById(userId);
+  if (user) {
+    await syncUserProfileToVector(user);
+  }
 
   return newReview;
 };
@@ -223,6 +229,11 @@ export const updateReview = async (
 
   await syncReviewToVector(updatedReview);
 
+  const user = await User.findById(updatedReview.user.toString());
+  if (user) {
+    await syncUserProfileToVector(user);
+  }
+
   return updatedReview;
 };
 
@@ -236,6 +247,11 @@ export const deleteReview = async (reviewId: string): Promise<void> => {
   await recomputeBookRating(review.book.toString());
 
   await deleteReviewFromVector(reviewId);
+
+  const user = await User.findById(review.user.toString());
+  if (user) {
+    await syncUserProfileToVector(user);
+  }
 };
 
 export const isReviewAuthor = async (
