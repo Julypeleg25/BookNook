@@ -10,12 +10,19 @@ export interface RagQueryRequest {
 
 export interface RagSource {
   id: string;
+  bookId: string;
+  type: "book" | "review";
+  text: string;
   score: number;
-  payload: {
+  metadata: {
     title?: string;
-    content?: string;
-    description?: string;
-    type: "book" | "review";
+    genres?: string[];
+    authors?: string[];
+    rating?: number;
+    userId?: string;
+    username?: string;
+    mongoId?: string;
+    bookId?: string;
     [key: string]: any;
   };
 }

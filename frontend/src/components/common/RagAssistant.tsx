@@ -16,7 +16,6 @@ import { Send as SendIcon, AutoAwesome as AiIcon } from "@mui/icons-material";
 import { useRag } from "@hooks/useRag";
 import { RAGMode } from "@models/Rag";
 import { MarkdownMessage } from "./MarkdownMessage";
-import { RecommendationCarousel } from "./RecommendationCarousel";
 
 export const RagAssistant: React.FC = () => {
   const [query, setQuery] = useState("");
@@ -38,26 +37,6 @@ export const RagAssistant: React.FC = () => {
     }
   };
 
-  const recommendedBooks = useMemo(() => {
-    if (!response?.sources) return [];
-
-    const seen = new Set<string>();
-    const books: Array<{ id: string; title: string; imageUrl?: string }> = [];
-
-    for (const source of response.sources) {
-      const bookId = source.bookId;
-      if (bookId && bookId !== "N/A" && !seen.has(bookId)) {
-        seen.add(bookId);
-        books.push({
-          id: bookId,
-          title: source.metadata?.title || source.metadata?.bookTitle || "Recommended Book",
-          imageUrl: source.metadata?.thumbnail || source.metadata?.imageUrl
-        });
-      }
-    }
-    return books;
-  }, [response]);
-
   return (
     <Box sx={{ maxWidth: 800, mx: "auto", p: { xs: 2, md: 4 } }}>
       <Paper
@@ -68,7 +47,6 @@ export const RagAssistant: React.FC = () => {
           border: "1px solid",
           borderColor: "divider",
           borderRadius: 3,
-          backgroundColor: mode === RAGMode.PERSONAL ? "rgba(25, 118, 210, 0.02)" : "inherit"
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", mb: 3, gap: 1.5 }}>
