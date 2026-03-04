@@ -7,6 +7,8 @@ import { NotFoundError } from "@utils/errors";
 import { bookRepository } from "@repositories/bookRepository";
 import { IUser } from "@models/User";
 import { IBook } from "@models/Book";
+import { syncReviewToVector, deleteReviewFromVector } from "@services/ai/vectorSyncService";
+
 
 export const createReview = async (
   userId: Types.ObjectId,
@@ -17,7 +19,6 @@ export const createReview = async (
 ): Promise<IUserReview> => {
   const book = await getOrCreateLocalBook(externalBookId);
 
-  // Fallback image logic: if no picturePath provided, use book thumbnail
   const finalPicturePath = picturePath || book.thumbnail;
 
   const newReview = await userReviewRepository.create({
@@ -30,14 +31,16 @@ export const createReview = async (
 
   await recomputeBookRating(book._id.toString());
 
+  await syncReviewToVector(newReview);
+
   return newReview;
 };
 
 import { userRepository } from "@repositories/userRepository";
 
 export const getAllReviews = async (
-  minLikes?: number, 
-  searchQuery?: string, 
+  minLikes?: number,
+  searchQuery?: string,
   username?: string,
   rating?: number,
   genre?: string
@@ -48,27 +51,25 @@ export const getAllReviews = async (
   if (username) {
     const matchingUsers = await userRepository.findByUsernamePartial(username);
     if (matchingUsers.length === 0) {
-      return []; // No user matched, return nothing
+      return [];
     }
     userIdFilter = matchingUsers.map((u: IUser) => u._id as Types.ObjectId);
   }
 
-  // 1. Resolve genre strictly if provided
   let genreBookIds: Types.ObjectId[] | undefined;
   if (genre) {
-    const { items: booksInGenre } = await bookRepository.localSearchBooks({ 
+    const { items: booksInGenre } = await bookRepository.localSearchBooks({
       subject: genre,
-      limit: 1000 // Get many to be sure
+      limit: 1000
     });
     if (booksInGenre.length === 0) return [];
     genreBookIds = booksInGenre.map((b: IBook) => b._id as Types.ObjectId);
   }
 
-  // 2. Resolve searchQuery into book IDs (for the OR search)
   let searchBookIds: Types.ObjectId[] | undefined;
   if (searchQuery) {
-    const { items: matchingBooks } = await bookRepository.localSearchBooks({ 
-      title: searchQuery 
+    const { items: matchingBooks } = await bookRepository.localSearchBooks({
+      title: searchQuery
     });
     if (matchingBooks.length > 0) {
       searchBookIds = matchingBooks.map((b: IBook) => b._id as Types.ObjectId);
@@ -76,11 +77,11 @@ export const getAllReviews = async (
   }
 
   return await userReviewRepository.findAll(
-    minLikes, 
-    searchQuery, 
-    userIdFilter, 
-    searchBookIds, 
-    rating, 
+    minLikes,
+    searchQuery,
+    userIdFilter,
+    searchBookIds,
+    rating,
     genre,
     genreBookIds
   );
@@ -111,14 +112,14 @@ export const getReviewById = async (
 const extractBookId = (bookField: any): string | null => {
   if (!bookField) return null;
   if (typeof bookField === 'string') return bookField;
-  
+
   if (bookField._id) {
     if (typeof bookField._id === 'string') return bookField._id;
     if (bookField._id.toString) return bookField._id.toString();
   }
 
   if (bookField instanceof Types.ObjectId) return bookField.toString();
-  
+
   try {
     const s = String(bookField);
     return (s && s !== "[object Object]") ? s : null;
@@ -129,12 +130,12 @@ const extractBookId = (bookField: any): string | null => {
 
 export const getEnrichedReviews = async (reviews: any[]): Promise<any[]> => {
   const { normalizeBookDetail } = await import("./bookService");
-  
+
   return Promise.all(
     reviews.map(async (review) => {
       const reviewObj = typeof review.toObject === 'function' ? review.toObject() : review;
       const bookId = extractBookId(reviewObj.book);
-      
+
       try {
         if (!bookId) {
           throw new Error(`Could not determine book ID for review ${review._id}`);
@@ -187,7 +188,6 @@ export const getPopulatedReviewById = async (
     };
   } catch (error) {
     console.warn(`Error enriching review ${reviewId}:`, error);
-    // Fallback if book not found
     return {
       ...review.toObject(),
       book: {
@@ -221,6 +221,8 @@ export const updateReview = async (
 
   await recomputeBookRating(updatedReview.book.toString());
 
+  await syncReviewToVector(updatedReview);
+
   return updatedReview;
 };
 
@@ -232,6 +234,8 @@ export const deleteReview = async (reviewId: string): Promise<void> => {
 
   await userReviewRepository.delete(reviewId);
   await recomputeBookRating(review.book.toString());
+
+  await deleteReviewFromVector(reviewId);
 };
 
 export const isReviewAuthor = async (

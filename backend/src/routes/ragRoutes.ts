@@ -12,6 +12,7 @@ const router = Router();
  *     summary: Query the RAG system
  *     tags: [RAG]
  */
+
 router.post(
   "/query",
   ragRateLimiter,

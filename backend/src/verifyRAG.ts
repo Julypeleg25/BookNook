@@ -1,13 +1,17 @@
-import { securityFilter, REFUSAL_RESPONSE } from "@middlewares/securityMiddleware";
-import { processRagQuery, RAGMode } from "@services/ragService";
+import { securityFilter } from "@middlewares/securityMiddleware";
+import { processQuery } from "@services/ai/ragOrchestrator";
 import dotenv from "dotenv";
 
 dotenv.config();
-process.env.TEST_MODE = 'true'; // Force test mode for verification
 
+/**
+ * verifyRAG.ts
+ *
+ * Updated to use pgvector/OpenAI orchestrator.
+ */
 async function testSecurity() {
   console.log("--- Testing Security Middleware ---");
-  
+
   const testCases = [
     { name: "Safe Query", query: "What are some good fantasy books?", expectedBlock: false },
     { name: "Sensitive Keyword (English)", query: "What is the admin password?", expectedBlock: true },
@@ -46,11 +50,11 @@ async function testSecurity() {
 }
 
 async function testRagPipeline() {
-  console.log("\n--- Testing RAG Pipeline (TEST_MODE) ---");
-  
+  console.log("\n--- Testing RAG Pipeline ---");
+
   try {
-    const result = await processRagQuery("Recommend a book", RAGMode.GLOBAL);
-    console.log("[PASS] RAG Pipeline returned mock response successfully.");
+    const result = await processQuery("Recommend a book");
+    console.log("[PASS] RAG Pipeline returned response successfully.");
     console.log("Response Preview:", result.answer);
   } catch (err) {
     console.error("[FAIL] RAG Pipeline failed:", err);

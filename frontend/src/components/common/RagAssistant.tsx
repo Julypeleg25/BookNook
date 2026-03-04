@@ -14,14 +14,16 @@ import {
   ListItem,
   ListItemText,
   Chip,
+  Link,
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import { Send as SendIcon, AutoAwesome as AiIcon } from "@mui/icons-material";
 import { useRag } from "@hooks/useRag";
 import { RAGMode } from "@models/Rag";
 
 export const RagAssistant: React.FC = () => {
   const [query, setQuery] = useState("");
-  const [mode, setMode] = useState<RAGMode>(RAGMode.GLOBAL);
+  const [mode, setMode] = useState<RAGMode>(RAGMode.GENERAL);
   const { loading, error, response, fetchAiResponse } = useRag();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,7 +68,7 @@ export const RagAssistant: React.FC = () => {
               color="primary"
               aria-label="search mode"
             >
-              <ToggleButton value={RAGMode.GLOBAL} aria-label="global search">
+              <ToggleButton value={RAGMode.GENERAL} aria-label="global search">
                 Global (All Books)
               </ToggleButton>
               <ToggleButton value={RAGMode.PERSONAL} aria-label="personal library">
@@ -129,39 +131,52 @@ export const RagAssistant: React.FC = () => {
                 Sources & Context
               </Typography>
               <List disablePadding>
-                {response.sources.map((source, index) => (
-                  <ListItem
-                    key={`${source.id}-${index}`}
-                    disableGutters
-                    sx={{
-                      mb: 1,
-                      p: 2,
-                      bgcolor: "rgba(0,0,0,0.02)",
-                      borderRadius: 2,
-                      display: "block",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", alignItems: "center", mb: 0.5, gap: 1 }}>
-                      <Chip
-                        label={source.payload.type.toUpperCase()}
-                        size="small"
-                        color={source.payload.type === "book" ? "primary" : "secondary"}
-                        variant="outlined"
-                        sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700 }}
-                      />
-                      <Typography variant="subtitle2" component="span">
-                        {source.payload.title || "Related Review"}
-                      </Typography>
-                    </Box>
-                    <ListItemText
-                      primary={
-                        <Typography variant="body2" color="text.secondary" noWrap>
-                          {source.payload.description || source.payload.content || "..."}
-                        </Typography>
-                      }
-                    />
-                  </ListItem>
-                ))}
+                {response.sources.map((source: any, index) => {
+                  let linkTo = "";
+                  let displaySource = "";
+
+                  if (source.payload?.type === "review") {
+                    const bookId = source.payload.bookId;
+                    linkTo = `/book/${bookId}`;
+                    displaySource = `Review for Book: ${source.payload.bookTitle || "Unknown"}`;
+                  } else if (source.payload?.type === "book") {
+                    const bookId = source.payload.mongoId;
+                    linkTo = `/book/${bookId}`;
+                    displaySource = `Book Details: ${source.payload.title}`;
+                  } else {
+                    displaySource = String(source);
+                  }
+
+                  return (
+                    <ListItem
+                      key={`${source.id || index}-${index}`}
+                      disableGutters
+                      sx={{
+                        mb: 1,
+                        p: 2,
+                        bgcolor: "rgba(0,0,0,0.02)",
+                        borderRadius: 2,
+                        display: "block",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center", mb: 0.5, gap: 1 }}>
+
+                        {linkTo ? (
+                          <Link component={RouterLink} to={linkTo} color="primary" underline="hover">
+                            <Typography variant="subtitle2" component="span">
+                              {displaySource}
+                            </Typography>
+                          </Link>
+                        ) : (
+                          <Typography variant="subtitle2" component="span">
+                            {displaySource}
+                          </Typography>
+                        )}
+                      </Box>
+
+                    </ListItem>
+                  )
+                })}
               </List>
             </>
           )}

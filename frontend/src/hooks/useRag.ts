@@ -8,7 +8,7 @@ export const useRag = () => {
   const [response, setResponse] = useState<RagQueryResponse | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchAiResponse = useCallback(async (query: string, mode: RAGMode = RAGMode.GLOBAL) => {
+  const fetchAiResponse = useCallback(async (query: string, mode: RAGMode = RAGMode.GENERAL) => {
     if (!query.trim()) return;
 
     // Reset state and cancel previous request

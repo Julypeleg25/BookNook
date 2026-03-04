@@ -1,6 +1,6 @@
 export enum RAGMode {
-  GLOBAL = "GLOBAL",
-  PERSONAL = "PERSONAL",
+  GENERAL = "general",
+  PERSONAL = "personalized",
 }
 
 export interface RagQueryRequest {

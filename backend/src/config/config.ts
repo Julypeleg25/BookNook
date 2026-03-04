@@ -30,4 +30,8 @@ export const ENV = {
   GOOGLE_BOOKS_API:
     process.env.GOOGLE_BOOKS_API ??
     "https://www.googleapis.com/books/v1/volumes",
+  /** PostgreSQL connection string for pgvector (e.g. postgres://user:pass@localhost:5432/booknook) */
+  PGVECTOR_URL: requireEnv("PGVECTOR_URL"),
+  /** Google Gemini API Key */
+  GEMINI_API_KEY: requireEnv("GEMINI_API_KEY"),
 } as const;

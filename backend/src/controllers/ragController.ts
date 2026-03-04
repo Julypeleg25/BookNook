@@ -1,19 +1,39 @@
 import { Request, Response } from "express";
-import { processRagQuery, RAGMode } from "@services/ragService";
+import { processQuery } from "@services/ai/ragOrchestrator";
+import { validateRagQuery } from "@utils/ragValidation";
 
 /**
  * Handle RAG Query Request
+ *
+ * Accepts:
+ *   POST /api/rag/query
+ *   { query: string, mode?: "GLOBAL" | "PERSONAL", minRating?: number }
+ *
+ * Returns:
+ *   { answer: string, sources: SearchResult[] }
  */
 export const handleRagQuery = async (req: Request, res: Response) => {
   try {
-    const { query, mode = RAGMode.GLOBAL } = req.body;
-    const userId = (req as any).authenticatedUser?._id?.toString();
+    const {
+      query,
+      minRating,
+      mode = "general", // 'general' or 'personalized'
+    } = req.body;
 
-    if (mode === RAGMode.PERSONAL && !userId) {
-      return res.status(401).json({ error: "Authentication required for PERSONAL mode" });
+    const validation = validateRagQuery(query);
+    if (!validation.isValid) {
+      return res.status(400).json({ error: validation.error });
     }
 
-    const result = await processRagQuery(query, mode, userId);
+    const userId = (req as any).user?._id?.toString();
+
+    const result = await processQuery(query, {
+      mode: mode.toLowerCase() === "personalized" ? "personalized" : "general",
+      userId,
+      minRating: minRating !== undefined ? Number(minRating) : null,
+    });
+
+
     res.json(result);
   } catch (error) {
     console.error("[RAG CONTROLLER] Error:", error);
