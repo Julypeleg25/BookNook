@@ -5,6 +5,7 @@ import { formatDate } from "@utils/dateUtils";
 import type { BookPost } from "@models/Book";
 import BookHeader from "./BookHeaderButtons";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
 import { useSnackbar } from "notistack";
@@ -20,6 +21,7 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
 
   const isLiked = user?.id ? likes.includes(user.id) : false;
   const isAuthor = user?.id && bookPost.user ? user.id === (bookPost.user as any).id || user.id === (bookPost.user as any)._id : false;
+  const queryClient = useQueryClient();
 
   const handleLikeClick = async () => {
     if (!isAuthenticated) {
@@ -45,6 +47,7 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
       } else {
         await userReviewService.likeReview(bookPost.id);
       }
+      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
     } catch (error) {
       setLikes(previousLikes);
       enqueueSnackbar("Error updating like", { variant: "error" });

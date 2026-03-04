@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import type { BookPost } from "@models/Book";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { FaRegComment, FaHeart } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import { userReviewService } from "@/api/services/userReviewService";
@@ -21,6 +22,7 @@ interface BookPostCardProps {
 const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
   const { user } = useUserStore();
   const [likes, setLikes] = useState<string[]>(post.likes || []);
+  const queryClient = useQueryClient();
   const isLiked = user ? likes.includes(user.id || (user as any)._id) : false;
   const isAuthor = user?.username === post.user.username;
 
@@ -39,6 +41,8 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
         await userReviewService.likeReview(post.id);
         setLikes((prev) => [...prev, user.id || (user as any)._id]);
       }
+      // Invalidate the reviews query to refetch latest like state
+      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
     } catch (error: any) {
       enqueueSnackbar(error.message || "Failed to update like", { variant: "error" });
     }
