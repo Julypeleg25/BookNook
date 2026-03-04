@@ -33,7 +33,6 @@ const AiBookRecommendation = ({
     if (!prompt.trim()) return;
 
     setLoading(true);
-    // TODO: Mock AI response - replace with actual API call
     setTimeout(() => {
       setResponse(responseString);
       setLoading(false);
@@ -53,7 +52,7 @@ const AiBookRecommendation = ({
       }}
     >
       <Typography variant="h6" gutterBottom>
-      <IoSparkles/>  AI Book Recommendation
+        <IoSparkles />  AI Book Recommendation
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: "1rem" }}>
         Describe what kind of book you're looking for, and our AI will help you

@@ -4,11 +4,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-/**
- * verifyRAG.ts
- *
- * Updated to use pgvector/OpenAI orchestrator.
- */
 async function testSecurity() {
   console.log("--- Testing Security Middleware ---");
 

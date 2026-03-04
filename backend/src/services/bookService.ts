@@ -25,7 +25,6 @@ export const normalizeBookSummary = (
     authors: info.authors ?? [],
     thumbnail: info.imageLinks?.thumbnail,
     publishedDate: info.publishedDate,
-    // Google Books API typically puts averageRating in volumeInfo if available
     avgRating: (info as any).averageRating,
     ratingCount: (info as any).ratingsCount,
     genres: info.categories ?? [],

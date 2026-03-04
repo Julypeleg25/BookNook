@@ -1,9 +1,3 @@
-/**
- * scripts/indexData.ts
- *
- * Re-indexes all books, reviews, and user profiles from MongoDB into PostgreSQL (pgvector).
- */
-
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { BookModel } from "@models/Book";
@@ -18,10 +12,6 @@ import { ENV } from "@config/config";
 dotenv.config();
 
 const BATCH_SIZE = 32;
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 async function getTypicalTasteMap(): Promise<Map<string, string[]>> {
   const reviews = await UserReviewModel.find({});
@@ -55,10 +45,6 @@ async function getTypicalTasteMap(): Promise<Map<string, string[]>> {
 
   return tasteMap;
 }
-
-// ---------------------------------------------------------------------------
-// Indexers
-// ---------------------------------------------------------------------------
 
 async function indexBooks(): Promise<void> {
   const books = await BookModel.find({});

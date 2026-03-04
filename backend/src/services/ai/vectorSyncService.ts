@@ -1,9 +1,3 @@
-/**
- * vectorSyncService.ts
- *
- * Provides functions called on book/review/user CRUD.
- */
-
 import { IBook } from "@models/Book";
 import { IUserReview, UserReviewModel } from "@models/UserReview";
 import User, { IUser } from "@models/User";
@@ -14,9 +8,6 @@ import { upsertChunk, deleteChunkBySourceId } from "@services/ai/vectorRepositor
 import { logger } from "@utils/logger";
 
 
-/**
- * Calculates a user's top genres based on their reviews.
- */
 async function getUserTopGenres(userId: string): Promise<string[]> {
     const reviews = await UserReviewModel.find({ user: userId });
     const genresCount: Record<string, number> = {};
@@ -136,7 +127,6 @@ export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
         const dislikes: Set<string> = new Set();
         const interestThemes: Record<string, number> = {};
 
-        // Helper to process a review for interests/dislikes
         const processReview = async (review: IUserReview) => {
             const book = await bookRepository.findById(review.book.toString());
             if (!book) return;

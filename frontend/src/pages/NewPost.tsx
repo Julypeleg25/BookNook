@@ -37,20 +37,16 @@ const NewPost = () => {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
 
-  // Get book from route state or fetch it
   const bookFromState = location.state?.book;
 
-  // 1. Fetch Review if in Edit Mode
   const { data: reviewData, isLoading: isLoadingReview } = useQuery({
     queryKey: ["review", reviewId],
     queryFn: () => userReviewService.getReviewById(reviewId!),
     enabled: !!reviewId,
   });
 
-  // Determine effective bookId
-  const bookId = routeBookId || (reviewData?.book)?._id || (reviewData?.book as any);
+  const bookId = routeBookId || (reviewData?.book)?._id || (reviewData?.book);
 
-  // 2. Fetch Book Data
   const { data: bookData, isLoading: isLoadingBook } = useQuery({
     queryKey: ["book", bookId],
     queryFn: async () => {
@@ -77,7 +73,6 @@ const NewPost = () => {
     mode: "onSubmit",
   });
 
-  // Pre-fill form when review data loads
   useEffect(() => {
     if (reviewData) {
       reset({

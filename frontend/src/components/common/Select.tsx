@@ -21,7 +21,7 @@ interface SelectProps {
   multiple?: boolean;
   startIcon?: ReactNode;
   sx?: SxProps;
-  fullWidth?: boolean; // Added this
+  fullWidth?: boolean;
 }
 
 const Select = (props: SelectProps) => {
@@ -29,16 +29,13 @@ const Select = (props: SelectProps) => {
     <FormControl style={props.style} fullWidth={props.fullWidth} sx={props.sx}>
       {props.label && <InputLabel>{props.label}</InputLabel>}
       <MuiSelect
-        // FIX: Add the onChange handler here
         onChange={(event) => {
           const value = event.target.value;
-          // Ensure we always return an array to the parent
           props.onChange(typeof value === 'string' ? value.split(',') : (value as (string | number)[]));
         }}
         startAdornment={props.startIcon}
         variant="outlined"
         fullWidth
-        // disableUnderline // Remove this if you want to see the select line
         multiple={props.multiple}
         value={props.selectedValues}
         label={props.label}

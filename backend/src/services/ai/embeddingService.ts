@@ -15,9 +15,6 @@ const getExtractor = async () => {
     return extractor;
 };
 
-/**
- * Generate a single 384-dim normalised embedding for the given text.
- */
 export const generateEmbedding = async (text: string): Promise<number[]> => {
     if (!text || text.trim().length === 0) {
         throw new Error("[EmbeddingService] Cannot embed empty text.");
@@ -28,11 +25,7 @@ export const generateEmbedding = async (text: string): Promise<number[]> => {
     return Array.from(output.data) as number[];
 };
 
-/**
- * Efficiently generate embeddings for a batch of texts.
- * Processes items sequentially to avoid OOM on large batches.
- * For very large datasets prefer batching in the calling script (e.g. chunks of 32).
- */
+
 export const generateEmbeddingsBatch = async (
     texts: string[]
 ): Promise<number[][]> => {

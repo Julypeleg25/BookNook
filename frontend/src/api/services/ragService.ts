@@ -10,7 +10,7 @@ export const ragService = {
     const res = await axiosClient.post<RagQueryResponse>(
       endpoints.rag.query,
       data,
-      { signal, timeout: 120000 } // 2 minute timeout for local LLM generation
+      { signal, timeout: 120000 }
     );
     return res.data;
   },

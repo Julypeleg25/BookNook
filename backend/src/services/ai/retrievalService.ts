@@ -13,12 +13,6 @@ export interface RetrievalOptions {
     topK?: number;
 }
 
-/**
- * Mode-Aware Retrieval Strategy
- * 
- * General: Search books and reviews.
- * Personalized: Fetch user profile + Search books/reviews.
- */
 export const retrieveChunks = async (
     query: string,
     opts: RetrievalOptions
@@ -39,8 +33,8 @@ export const retrieveChunks = async (
 
     const queryEmbedding = await generateEmbedding(query);
 
-    // For general mode, we restrict to books and reviews.
-    // In personalized mode, we search books/reviews but we've already pulled the profile separately.
+    // general mode, we restrict to books and reviews.
+    // personalized mode, we search books/reviews but we've already pulled the profile separately.
     const searchResults = await similaritySearch(queryEmbedding, {
         topK,
         minRating,

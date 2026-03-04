@@ -17,7 +17,7 @@ import {
 import { MdSend } from "react-icons/md";
 
 interface NewCommentProps {
-  avatarUrl?: string; // Made optional to match User model
+  avatarUrl?: string;
   onSubmit?: (comment: string) => void;
 }
 
@@ -70,7 +70,6 @@ const NewComment = forwardRef(
             borderRadius: "1rem",
             width: "90%",
             justifySelf: "center",
-            // Removed fixed height to allow growing
           }}
           fullWidth
           value={value}
@@ -82,19 +81,22 @@ const NewComment = forwardRef(
           helperText={error ?? `${value.length}/500`}
           multiline
           maxRows={3}
-          InputProps={{ // Changed slotProps to InputProps for better compatibility or ensure correct slot
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={sendComment}
-                  disabled={!value.trim()}
-                  edge="end"
-                  color="primary"
-                >
-                  <MdSend />
-                </IconButton>
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={sendComment}
+                    disabled={!value.trim()}
+                    edge="end"
+                    color="primary"
+                  >
+                    <MdSend />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }
+
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {

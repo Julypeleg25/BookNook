@@ -25,7 +25,7 @@ interface BookPost {
   description: string;
   rating: number;
   imageUrl?: string;
-  likes: string[]; // Updated to string[] (user IDs)
+  likes: string[];
   comments: PostComment[];
 }
 

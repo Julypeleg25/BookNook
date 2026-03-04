@@ -9,7 +9,6 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ): void => {
-  // AppError hierarchy (ValidationError, NotFoundError, UnauthorizedError, etc.)
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
       success: false,
@@ -19,7 +18,6 @@ export const errorHandler = (
     return;
   }
 
-  // Malformed JSON body
   if (err instanceof SyntaxError && "body" in err) {
     res.status(400).json({
       success: false,
@@ -29,7 +27,6 @@ export const errorHandler = (
     return;
   }
 
-  // Multer file filter errors
   const errorMessage = err instanceof Error ? err.message : "Unknown error";
   if (errorMessage.includes("Only image files")) {
     res.status(400).json({
@@ -40,7 +37,6 @@ export const errorHandler = (
     return;
   }
 
-  // Unknown errors — never expose stack traces in production
   logger.error("Unhandled error:", err);
   res.status(500).json({
     success: false,

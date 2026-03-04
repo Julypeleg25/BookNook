@@ -47,9 +47,7 @@ export const getPool = (): Pool => {
     return pool;
 };
 
-/**
- * Run the migration SQL inline so callers don't need a separate step.
- */
+
 export const ensureSchema = async (): Promise<void> => {
     const client = await getPool().connect();
     try {

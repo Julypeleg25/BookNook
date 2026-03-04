@@ -5,14 +5,6 @@ import { optionalAuthenticate } from "@middlewares/authMiddleware";
 
 const router = Router();
 
-/**
- * @swagger
- * /api/rag/query:
- *   post:
- *     summary: Query the RAG system
- *     tags: [RAG]
- */
-
 router.post(
   "/query",
   ragRateLimiter,

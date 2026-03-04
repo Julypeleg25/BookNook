@@ -2,22 +2,12 @@ import { Request, Response } from "express";
 import { processQuery } from "@services/ai/ragOrchestrator";
 import { validateRagQuery } from "@utils/ragValidation";
 
-/**
- * Handle RAG Query Request
- *
- * Accepts:
- *   POST /api/rag/query
- *   { query: string, mode?: "GLOBAL" | "PERSONAL", minRating?: number }
- *
- * Returns:
- *   { answer: string, sources: SearchResult[] }
- */
 export const handleRagQuery = async (req: Request, res: Response) => {
   try {
     const {
       query,
       minRating,
-      mode = "general", // 'general' or 'personalized'
+      mode = "general",
     } = req.body;
 
     const validation = validateRagQuery(query);

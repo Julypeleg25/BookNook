@@ -41,7 +41,6 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
         await userReviewService.likeReview(post.id);
         setLikes((prev) => [...prev, user.id || (user as any)._id]);
       }
-      // Invalidate the reviews query to refetch latest like state
       queryClient.invalidateQueries({ queryKey: ["allReviews"] });
     } catch (error: any) {
       enqueueSnackbar(error.message || "Failed to update like", { variant: "error" });
