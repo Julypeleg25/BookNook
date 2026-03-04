@@ -20,11 +20,6 @@ export interface RAGResult {
     }>;
 }
 
-/**
- * RAG Orchestrator
- *
- * Coordinates embedding, retrieval, context building, and generation.
- */
 export const processQuery = async (
     query: string,
     opts: RAGOptions = {}
@@ -39,24 +34,15 @@ export const processQuery = async (
             topK: 6,
         });
 
+        const context = `
+<USER_PROFILE>
+${userProfile}
+</USER_PROFILE>
 
-        if (chunks.length === 0 && !userProfile) {
-            return {
-                answer: "I don't have any relevant books or reviews in the database for that query.",
-                sources: [],
-            };
-        }
-
-        let context = "";
-
-        if (userProfile) {
-            context += `--- USER PROFILE ---\n${userProfile}\n\n`;
-        }
-
-        context += `--- SEMANTIC SEARCH RESULTS ---\n`;
-        context += chunks
-            .map((c, i) => `Result #${i + 1} (${c.type}):\n${c.text}`)
-            .join("\n\n");
+<GLOBAL_KNOWLEDGE>
+${chunks.map((c, i) => `[Result #${i + 1}] type: ${c.type}, authorId: ${c.metadata?.userId || 'system'}\nContent: ${c.text}`).join("\n\n")}
+</GLOBAL_KNOWLEDGE>
+`.trim();
 
         const answer = await generateAnswer(query, context, { mode });
 
@@ -76,4 +62,3 @@ export const processQuery = async (
         throw err;
     }
 };
-

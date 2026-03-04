@@ -126,12 +126,41 @@ export const deleteReviewFromVector = async (reviewId: string): Promise<void> =>
 export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
     try {
         const userId = user._id.toString();
-        const topThemes = await getUserTopGenres(userId);
+
+        const likedReviews = await UserReviewModel.find({ likes: userId });
+
+        const inferredInterests: Set<string> = new Set();
+        const dislikes: Set<string> = new Set();
+        const interestThemes: Record<string, number> = {};
+
+        for (const review of likedReviews) {
+            const book = await bookRepository.findById(review.book.toString());
+            if (!book) continue;
+
+            const bookIdentifier = `${book.title} (by ${book.authors?.join(", ")})`;
+
+            if (review.rating >= 4) {
+                inferredInterests.add(bookIdentifier);
+                book.categories?.forEach(cat => {
+                    interestThemes[cat] = (interestThemes[cat] || 0) + 1;
+                });
+            }
+            else if (review.rating <= 2) {
+                dislikes.add(`Avoid books like ${bookIdentifier}`);
+            }
+        }
+
+        const topThemes = Object.entries(interestThemes)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([theme]) => theme);
 
         const text = buildProfileChunk(
             user.username,
             user.readlist || [],
             user.wishlist || [],
+            Array.from(inferredInterests).slice(0, 10),
+            Array.from(dislikes).slice(0, 5),
             topThemes
         );
         const embedding = await generateEmbedding(text);
@@ -149,8 +178,9 @@ export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
             },
         });
 
-        logger.info(`[VectorSync] Synced profile for user ${user.username} to vector store.`);
+        logger.info(`[VectorSync] Synced behavioral profile for user ${user.username} to vector store.`);
     } catch (err) {
         logger.error(`[VectorSync] Failed to sync profile for user ${user.username}:`, err);
     }
 };
+

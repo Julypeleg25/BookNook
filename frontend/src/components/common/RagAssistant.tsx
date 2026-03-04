@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   TextField,
@@ -10,16 +10,13 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Divider,
-  List,
-  ListItem,
-  ListItemText,
-  Chip,
-  Link,
+  Tooltip,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
 import { Send as SendIcon, AutoAwesome as AiIcon } from "@mui/icons-material";
 import { useRag } from "@hooks/useRag";
 import { RAGMode } from "@models/Rag";
+import { MarkdownMessage } from "./MarkdownMessage";
+import { RecommendationCarousel } from "./RecommendationCarousel";
 
 export const RagAssistant: React.FC = () => {
   const [query, setQuery] = useState("");
@@ -41,24 +38,56 @@ export const RagAssistant: React.FC = () => {
     }
   };
 
+  const recommendedBooks = useMemo(() => {
+    if (!response?.sources) return [];
+
+    const seen = new Set<string>();
+    const books: Array<{ id: string; title: string; imageUrl?: string }> = [];
+
+    for (const source of response.sources) {
+      const bookId = source.bookId;
+      if (bookId && bookId !== "N/A" && !seen.has(bookId)) {
+        seen.add(bookId);
+        books.push({
+          id: bookId,
+          title: source.metadata?.title || source.metadata?.bookTitle || "Recommended Book",
+          imageUrl: source.metadata?.thumbnail || source.metadata?.imageUrl
+        });
+      }
+    }
+    return books;
+  }, [response]);
+
   return (
     <Box sx={{ maxWidth: 800, mx: "auto", p: { xs: 2, md: 4 } }}>
-      <Paper elevation={0} sx={{ p: 4, mb: 4, border: "1px solid", borderColor: "divider" }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 4,
+          mb: 4,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 3,
+          backgroundColor: mode === RAGMode.PERSONAL ? "rgba(25, 118, 210, 0.02)" : "inherit"
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center", mb: 3, gap: 1.5 }}>
           <AiIcon color="primary" sx={{ fontSize: 32 }} />
-          <Typography variant="h4" component="h1">
-            BookNook AI Assistant
+          <Typography variant="h4" component="h1" sx={{ fontWeight: "bold" }}>
+            BookNook AI
           </Typography>
         </Box>
 
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          Ask anything about books, reviews, or your personal library.
+          {mode === RAGMode.PERSONAL
+            ? "Personal book helper based on what you like"
+            : "General book assistant that can answer questions about books, authors, generes, and more."}
         </Typography>
 
         <form onSubmit={handleSubmit}>
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1.5, display: "block" }}>
-              Search Mode
+            <Typography variant="subtitle2" sx={{ mb: 1.5, display: "block", fontWeight: "bold" }}>
+              Pick Mode
             </Typography>
             <ToggleButtonGroup
               value={mode}
@@ -67,25 +96,36 @@ export const RagAssistant: React.FC = () => {
               size="small"
               color="primary"
               aria-label="search mode"
+              sx={{ gap: 1, "& .MuiToggleButton-root": { border: "1px solid !important", borderRadius: "8px !important" } }}
             >
-              <ToggleButton value={RAGMode.GENERAL} aria-label="global search">
-                Global (All Books)
-              </ToggleButton>
-              <ToggleButton value={RAGMode.PERSONAL} aria-label="personal library">
-                My Library
-              </ToggleButton>
+              <Tooltip title="based on all data">
+                <ToggleButton value={RAGMode.GENERAL}>
+                  General
+                </ToggleButton>
+              </Tooltip>
+               <Tooltip title="based on your preferences">
+                <ToggleButton value={RAGMode.PERSONAL}>
+                  Personal Helper
+                </ToggleButton>
+              </Tooltip>
             </ToggleButtonGroup>
           </Box>
 
           <TextField
             fullWidth
             multiline
-            rows={4}
-            placeholder="e.g. Can you recommend a mystery book with a female protagonist?"
+            rows={3}
+            variant="outlined"
+            placeholder={mode === RAGMode.PERSONAL
+              ? "e.g. Based on what I like, what should I read next?"
+              : "e.g.  recommend a liked romance book"}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             disabled={loading}
-            sx={{ mb: 3 }}
+            sx={{
+              mb: 3,
+              "& .MuiOutlinedInput-root": { borderRadius: 3 }
+            }}
           />
 
           <Button
@@ -93,10 +133,11 @@ export const RagAssistant: React.FC = () => {
             variant="contained"
             size="large"
             disabled={loading || !query.trim()}
-            startIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
+            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
             fullWidth
+            sx={{ borderRadius: 3, py: 1.5, textTransform: "none", fontSize: "1.1rem" }}
           >
-            {loading ? "Thinking..." : "Send Request"}
+            {loading ? "Consulting Records..." : "Ask"}
           </Button>
         </form>
       </Paper>
@@ -108,78 +149,13 @@ export const RagAssistant: React.FC = () => {
       )}
 
       {response && (
-        <Paper elevation={0} sx={{ p: 4, border: "1px solid", borderColor: "divider" }}>
-          <Typography variant="h5" sx={{ mb: 2 }}>
-            Response
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              whiteSpace: "pre-wrap",
-              mb: 4,
-              color: "text.primary",
-              lineHeight: 1.8,
-            }}
-          >
-            {response.answer}
+        <Paper elevation={0} sx={{ p: 4, border: "1px solid", borderColor: "divider", borderRadius: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "primary.main" }}>
+            AI Assistant
           </Typography>
 
-          {response.sources.length > 0 && (
-            <>
-              <Divider sx={{ mb: 3 }} />
-              <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                Sources & Context
-              </Typography>
-              <List disablePadding>
-                {response.sources.map((source: any, index) => {
-                  let linkTo = "";
-                  let displaySource = "";
+          <MarkdownMessage content={response.answer} />
 
-                  if (source.payload?.type === "review") {
-                    const bookId = source.payload.bookId;
-                    linkTo = `/book/${bookId}`;
-                    displaySource = `Review for Book: ${source.payload.bookTitle || "Unknown"}`;
-                  } else if (source.payload?.type === "book") {
-                    const bookId = source.payload.mongoId;
-                    linkTo = `/book/${bookId}`;
-                    displaySource = `Book Details: ${source.payload.title}`;
-                  } else {
-                    displaySource = String(source);
-                  }
-
-                  return (
-                    <ListItem
-                      key={`${source.id || index}-${index}`}
-                      disableGutters
-                      sx={{
-                        mb: 1,
-                        p: 2,
-                        bgcolor: "rgba(0,0,0,0.02)",
-                        borderRadius: 2,
-                        display: "block",
-                      }}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center", mb: 0.5, gap: 1 }}>
-
-                        {linkTo ? (
-                          <Link component={RouterLink} to={linkTo} color="primary" underline="hover">
-                            <Typography variant="subtitle2" component="span">
-                              {displaySource}
-                            </Typography>
-                          </Link>
-                        ) : (
-                          <Typography variant="subtitle2" component="span">
-                            {displaySource}
-                          </Typography>
-                        )}
-                      </Box>
-
-                    </ListItem>
-                  )
-                })}
-              </List>
-            </>
-          )}
         </Paper>
       )}
     </Box>
