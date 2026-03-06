@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import {
   createReviewHandler,
@@ -16,17 +15,249 @@ import { upload } from "@config/multerConfig";
 
 const router = Router();
 
+/**
+ * @swagger
+ * /userReviews:
+ *   post:
+ *     summary: Create a new review
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               externalBookId:
+ *                 type: string
+ *               rating:
+ *                 type: number
+ *               review:
+ *                 type: string
+ *               picture:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Review created
+ *   get:
+ *     summary: Get all reviews
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: searchQuery
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: rating
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: List of reviews
+ */
 router.post("/", upload.single("picture"), createReviewHandler);
 router.get("/", getAllReviewsHandler);
+
+/**
+ * @swagger
+ * /userReviews/user/{userId}:
+ *   get:
+ *     summary: Get reviews by user ID
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of user reviews
+ */
 router.get("/user/:userId", getReviewsByUserIdHandler);
+
+/**
+ * @swagger
+ * /userReviews/book/{bookId}:
+ *   get:
+ *     summary: Get reviews by book ID
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: bookId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of book reviews
+ */
 router.get("/book/:bookId", getReviewsByBookIdHandler);
+
+/**
+ * @swagger
+ * /userReviews/{id}:
+ *   get:
+ *     summary: Get review by ID
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Review details
+ *   patch:
+ *     summary: Update a review
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               review:
+ *                 type: string
+ *               rating:
+ *                 type: number
+ *               picture:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Review updated
+ *   delete:
+ *     summary: Delete a review
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Review deleted
+ */
 router.get("/:id", getReviewById);
 router.patch("/:id", isReviewAuthorMiddleware, upload.single("picture"), updateReviewHandler);
-router.post("/:id/like", likeReviewHandler);
-router.post("/:id/unlike", unlikeReviewHandler);
 router.delete("/:id", isReviewAuthorMiddleware, deleteReviewHandler);
 
+/**
+ * @swagger
+ * /userReviews/{id}/like:
+ *   post:
+ *     summary: Like a review
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Review liked
+ */
+router.post("/:id/like", likeReviewHandler);
+
+/**
+ * @swagger
+ * /userReviews/{id}/unlike:
+ *   post:
+ *     summary: Unlike a review
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Review unliked
+ */
+router.post("/:id/unlike", unlikeReviewHandler);
+
+/**
+ * @swagger
+ * /userReviews/{id}/comments:
+ *   post:
+ *     summary: Add a comment to a review
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               comment:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Comment added
+ */
 router.post("/:id/comments", addCommentHandler);
+
+/**
+ * @swagger
+ * /userReviews/{id}/comments/{commentId}:
+ *   delete:
+ *     summary: Delete a comment from a review
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: commentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Comment deleted
+ */
 router.delete("/:id/comments/:commentId", deleteCommentHandler);
 
 export default router;

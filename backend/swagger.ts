@@ -6,52 +6,61 @@ export const swaggerSpec = swaggerJSDoc({
     info: {
       title: 'BookNook API',
       version: '1.0.0',
+      description: 'API documentation for the BookNook social reading application',
     },
     servers: [
       {
         url: 'http://localhost:3000',
+        description: 'Development server',
       },
     ],
-   components: {
-    schemas: {
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+      schemas: {
         BookSummary: {
-        type: 'object',
-        required: ['id', 'title', 'authors'],
-        properties: {
+          type: 'object',
+          required: ['id', 'title', 'authors'],
+          properties: {
             id: { type: 'string' },
             title: { type: 'string' },
             authors: {
-            type: 'array',
-            items: { type: 'string' },
+              type: 'array',
+              items: { type: 'string' },
             },
             thumbnail: { type: 'string' },
+          },
         },
-        },
-
         BookDetail: {
-        type: 'object',
-        required: ['id', 'title', 'authors', 'categories'],
-        properties: {
+          type: 'object',
+          required: ['id', 'title', 'authors', 'categories'],
+          properties: {
             id: { type: 'string' },
             title: { type: 'string' },
             subtitle: { type: 'string' },
             authors: {
-            type: 'array',
-            items: { type: 'string' },
+              type: 'array',
+              items: { type: 'string' },
             },
             description: { type: 'string' },
             publishedDate: { type: 'string' },
             pageCount: { type: 'integer' },
             categories: {
-            type: 'array',
-            items: { type: 'string' },
+              type: 'array',
+              items: { type: 'string' },
             },
             thumbnail: { type: 'string' },
             previewLink: { type: 'string' },
+          },
         },
-        },
-    },
+      },
     },
   },
-  apis: ['./routes/*.ts'], 
+  // Correctly scan the src/routes directory
+  apis: ['./src/routes/*.ts'],
 });
