@@ -1,6 +1,6 @@
-import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
-import { Box, Typography, CircularProgress, Button } from "@mui/material";
+import { useParams, useLocation } from "react-router-dom";
+import { useEffect, useRef, useMemo } from "react";
+import { Box, Typography, CircularProgress } from "@mui/material";
 import CommentsSection, {
   type CommentsSectionRef,
 } from "@components/post/comments/CommentsSection";
@@ -10,8 +10,7 @@ import AiBookRecommendation from "@components/post/AiBookRecommendation";
 import NotFound from "./NotFound";
 import { useQuery } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
-import type { BookPost } from "@models/Book";
-import useUserStore from "@/state/useUserStore";
+import type { Book, BookPost } from "@models/Book";
 import env from "@/config/env";
 import PostActionsMenu from "@components/bookCards/post/PostActionsMenu";
 
@@ -21,9 +20,7 @@ const AI_RESPONSE =
 const BookPost = () => {
   const { id } = useParams<{ id: string }>();
   const { hash } = useLocation();
-  const navigate = useNavigate();
   const commentsRef = useRef<CommentsSectionRef>(null);
-  const { user } = useUserStore();
 
   const {
     data: review,
@@ -35,10 +32,10 @@ const BookPost = () => {
     enabled: !!id,
   });
 
-  const bookPost: BookPost | null = review
+  const bookPost: BookPost | null = useMemo(() => review
     ? {
       id: review._id,
-      book: review.book as any,
+      book: review.book as Book,
       user: {
         id: review.user._id,
         username: review.user.username,
@@ -49,10 +46,10 @@ const BookPost = () => {
       rating: review.rating,
       imageUrl: review.picturePath || review.imageUrl,
       likes: review.likes || [],
-      comments: (review.comments || []).map((c: any) => ({
+      comments: (review.comments || []).map((c: import("@models/UserReview").ReviewComment) => ({
         id: c._id,
         user: {
-          id: c.user?._id || c.user,
+          id: c.user?.id || (c.user as unknown as string),
           username: c.user?.username || "Unknown",
           avatar: c.user?.avatar,
         },
@@ -60,7 +57,7 @@ const BookPost = () => {
         content: c.comment,
       })),
     }
-    : null;
+    : null, [review]);
 
   useEffect(() => {
     if (hash === "#comments" && commentsRef.current) {
@@ -86,7 +83,6 @@ const BookPost = () => {
 
   if (isError || !bookPost) return <NotFound />;
 
-  const isAuthor = user?.id === bookPost.user.id;
 
   return (
     <div style={{ margin: "3rem" }}>
@@ -117,7 +113,7 @@ const BookPost = () => {
             ? rawUrl.startsWith("http")
               ? rawUrl
               : `${env.API_BASE_URL}${rawUrl}`
-            : ((bookPost.book as any)?.thumbnail ?? null);
+            : (bookPost.book.thumbnail ?? null);
           return resolvedUrl ? (
             <img
               src={resolvedUrl}

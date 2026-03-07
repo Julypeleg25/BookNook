@@ -3,6 +3,7 @@ import type { User } from "./User";
 
 interface Book {
   id: string;
+  _id?: string;
   title: string;
   authors: string[];
   description?: string;

@@ -2,48 +2,49 @@ import { axiosClient } from "../axios/axiosClient";
 import { endpoints } from "../endpoints";
 
 import { Book } from "@/models/Book";
-import { CreateReviewData, UserReview } from "./userReviewService";
+import { CreateReviewData } from "./userReviewService";
+import { UserReview } from "@/models/UserReview";
 
 
 
 export const ListsService = {
     async getWishlistBooks(
     ): Promise<Book[]> {
-           const res = await axiosClient.get<Book[]>(
-              endpoints.lists.wishlist
-          )
+        const res = await axiosClient.get<Book[]>(
+            endpoints.lists.wishlist
+        )
 
         return res.data
     },
     async getReadlistBooks(
     ): Promise<Book[]> {
-           const res = await axiosClient.get<Book[]>(
-              endpoints.lists.readlist
-          )
+        const res = await axiosClient.get<Book[]>(
+            endpoints.lists.readlist
+        )
 
         return res.data
     },
 
-      async addBookToList(
+    async addBookToList(
         bookId: string,
         listType: "wish" | "read"
     ): Promise<Book[]> {
-           const res = await axiosClient.post<Book[]>(
-              endpoints.lists.addBook(bookId),
-              { listType }
-          )
+        const res = await axiosClient.post<Book[]>(
+            endpoints.lists.addBook(bookId),
+            { listType }
+        )
 
         return res.data
     },
 
-     async removeBookFromList(
+    async removeBookFromList(
         bookId: string,
         listType: "wish" | "read"
     ): Promise<Book[]> {
-           const res = await axiosClient.delete<Book[]>(
-              endpoints.lists.removeBook(bookId),
-              { data: { listType } }
-          )
+        const res = await axiosClient.delete<Book[]>(
+            endpoints.lists.removeBook(bookId),
+            { data: { listType } }
+        )
 
         return res.data
     },
@@ -81,8 +82,8 @@ export const ListsService = {
         return res.data;
     },
 
-    async addComment(reviewId: string, comment: string): Promise<any[]> {
-        const res = await axiosClient.post<any[]>(
+    async addComment(reviewId: string, comment: string): Promise<UserReview[]> {
+        const res = await axiosClient.post<UserReview[]>(
             endpoints.userReviews.comments(reviewId),
             { comment }
         );

@@ -4,7 +4,6 @@ import {
   getUserWishOrReadlist,
   removeBookFromUserList,
 } from "@services/listService";
-import { getBookByGoogleIdFromGoogle } from "@services/bookService";
 import { getUserById } from "@services/userService";
 import { logger } from "@utils/logger";
 import { ValidationError } from "@utils/errors";
@@ -70,7 +69,7 @@ export const getWishlist = async (
 ): Promise<void> => {
   try {
     const userId = req.authenticatedUser!.id;
-    const user = await getUserById(userId);
+    await getUserById(userId);
 
     const fullBooksOfWishlist = await getUserWishOrReadlist(userId, "wish");
 
@@ -88,7 +87,7 @@ export const getReadlist = async (
 ): Promise<void> => {
   try {
     const userId = req.authenticatedUser!.id;
-    const user = await getUserById(userId);
+    await getUserById(userId);
 
     const fullBooksOfReadlist = await getUserWishOrReadlist(userId, "read");
 

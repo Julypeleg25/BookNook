@@ -1,8 +1,8 @@
-import FullBookPostCard from "@components/bookCards/FullBookPostCard";
 import { Box } from "@mui/material";
 import { useMemo } from "react";
 import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
-import type { BookPost } from "@models/Book";
+import type { BookPost, Book } from "@models/Book";
+import { UserReview, ReviewComment } from "@/models/UserReview";
 import { useQuery } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
@@ -23,18 +23,26 @@ const MyPosts = () => {
 
   const bookPosts: BookPost[] = useMemo(
     () =>
-      reviews.map((r: any) => ({
+      reviews.map((r: UserReview) => ({
         id: r._id,
-        book: r.book,
-        user: r.user,
-        createdDate: r.createdDate,
+        book: r.book as Book,
+        user: {
+          id: r.user._id,
+          username: r.user.username,
+          avatar: r.user.avatar,
+        },
+        createdDate: r.createdAt,
         description: r.review,
         rating: r.rating,
         imageUrl: r.picturePath,
         likes: r.likes,
-        comments: r.comments.map((c: any) => ({
+        comments: r.comments.map((c: ReviewComment) => ({
           id: c._id,
-          user: c.user,
+          user: {
+            id: c.user.id,
+            username: c.user.username,
+            avatar: c.user.avatar,
+          },
           createdDate: c.createdAt,
           content: c.comment,
         })),

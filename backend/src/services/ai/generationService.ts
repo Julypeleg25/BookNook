@@ -49,7 +49,7 @@ Please provide a concise and helpful response based STRICTLY on the context prov
 
         const result = await model.generateContent(prompt);
         return result.response.text();
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("[GenerationService] Gemini generation failed:", err);
         throw err;
     }

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { processQuery } from "@services/ai/ragOrchestrator";
 import { validateRagQuery } from "@utils/ragValidation";
+import { logger } from "@utils/logger";
 
 export const handleRagQuery = async (req: Request, res: Response) => {
   try {
@@ -15,7 +16,7 @@ export const handleRagQuery = async (req: Request, res: Response) => {
       return res.status(400).json({ error: validation.error });
     }
 
-    const userId = (req as any).user?._id?.toString();
+    const userId = req.authenticatedUser?.id;
 
     const result = await processQuery(query, {
       mode: mode.toLowerCase() === "personalized" ? "personalized" : "general",
@@ -26,7 +27,7 @@ export const handleRagQuery = async (req: Request, res: Response) => {
 
     res.json(result);
   } catch (error) {
-    console.error("[RAG CONTROLLER] Error:", error);
+    logger.error("[RAG CONTROLLER] Error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

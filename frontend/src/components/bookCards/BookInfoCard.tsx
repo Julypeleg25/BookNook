@@ -58,8 +58,8 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
         <Box
           component="img"
           src={getAvatarSrcUrl(book.thumbnail)}
-          onError={(e: any) => {
-            e.target.src = "https://via.placeholder.com/150*200?text=No+Cover";
+          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+            e.currentTarget.src = "https://via.placeholder.com/150*200?text=No+Cover";
           }}
           alt={book.title}
           sx={{

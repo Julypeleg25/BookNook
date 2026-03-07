@@ -1,7 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 
 interface MarkdownMessageProps {
     content: string;

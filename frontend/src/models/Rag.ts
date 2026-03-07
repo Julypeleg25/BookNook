@@ -23,7 +23,7 @@ export interface RagSource {
     username?: string;
     mongoId?: string;
     bookId?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

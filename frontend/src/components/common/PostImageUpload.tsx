@@ -36,7 +36,7 @@ const PostImageUpload = ({ value, onChange }: PostImageUploadProps) => {
     return () => {
       stream?.getTracks().forEach((t) => t.stop());
     };
-  }, [cameraOpen]);
+  }, [cameraOpen, stream]);
 
   const takePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;

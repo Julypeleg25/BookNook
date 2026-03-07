@@ -22,11 +22,12 @@ export const useRag = () => {
       const data: RagQueryRequest = { query, mode };
       const result = await ragService.query(data, abortControllerRef.current.signal);
       setResponse(result);
-    } catch (err: any) {
-      if (err.name === "CanceledError" || err.name === "AbortError") {
+    } catch (err: unknown) {
+      const error = err as { name?: string; response?: { data?: { error?: string } } };
+      const message = error.response?.data?.error || (err as Error).message || "An unexpected error occurred.";
+      if (error.name === "CanceledError" || error.name === "AbortError") {
         return;
       }
-      const message = err.response?.data?.error || err.message || "An unexpected error occurred.";
       setError(message);
     } finally {
       setLoading(false);

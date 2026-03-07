@@ -51,16 +51,15 @@ export const optionalAuthenticate = async (
     }
 
     const decoded = verifyAccessToken(token);
-    console.log("[Auth Middleware] Decoded Token:", decoded);
+    logger.info(`[Auth Middleware] Decoded Token for user ID: ${decoded._id}`);
     const user = await getUserById(decoded._id);
 
     if (user) {
       req.authenticatedUser = sanitizeUser(user);
-      console.log("[Auth Middleware] Authenticated User:", req.authenticatedUser);
     }
     next();
   } catch (error) {
-    console.error("[Auth Middleware] Error during authentication:", error);
+    logger.error("[Auth Middleware] Error during authentication:", error);
     next();
   }
 };

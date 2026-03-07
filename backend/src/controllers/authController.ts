@@ -53,7 +53,7 @@ export const register = async (
       accessToken,
     };
     res.status(HttpStatusCode.Created).json(response);
-  } catch (error) {
+  } catch (error: unknown) {
     if (req.file) await deleteFile(req.file.path);
     next(error);
   }
@@ -83,7 +83,7 @@ export const login = async (
       user: sanitizeUser(user),
     };
     res.json(response);
-  } catch (error) {
+  } catch (error: unknown) {
     next(error);
   }
 };
@@ -112,7 +112,7 @@ export const refresh = async (
     await updateUserTokens(decoded._id, accessToken, refreshToken);
 
     res.json({ accessToken });
-  } catch (error) {
+  } catch (error: unknown) {
     next(error);
   }
 };
@@ -184,7 +184,7 @@ export const logout = async (
 
     clearAuthCookies(res);
     res.status(HttpStatusCode.Ok).json({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
     next(error);
   }
 };

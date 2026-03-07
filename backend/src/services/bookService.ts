@@ -19,20 +19,22 @@ export const normalizeBookSummary = (
   volume: GoogleBooksVolume,
 ): BookSummary => {
   const info = volume.volumeInfo;
+  const infoTyped = info as { averageRating?: number; ratingsCount?: number } & typeof info;
   return {
     id: volume.id,
     title: info.title,
     authors: info.authors ?? [],
     thumbnail: info.imageLinks?.thumbnail,
     publishedDate: info.publishedDate,
-    avgRating: (info as any).averageRating,
-    ratingCount: (info as any).ratingsCount,
+    avgRating: infoTyped.averageRating,
+    ratingCount: infoTyped.ratingsCount,
     genres: info.categories ?? [],
   };
 };
 
 export const normalizeBookDetail = (volume: GoogleBooksVolume): BookDetail => {
   const info = volume.volumeInfo;
+  const infoTyped = info as { averageRating?: number; ratingsCount?: number } & typeof info;
   return {
     id: volume.id,
     title: info.title,
@@ -44,8 +46,8 @@ export const normalizeBookDetail = (volume: GoogleBooksVolume): BookDetail => {
     pageCount: info.pageCount,
     thumbnail: info.imageLinks?.thumbnail,
     previewLink: info.previewLink,
-    avgRating: (info as any).averageRating,
-    ratingCount: (info as any).ratingsCount,
+    avgRating: infoTyped.averageRating,
+    ratingCount: infoTyped.ratingsCount,
     genres: info.categories ?? [],
   };
 };

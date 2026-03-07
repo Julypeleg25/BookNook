@@ -16,7 +16,7 @@ export interface RAGResult {
         type: string;
         text: string;
         score: number;
-        metadata: any;
+        metadata: Record<string, unknown>;
     }>;
 }
 

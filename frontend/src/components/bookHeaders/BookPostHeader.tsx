@@ -20,7 +20,7 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const isLiked = user?.id ? likes.includes(user.id) : false;
-  const isAuthor = user?.id && bookPost.user ? user.id === (bookPost.user as any).id || user.id === (bookPost.user as any)._id : false;
+  const isAuthor = user?.id && bookPost.user ? user.id === bookPost.user.id : false;
   const queryClient = useQueryClient();
 
   const handleLikeClick = async () => {
@@ -48,7 +48,7 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
         await userReviewService.likeReview(bookPost.id);
       }
       queryClient.invalidateQueries({ queryKey: ["allReviews"] });
-    } catch (error) {
+    } catch {
       setLikes(previousLikes);
       enqueueSnackbar("Error updating like", { variant: "error" });
     }

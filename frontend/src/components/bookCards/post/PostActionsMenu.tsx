@@ -62,11 +62,12 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
+        disableScrollLock
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         onClick={(e) => e.stopPropagation()}
       >
-           <MenuItem
+        <MenuItem
           component={Link}
           to={`/posts/${post.id}`}
           onClick={handleClose}
@@ -93,7 +94,7 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
           <ListItemText>Delete</ListItemText>
         </MenuItem>
 
-         <MenuItem component={Link}
+        <MenuItem component={Link}
           to={`/books/${post.book.id}`} >
           <ListItemIcon>
             <FiBookOpen fontSize="small" color="inherit" />

@@ -45,7 +45,7 @@ const NewPost = () => {
     enabled: !!reviewId,
   });
 
-  const bookId = routeBookId || (reviewData?.book)?._id || (reviewData?.book);
+  const bookId = routeBookId || (typeof reviewData?.book === 'string' ? reviewData.book : reviewData?.book?._id);
 
   const { data: bookData, isLoading: isLoadingBook } = useQuery({
     queryKey: ["book", bookId],
@@ -57,7 +57,7 @@ const NewPost = () => {
     enabled: !!bookId && !bookFromState,
   });
 
-  const book = bookFromState || bookData || (reviewData?.book as any);
+  const book = bookFromState || bookData || (typeof reviewData?.book === 'object' ? reviewData.book : null);
 
   const {
     control,
@@ -99,9 +99,10 @@ const NewPost = () => {
       }
       navigate("/posts");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const axiosError = error as { response?: { data?: { message?: string } } };
       enqueueSnackbar(
-        error?.response?.data?.message || "Failed to create review",
+        axiosError?.response?.data?.message || "Failed to create review",
         { variant: "error" }
       );
     },
@@ -128,9 +129,10 @@ const NewPost = () => {
       }
       navigate(`/posts/${reviewId}`);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const axiosError = error as { response?: { data?: { message?: string } } };
       enqueueSnackbar(
-        error?.response?.data?.message || "Failed to update review",
+        axiosError?.response?.data?.message || "Failed to update review",
         { variant: "error" }
       );
     },
@@ -194,8 +196,8 @@ const NewPost = () => {
           <Box
             component="img"
             src={getAvatarSrcUrl(book.thumbnail)}
-            onError={(e: any) => {
-              e.target.src = "https://via.placeholder.com/150x200?text=No+Cover";
+            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+              (e.target as HTMLImageElement).src = "https://via.placeholder.com/150x200?text=No+Cover";
             }}
             alt={book.title}
             sx={{

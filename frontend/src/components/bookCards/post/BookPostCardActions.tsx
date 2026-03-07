@@ -23,8 +23,8 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
   const { user } = useUserStore();
   const [likes, setLikes] = useState<string[]>(post.likes || []);
   const queryClient = useQueryClient();
-  const isLiked = user ? likes.includes(user.id || (user as any)._id) : false;
-  const isAuthor = user?.username === post.user.username;
+  const isLiked = user ? likes.includes(user.id) : false;
+  const isAuthor = user?.id && post.user ? user.id === post.user.id : false;
 
   const handleLikeToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -33,17 +33,19 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
       return;
     }
 
+    const previousLikes = likes;
     try {
       if (isLiked) {
         await userReviewService.unlikeReview(post.id);
-        setLikes((prev) => prev.filter((id) => id !== (user.id || (user as any)._id)));
+        setLikes((prev) => prev.filter((id) => id !== user.id));
       } else {
         await userReviewService.likeReview(post.id);
-        setLikes((prev) => [...prev, user.id || (user as any)._id]);
+        setLikes((prev) => [...prev, user.id]);
       }
       queryClient.invalidateQueries({ queryKey: ["allReviews"] });
-    } catch (error: any) {
-      enqueueSnackbar(error.message || "Failed to update like", { variant: "error" });
+    } catch {
+      setLikes(previousLikes);
+      enqueueSnackbar("Error updating like", { variant: "error" });
     }
   };
 

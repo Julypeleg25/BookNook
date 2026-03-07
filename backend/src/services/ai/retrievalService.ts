@@ -1,8 +1,7 @@
 import {
     similaritySearch,
     fetchChunksByMetadata,
-    SearchResult,
-    ChunkType
+    SearchResult
 } from "./vectorRepository";
 import { generateEmbedding } from "./embeddingService";
 

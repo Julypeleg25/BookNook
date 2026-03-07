@@ -7,7 +7,7 @@ export const validateRagQuery = (query: string): { isValid: boolean, error?: str
         return { isValid: false, error: "Query exceeds maximum allowed length." };
     }
 
-    const strippedQuery = query.replace(/[0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?£€]/g, "");
+    const strippedQuery = query.replace(/[0-9\s!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?£€]/g, "");
 
     if (strippedQuery.length === 0) {
         return { isValid: false, error: "Query must contain searchable text." };

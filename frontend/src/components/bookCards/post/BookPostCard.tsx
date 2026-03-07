@@ -1,6 +1,5 @@
 import {
   Card,
-  CardActionArea,
   CardContent,
   Chip,
   Typography,
@@ -44,15 +43,15 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         },
       }}
     >
-   
-        <BookPostCardHeader post={post} />
 
-        <CardContent>
-          <Typography color="text.secondary">
-            {post.description.slice(0, MAX_DESCRIPTION_LENGTH)}
-            {post.description.length > MAX_DESCRIPTION_LENGTH ? "…" : ""}
-          </Typography>
-        </CardContent>
+      <BookPostCardHeader post={post} />
+
+      <CardContent>
+        <Typography color="text.secondary">
+          {post.description.slice(0, MAX_DESCRIPTION_LENGTH)}
+          {post.description.length > MAX_DESCRIPTION_LENGTH ? "…" : ""}
+        </Typography>
+      </CardContent>
 
       <BookPostCardActions post={post} onCommentsClick={handleCommentsClick} />
 

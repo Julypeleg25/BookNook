@@ -4,7 +4,6 @@ import { timeAgo } from "@utils/dateUtils";
 import type { BookPost } from "@models/Book";
 import NewComment, { type NewCommentRef } from "./NewComment";
 import CommentsHeader from "./CommentsHeader";
-import env from "@/config/env";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";

@@ -4,9 +4,7 @@ import {
   getAllReviews,
   getReviewsByUserId,
   getReviewsByBookId,
-  getReviewById,
 } from "@services/userReviewService";
-import { getGoogleBookByLocalId } from "@services/bookService";
 import { ForbiddenError, ValidationError } from "@utils/errors";
 import { logger } from "@utils/logger";
 import { isImageFile, deleteFile } from "@utils/fileUtils";
@@ -81,7 +79,7 @@ export const getAllReviewsHandler = async (
     const enriched = await getEnrichedReviews(reviews);
 
     res.json(enriched);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error fetching all reviews:", error);
     next(error);
   }
@@ -101,7 +99,7 @@ export const getReviewsByUserIdHandler = async (
     const reviews = await getReviewsByUserId(userId);
     const enriched = await getEnrichedReviews(reviews);
     res.json(enriched);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error(
       `Error fetching reviews for user ${req.params.userId}:`,
       error,
@@ -124,7 +122,7 @@ export const getReviewsByBookIdHandler = async (
     const reviews = await getReviewsByBookId(bookId);
     const enriched = await getEnrichedReviews(reviews);
     res.json(enriched);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error(
       `Error fetching reviews for book ${req.params.bookId}:`,
       error,
@@ -146,7 +144,7 @@ export const getReviewByIdHandler = async (
 
     const review = await getPopulatedReviewById(id);
     res.json(review);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error(`Error fetching review ${req.params.id}:`, error);
     next(error);
   }

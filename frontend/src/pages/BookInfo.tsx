@@ -26,7 +26,7 @@ const BookInfo = () => {
         setLoading(true);
         const { book } = await booksService.getById(id);
         setBook(book);
-      } catch (err) {
+      } catch {
         setError(true);
       } finally {
         setLoading(false);
@@ -89,7 +89,7 @@ const BookInfo = () => {
 
   return (
     <Box sx={{ margin: "1.5rem", px: "1rem", py: "2rem" }}>
-      <BookInfoHeader book={book as any} />
+      <BookInfoHeader book={book} />
 
       <Box
         display="grid"

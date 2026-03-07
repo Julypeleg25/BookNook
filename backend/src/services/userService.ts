@@ -2,8 +2,7 @@ import { Types } from "mongoose";
 import { IUser } from "@models/User";
 import { userRepository } from "@repositories/userRepository";
 import { hashPassword } from "@utils/hashPassword";
-import { NotFoundError, ConflictError, ValidationError } from "@utils/errors";
-import { logger } from "@utils/logger";
+import { NotFoundError, ConflictError } from "@utils/errors";
 import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
 
 interface CreateUserData {

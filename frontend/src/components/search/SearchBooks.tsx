@@ -52,8 +52,8 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 limit: PAGE_SIZE
             });
         },
-        getNextPageParam: (lastPage: any) => {
-            return lastPage.hasNextPage ? (lastPage.page as number) + 1 : undefined;
+        getNextPageParam: (lastPage) => {
+            return lastPage.hasNextPage ? (lastPage.page) + 1 : undefined;
         },
         initialPageParam: 1,
         enabled: hasValidQuery,
@@ -78,7 +78,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
         return () => observer.disconnect();
     }, [handleObserver]);
 
-    const allBooks = data?.pages.flatMap((page: any) => page.items) ?? [];
+    const allBooks = data?.pages.flatMap((page) => page.items) ?? [];
     const showEmptyState = hasValidQuery && !isLoading && allBooks.length === 0;
 
     return (
@@ -105,10 +105,10 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
             {!isLoading && allBooks.length > 0 && (
                 <Box>
                     <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={3} mt={4}>
-                        {allBooks.map((bookSummary: any) => (
+                        {allBooks.map((bookSummary) => (
                             <BookInfoCard
                                 key={bookSummary.id}
-                                book={bookSummary as Book}
+                                book={bookSummary}
                                 isOnlyInfo={true}
                                 onSelect={isSelectMode ? () => onBookSelect?.(bookSummary as Book) : undefined}
                             />

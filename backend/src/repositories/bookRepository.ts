@@ -45,7 +45,7 @@ export class BookRepository {
 
   async getOrCreate(externalId: string): Promise<IBook> {
     try {
-      let localBook = await this.findByExternalId(externalId);
+      const localBook = await this.findByExternalId(externalId);
 
       const googleBook = await getBookByGoogleIdFromGoogle(externalId);
       const normalizedToBookModel = normalizeBookDetail(googleBook);
