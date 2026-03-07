@@ -35,8 +35,7 @@ export const register = async (
     }
 
     const { email, username, password } = req.body;
-    const avatarPath = req.file ? `/uploads/${req.file.filename}` : undefined;
-
+    const avatarPath = req.file ? req.file.filename : undefined;
     const user = await createUser({
       username,
       email,

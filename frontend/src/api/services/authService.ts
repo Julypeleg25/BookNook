@@ -14,7 +14,9 @@ export const AuthService = {
   },
 
   async register(payload: RegisterRequestDTO | FormData): Promise<AuthResponseDto> {
-    const res = await axiosClient.post<AuthResponseDto>(endpoints.auth.register, payload);
+    const res = await axiosClient.post<AuthResponseDto>(endpoints.auth.register, payload, {
+      headers: payload instanceof FormData ? { "Content-Type": "multipart/form-data" } : undefined,
+    });
     return res.data;
   },
 
