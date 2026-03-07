@@ -56,26 +56,19 @@ const MyPosts = () => {
   });
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gap: "1.25rem",
-        borderRadius: "1rem",
-        padding: "1rem",
-        width: "100%",
-        margin: "0.75rem",
-      }}
-    >
-      <h2>My posts</h2>
+    <Box sx={{ width: "100%", mt: 2 }}>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
+        My posts
+      </Typography>
 
       <Box
         display="grid"
         gridTemplateColumns={{
           xs: "1fr",
           sm: "1fr 1fr",
-          md: "1fr 1fr 1fr 1fr",
+          md: "1fr 1fr 1fr",
         }}
-        gap={"2rem"}
+        gap="1.5rem"
       >
         {isLoading
           ? [...Array(BATCH_SIZE)].map((_, i) => <PostCardSkeleton key={i} />)
@@ -92,11 +85,11 @@ const MyPosts = () => {
 
       {!isLoading && bookPosts.length === 0 && (
         <Typography sx={{ textAlign: "center", mt: 4 }} color="text.secondary">
-          No posts yet
+          No posts yet.
         </Typography>
       )}
 
-      {visibleItems.length < bookPosts.length && <Box ref={loaderRef} />}
+      {visibleItems.length < bookPosts.length && <Box ref={loaderRef} sx={{ height: 20 }} />}
     </Box>
   );
 };

@@ -78,7 +78,7 @@ const SignUp = () => {
 
       await register(formData);
       reset();
-      navigate("/login");
+      navigate("/posts");
     } catch (error: unknown) {
       const message = error instanceof ApiError ? error.message : "Signup failed";
       setError("root", { message });

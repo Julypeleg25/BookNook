@@ -16,50 +16,44 @@ import MyPosts from "./MyPosts";
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
 
-
   return (
-    <Stack justifySelf="center" margin="1rem">
-      <Card
+    <Box sx={{ display: "flex", justifyContent: "center", p: "2rem" }}>
+      <Stack
+        spacing={4}
         sx={{
-          borderRadius: "1.5rem",
-          p: "1rem",
-          maxWidth: "40%",
-          width: "40rem",
+          width: "100%",
+          maxWidth: "900px",
+          alignItems: "flex-start"
         }}
       >
-        <CardContent>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb="1rem"
-          >
-            <Box>
-              <Typography fontSize="1.4rem" fontWeight={600}>
+        <Card
+          sx={{
+            borderRadius: "1.5rem",
+            p: "1rem",
+            width: "100%",
+            boxShadow: 2,
+          }}
+        >
+          <CardContent>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb="1rem">
+              <Typography variant="h5" fontWeight={600}>
                 My information
               </Typography>
-
-             
-            </Box>
-
-            {!isEditing && (
-              <Tooltip title="edit profile">
+              {!isEditing && (
                 <IconButton onClick={() => setIsEditing(true)}>
-                  <MdEdit size="2rem" />
+                  <MdEdit size="1.8rem" />
                 </IconButton>
-              </Tooltip>
-            )}
-          </Box>
+              )}
+            </Box>
+            {!isEditing ? <ProfileView /> : <ProfileForm onCancel={() => setIsEditing(false)} />}
+          </CardContent>
+        </Card>
 
-          {!isEditing ? (
-            <ProfileView />
-          ) : (
-            <ProfileForm onCancel={() => setIsEditing(false)} />
-          )}
-        </CardContent>
-      </Card>
-      <MyPosts/>
-    </Stack>
+        <Box sx={{ width: "100%" }}>
+          <MyPosts />
+        </Box>
+      </Stack>
+    </Box>
   );
 };
 
