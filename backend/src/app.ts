@@ -16,6 +16,8 @@ import { errorHandler } from "@middlewares/errorHandler";
 import { logger } from "@utils/logger";
 import ragRoutes from "@routes/ragRoutes";
 import { ensureSchema } from "@services/ai/vectorRepository";
+import { fileURLToPath } from "url";
+import path from "path";
 
 
 const app = express();
@@ -43,6 +45,15 @@ app.use("/api/rag", ragRoutes);
 app.use("/uploads", express.static(UPLOADS_FOLDER));
 
 app.use(errorHandler);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 mongoose
   .connect(ENV.MONGODB_URL)
