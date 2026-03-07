@@ -1,9 +1,14 @@
 import * as listService from '../services/listService';
 import { userRepository } from '@repositories/userRepository';
 import * as bookService from '../services/bookService';
+import { jest } from '@jest/globals';
 
+jest.mock("@xenova/transformers", () => ({
+    pipeline: (jest.fn() as any).mockResolvedValue(() => Promise.resolve([[0.1, 0.2, 0.3]]))
+}));
 jest.mock('@repositories/userRepository');
 jest.mock('../services/bookService');
+
 jest.mock('@config/config', () => ({
     ENV: {
         NODE_ENV: 'test',
@@ -28,7 +33,10 @@ jest.mock('@config/config', () => ({
 
 describe('ListService', () => {
     const userId = 'user123';
-    const bookId = 'book456';
+    const bookId = 'bookkk';
+
+    const mockedGetBook = bookService.getBookByGoogleIdFromGoogle as jest.MockedFunction<typeof bookService.getBookByGoogleIdFromGoogle>;
+    const mockedNormalize = bookService.normalizeBookSummary as jest.MockedFunction<typeof bookService.normalizeBookSummary>;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -36,7 +44,7 @@ describe('ListService', () => {
 
     describe('addBookToUserList', () => {
         it('should call userRepository.addBookToList', async () => {
-            (userRepository.addBookToList as jest.Mock).mockResolvedValue(['book1', 'book2']);
+            jest.spyOn(userRepository, 'addBookToList').mockResolvedValue(['book1', 'book2']);
 
             const result = await listService.addBookToUserList(userId, bookId, 'wish');
 
@@ -53,12 +61,14 @@ describe('ListService', () => {
     describe('getUserWishOrReadlist', () => {
         it('should fetch list and enrich with Google Books data', async () => {
             const mockGoogleIds = ['id1'];
+            
             const mockGoogleVolume = { id: 'id1', volumeInfo: { title: 'Book 1' } };
             const mockSummary = { id: 'id1', title: 'Book 1' };
 
-            (userRepository.getList as jest.Mock).mockResolvedValue(mockGoogleIds);
-            (bookService.getBookByGoogleIdFromGoogle as jest.Mock).mockResolvedValue(mockGoogleVolume as any);
-            (bookService.normalizeBookSummary as jest.Mock).mockReturnValue(mockSummary as any);
+            jest.spyOn(userRepository, 'getList').mockResolvedValue(mockGoogleIds);
+            
+            mockedGetBook.mockResolvedValue(mockGoogleVolume as any);
+            mockedNormalize.mockReturnValue(mockSummary as any);
 
             const result = await listService.getUserWishOrReadlist(userId, 'read');
 

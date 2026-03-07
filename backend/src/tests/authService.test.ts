@@ -1,9 +1,11 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import * as authService from '../services/authService';
-import { ENV } from '@config/config';
 import { Response } from 'express';
+import { jest } from '@jest/globals';
+import { IUser } from '../models/User';
 
 jest.mock('jsonwebtoken');
+
 jest.mock('@config/config', () => ({
     ENV: {
         JWT_ACCESS_SECRET: 'access-secret',
@@ -15,18 +17,26 @@ jest.mock('@config/config', () => ({
 }));
 
 describe('AuthService', () => {
+    const mockedSign = jwt.sign as jest.MockedFunction<typeof jwt.sign>;
+    const mockedVerify = jwt.verify as jest.MockedFunction<typeof jwt.verify>;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     describe('generateTokens', () => {
         it('should generate access and refresh tokens', () => {
-            const mockUser = { _id: 'user123' };
-            (jwt.sign as jest.Mock).mockReturnValue('mock-token' as any);
+            const mockUser = { _id: 'user123' } as unknown as IUser;
+            
+            mockedSign.mockReturnValue('mock-token' as any); 
 
-            const tokens = authService.generateTokens(mockUser as any);
+            const tokens = authService.generateTokens(mockUser);
 
             expect(tokens).toEqual({
                 accessToken: 'mock-token',
                 refreshToken: 'mock-token',
             });
-            expect(jwt.sign).toHaveBeenCalledTimes(2);
+            expect(mockedSign).toHaveBeenCalledTimes(2);
         });
     });
 
@@ -48,17 +58,18 @@ describe('AuthService', () => {
 
     describe('verifyRefreshToken', () => {
         it('should verify and return decoded payload', () => {
-            const mockPayload = { _id: 'user123' };
-            (jwt.verify as jest.Mock).mockReturnValue(mockPayload as any);
+            const mockPayload: JwtPayload = { _id: 'user123' };
+            
+            mockedVerify.mockReturnValue(mockPayload as any);
 
             const decoded = authService.verifyRefreshToken('valid-token');
 
             expect(decoded).toEqual(mockPayload);
-            expect(jwt.verify).toHaveBeenCalledWith('valid-token', 'refresh-secret');
+            expect(mockedVerify).toHaveBeenCalledWith('valid-token', 'refresh-secret');
         });
 
-        it('should throw UnauthorizedError on invalid token', () => {
-            (jwt.verify as jest.Mock).mockImplementation(() => {
+        it('should throw error on invalid token', () => {
+            mockedVerify.mockImplementation(() => {
                 throw new Error('invalid');
             });
 

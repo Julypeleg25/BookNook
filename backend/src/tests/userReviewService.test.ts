@@ -1,16 +1,27 @@
 import { Types } from "mongoose";
+import { jest } from '@jest/globals';
+
+import { IBook } from '../models/Book';
+import { IUserReview } from '../models/UserReview';
+import User from "../models/User";
+
 import * as userReviewService from "../services/userReviewService";
 import { userReviewRepository } from "../repositories/userReviewRepository";
 import * as bookService from "../services/bookService";
 import * as ratingService from "../services/ratingService";
 import * as vectorSyncService from "../services/ai/vectorSyncService";
-import User from "../models/User";
+
+jest.mock("@xenova/transformers", () => ({
+    pipeline: (jest.fn() as any).mockResolvedValue(() => Promise.resolve([[0.1, 0.2, 0.3]]))
+}));
 
 jest.mock("../repositories/userReviewRepository");
 jest.mock("../services/bookService");
 jest.mock("../services/ratingService");
 jest.mock("../services/ai/vectorSyncService");
 jest.mock("../models/User");
+jest.mock("../utils/logger");
+
 jest.mock('@config/config', () => ({
     ENV: {
         NODE_ENV: 'test',
@@ -44,13 +55,43 @@ describe("UserReviewService", () => {
 
     describe("createReview", () => {
         it("should create a review and trigger syncs", async () => {
-            const mockBook = { _id: bookId, title: "Test Book", thumbnail: "thumb" };
-            const mockReview = { _id: reviewId, user: userId, book: bookId, rating: 5, review: "Great!" };
+            const mockBook = {
+                _id: bookId,
+                externalId: 'extId',
+                categories: [],
+                title: "Test Book",
+                authors: [],
+                thumbnail: "thumb",
+                publishedDate: '',
+                description: '',
+                avgRating: 0,
+                ratingCount: 0,
+                ratingSum: 0,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            } as unknown as IBook;
+
+            const mockReview = {
+                _id: reviewId,
+                user: userId,
+                book: bookId,
+                review: "Great!",
+                rating: 5,
+                picturePath: '',
+                comments: [],
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                likes: [],
+                imageUrl: '',
+                description: '',
+                createdDate: new Date()
+            } as unknown as IUserReview;
+
             const mockUser = { _id: userId, username: "testuser" };
 
-            (bookService.getOrCreateLocalBook as jest.Mock).mockResolvedValue(mockBook);
-            (userReviewRepository.create as jest.Mock).mockResolvedValue(mockReview);
-            (User.findById as jest.Mock).mockResolvedValue(mockUser);
+            jest.spyOn(bookService, 'getOrCreateLocalBook').mockResolvedValue(mockBook);
+            jest.spyOn(userReviewRepository, 'create').mockResolvedValue(mockReview);
+            jest.spyOn(User, 'findById').mockResolvedValue(mockUser);
 
             const result = await userReviewService.createReview(userId, "extId", 5, "Great!");
 
@@ -65,11 +106,26 @@ describe("UserReviewService", () => {
 
     describe("updateReview", () => {
         it("should update a review and trigger syncs", async () => {
-            const mockReview = { _id: reviewId, user: userId, book: bookId, rating: 4, review: "Updated" };
+            const mockReview = {
+                _id: reviewId,
+                user: userId,
+                book: bookId,
+                review: "Updated",
+                rating: 4,
+                picturePath: '',
+                comments: [],
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                likes: [],
+                imageUrl: '',
+                description: '',
+                createdDate: new Date()
+            } as unknown as IUserReview;
+            
             const mockUser = { _id: userId, username: "testuser" };
 
-            (userReviewRepository.update as jest.Mock).mockResolvedValue(mockReview);
-            (User.findById as jest.Mock).mockResolvedValue(mockUser);
+            jest.spyOn(userReviewRepository, 'update').mockResolvedValue(mockReview);
+            jest.spyOn(User, 'findById').mockResolvedValue(mockUser);
 
             const result = await userReviewService.updateReview(reviewId.toString(), { rating: 4 });
 
@@ -82,11 +138,26 @@ describe("UserReviewService", () => {
 
     describe("deleteReview", () => {
         it("should delete a review and trigger syncs", async () => {
-            const mockReview = { _id: reviewId, user: userId, book: bookId };
+            const mockReview = {
+                _id: reviewId,
+                user: userId,
+                book: bookId,
+                review: '',
+                rating: 0,
+                picturePath: '',
+                comments: [],
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                likes: [],
+                imageUrl: '',
+                description: '',
+                createdDate: new Date()
+            } as unknown as IUserReview;
+            
             const mockUser = { _id: userId, username: "testuser" };
 
-            (userReviewRepository.findById as jest.Mock).mockResolvedValue(mockReview);
-            (User.findById as jest.Mock).mockResolvedValue(mockUser);
+            jest.spyOn(userReviewRepository, 'findById').mockResolvedValue(mockReview);
+            jest.spyOn(User, 'findById').mockResolvedValue(mockUser);
 
             await userReviewService.deleteReview(reviewId.toString());
 

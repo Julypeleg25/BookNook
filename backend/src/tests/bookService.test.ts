@@ -1,7 +1,11 @@
 import * as bookService from '../services/bookService';
 import { bookRepository } from '@repositories/bookRepository';
 import axios from 'axios';
+import { jest } from '@jest/globals';
 
+jest.mock("@xenova/transformers", () => ({
+    pipeline: (jest.fn() as any).mockResolvedValue(() => Promise.resolve([[0.1, 0.2, 0.3]]))
+}));
 jest.mock('axios');
 jest.mock('@repositories/bookRepository');
 jest.mock('@utils/logger');
@@ -37,9 +41,9 @@ describe('BookService', () => {
             const mockVolume = {
                 id: 'vol123',
                 volumeInfo: {
-                    title: 'Test Title',
+                    title: 'desdsdsds',
                     authors: ['Author One'],
-                    imageLinks: { thumbnail: 'thumb-url' },
+                    imageLinks: { thumbnail: 'piccccc' },
                     publishedDate: '2023-01-01',
                     categories: ['Fiction'],
                 },
@@ -49,9 +53,9 @@ describe('BookService', () => {
 
             expect(result).toEqual({
                 id: 'vol123',
-                title: 'Test Title',
+                title: 'desdsdsds',
                 authors: ['Author One'],
-                thumbnail: 'thumb-url',
+                thumbnail: 'piccccc',
                 publishedDate: '2023-01-01',
                 avgRating: undefined,
                 ratingCount: undefined,
@@ -69,7 +73,7 @@ describe('BookService', () => {
                     ],
                 },
             };
-            (axios.get as jest.Mock).mockResolvedValue(mockResponse);
+            jest.spyOn(axios, 'get').mockResolvedValue(mockResponse);
 
             const result = await bookService.searchBooks({ title: 'test' });
 
@@ -84,8 +88,8 @@ describe('BookService', () => {
             const mockGoogleBook = { id: 'ext123', volumeInfo: { title: 'Google Title', authors: [] } };
             const mockLocalBook = { externalId: 'ext123', avgRating: 4.5, ratingCount: 10 };
 
-            (axios.get as jest.Mock).mockResolvedValue({ data: mockGoogleBook });
-            (bookRepository.findByExternalId as jest.Mock).mockResolvedValue(mockLocalBook as any);
+            jest.spyOn(axios, 'get').mockResolvedValue({ data: mockGoogleBook });
+            jest.spyOn(bookRepository, 'findByExternalId').mockResolvedValue(mockLocalBook as any);
 
             const result = await bookService.getBookDetails('ext123');
 

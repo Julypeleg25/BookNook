@@ -2,7 +2,7 @@ module.exports = {
     testEnvironment: 'node',
     setupFiles: ['<rootDir>/jest.setup.cjs'],
     transform: {
-        '^.+\\.(ts|tsx)$': 'babel-jest',
+        '^.+\\.(ts|tsx)$': 'ts-jest',
     },
     moduleNameMapper: {
         '^@models/(.*)$': '<rootDir>/src/models/$1',
@@ -16,4 +16,8 @@ module.exports = {
     },
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
     transformIgnorePatterns: [],
+    transform: {},
+    extensionsToTreatAsEsm: ['.ts'],
+    preset: 'ts-jest/presets/default-esm',
+    testMatch: ['**/?(*.)+(test).[tj]s'],
 };
