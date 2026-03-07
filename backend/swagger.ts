@@ -6,7 +6,7 @@ export const swaggerSpec = swaggerJSDoc({
     info: {
       title: 'BookNook API',
       version: '1.0.0',
-      description: 'API documentation for the BookNook social reading application',
+      description: 'API documentation for BookNook',
     },
     servers: [
       {
@@ -61,6 +61,5 @@ export const swaggerSpec = swaggerJSDoc({
       },
     },
   },
-  // Correctly scan the src/routes directory
   apis: ['./src/routes/*.ts'],
 });

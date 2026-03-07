@@ -39,7 +39,7 @@ const router = Router();
  *                 type: string
  *               picture:
  *                 type: string
- *       - bearerAuth: []
+ *                 format: binary
  *     parameters:
  *       - in: query
  *         name: searchQuery
