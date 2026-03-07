@@ -11,13 +11,11 @@ import { useState } from "react";
 import ProfileForm from "@components/profile/ProfileForm";
 import ProfileView from "@components/profile/ProfileView";
 import { MdEdit } from "react-icons/md";
-import MyPostsSection from "@components/profile/MyPostsSection";
-import { bookPosts } from "../exampleData";
+import MyPosts from "./MyPosts";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const postsCount = bookPosts.filter((post) => post.user.id === "u1").length;
 
   return (
     <Stack justifySelf="center" margin="1rem">
@@ -38,19 +36,10 @@ const Profile = () => {
           >
             <Box>
               <Typography fontSize="1.4rem" fontWeight={600}>
-                User information
+                My information
               </Typography>
 
-              {!isEditing && (
-                <Stack direction="row" spacing="0.5rem" mt="1rem">
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>{postsCount}</strong> Posts
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>8</strong> Books
-                  </Typography>
-                </Stack>
-              )}
+             
             </Box>
 
             {!isEditing && (
@@ -69,7 +58,7 @@ const Profile = () => {
           )}
         </CardContent>
       </Card>
-      <MyPostsSection postsCount={postsCount} />
+      <MyPosts/>
     </Stack>
   );
 };
