@@ -12,6 +12,7 @@ import { likeReviewHandler, unlikeReviewHandler } from "@controllers/likeControl
 import { addCommentHandler, deleteCommentHandler } from "@controllers/commentController";
 import { isReviewAuthorMiddleware } from "@middlewares/userReview";
 import { upload } from "@config/multerConfig";
+import { authenticate } from "@middlewares/authMiddleware";
 
 const router = Router();
 
@@ -38,14 +39,6 @@ const router = Router();
  *                 type: string
  *               picture:
  *                 type: string
- *                 format: binary
- *     responses:
- *       201:
- *         description: Review created
- *   get:
- *     summary: Get all reviews
- *     tags: [Reviews]
- *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
@@ -60,8 +53,8 @@ const router = Router();
  *       200:
  *         description: List of reviews
  */
-router.post("/", upload.single("picture"), createReviewHandler);
-router.get("/", getAllReviewsHandler);
+router.post("/", authenticate, upload.single("picture"), createReviewHandler);
+router.get("/", authenticate, getAllReviewsHandler);
 
 /**
  * @swagger
@@ -81,7 +74,7 @@ router.get("/", getAllReviewsHandler);
  *       200:
  *         description: List of user reviews
  */
-router.get("/user/:userId", getReviewsByUserIdHandler);
+router.get("/user/:userId", authenticate, getReviewsByUserIdHandler);
 
 /**
  * @swagger
@@ -101,7 +94,7 @@ router.get("/user/:userId", getReviewsByUserIdHandler);
  *       200:
  *         description: List of book reviews
  */
-router.get("/book/:bookId", getReviewsByBookIdHandler);
+router.get("/book/:bookId", authenticate, getReviewsByBookIdHandler);
 
 /**
  * @swagger
@@ -162,9 +155,9 @@ router.get("/book/:bookId", getReviewsByBookIdHandler);
  *       200:
  *         description: Review deleted
  */
-router.get("/:id", getReviewById);
-router.patch("/:id", isReviewAuthorMiddleware, upload.single("picture"), updateReviewHandler);
-router.delete("/:id", isReviewAuthorMiddleware, deleteReviewHandler);
+router.get("/:id", authenticate, getReviewById);
+router.patch("/:id", authenticate, isReviewAuthorMiddleware, upload.single("picture"), updateReviewHandler);
+router.delete("/:id", authenticate, isReviewAuthorMiddleware, deleteReviewHandler);
 
 /**
  * @swagger
@@ -184,7 +177,7 @@ router.delete("/:id", isReviewAuthorMiddleware, deleteReviewHandler);
  *       200:
  *         description: Review liked
  */
-router.post("/:id/like", likeReviewHandler);
+router.post("/:id/like", authenticate, likeReviewHandler);
 
 /**
  * @swagger
@@ -204,7 +197,7 @@ router.post("/:id/like", likeReviewHandler);
  *       200:
  *         description: Review unliked
  */
-router.post("/:id/unlike", unlikeReviewHandler);
+router.post("/:id/unlike", authenticate, unlikeReviewHandler);
 
 /**
  * @swagger
@@ -233,31 +226,7 @@ router.post("/:id/unlike", unlikeReviewHandler);
  *       201:
  *         description: Comment added
  */
-router.post("/:id/comments", addCommentHandler);
-
-/**
- * @swagger
- * /userReviews/{id}/comments/{commentId}:
- *   delete:
- *     summary: Delete a comment from a review
- *     tags: [Reviews]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *       - in: path
- *         name: commentId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Comment deleted
- */
-router.delete("/:id/comments/:commentId", deleteCommentHandler);
+router.post("/:id/comments", authenticate, addCommentHandler);
+router.delete("/:id/comments/:commentId", authenticate, deleteCommentHandler);
 
 export default router;

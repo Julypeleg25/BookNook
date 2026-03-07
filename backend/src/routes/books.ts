@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { searchBooksHandler, getBookByIdHandler } from "@controllers/bookController";
+import { authenticate } from "@middlewares/authMiddleware";
 
 const router = Router();
 
@@ -33,7 +34,7 @@ const router = Router();
  *       200:
  *         description: List of books
  */
-router.get("/", searchBooksHandler);
+router.get("/", authenticate, searchBooksHandler);
 
 /**
  * @swagger
@@ -53,6 +54,6 @@ router.get("/", searchBooksHandler);
  *       200:
  *         description: Book details
  */
-router.get("/:externalBookId", getBookByIdHandler);
+router.get("/:externalBookId", authenticate, getBookByIdHandler);
 
 export default router;

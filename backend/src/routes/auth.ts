@@ -1,3 +1,14 @@
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout a user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ */
 import express from "express";
 import {
   logout,
@@ -56,7 +67,7 @@ router.post("/register", upload.single("avatar"), validateBody(RegisterSchema), 
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               username:
  *                 type: string
  *               password:
  *                 type: string
@@ -80,16 +91,6 @@ router.post("/login", validateBody(LoginSchema), login);
  */
 router.post("/refresh", refresh);
 
-/**
- * @swagger
- * /auth/google:
- *   post:
- *     summary: Google Sign-In
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: Google Sign-In successful
- */
 router.post("/google", googleSignIn);
 
 /**
