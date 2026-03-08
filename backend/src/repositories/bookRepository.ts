@@ -1,5 +1,5 @@
 import { BookModel, IBook } from "@models/Book";
-import { Types, QueryFilter } from "mongoose";
+import { Types, FilterQuery } from "mongoose";
 import { logger } from "@utils/logger";
 import { getBookByGoogleIdFromGoogle, normalizeBookDetail } from "@services/bookService";
 import { syncBookToVector } from "@services/ai/vectorSyncService";
@@ -135,7 +135,7 @@ export class BookRepository {
     page = 1,
     limit = 20,
   }: LocalSearchParams): Promise<{ items: IBook[]; total: number }> {
-    const filter: QueryFilter<IBook> = {};
+    const filter: FilterQuery<IBook> = {};
 
     if (title) {
       filter.title = { $regex: title, $options: "i" };

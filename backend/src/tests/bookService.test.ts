@@ -6,6 +6,14 @@ import { jest } from '@jest/globals';
 jest.mock("@xenova/transformers", () => ({
     pipeline: (jest.fn() as any).mockResolvedValue(() => Promise.resolve([[0.1, 0.2, 0.3]]))
 }));
+
+jest.mock('../services/ai/vectorSyncService', () => ({
+    syncBookToVector: jest.fn(),
+    syncReviewToVector: jest.fn(),
+    syncUserProfileToVector: jest.fn(),
+    deleteReviewFromVector: jest.fn(),
+}));
+
 jest.mock('axios');
 jest.mock('@repositories/bookRepository');
 jest.mock('@utils/logger');

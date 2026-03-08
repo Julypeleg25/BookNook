@@ -16,13 +16,14 @@ const BATCH_SIZE = 32;
 async function getTypicalTasteMap(): Promise<Map<string, string[]>> {
   const reviews = await UserReviewModel.find({});
   const allBooks = await BookModel.find({}, { _id: 1, categories: 1 });
-  const bookMap = new Map(allBooks.map(b => [b._id.toString(), b.categories || []]));
+  
+  const bookMap = new Map(allBooks.map(b => [(b._id as any).toString(), b.categories || []]));
 
   const userTasteCounts = new Map<string, Map<string, number>>();
 
   for (const review of reviews) {
-    const userId = review.user.toString();
-    const bookId = review.book.toString();
+    const userId = (review.user as any).toString();
+    const bookId = (review.book as any).toString();
     const genres = bookMap.get(bookId) || [];
 
     if (!userTasteCounts.has(userId)) {
@@ -58,15 +59,16 @@ async function indexBooks(): Promise<void> {
 
     for (let j = 0; j < batch.length; j++) {
       const book = batch[j];
+      const bookIdStr = (book._id as any).toString();
       chunks.push({
-        sourceId: `book:${book._id.toString()}`,
-        bookId: book._id.toString(),
+        sourceId: `book:${bookIdStr}`,
+        bookId: bookIdStr,
         type: "book",
         text: texts[j],
         embedding: embeddings[j],
         rating: book.avgRating ?? null,
         metadata: {
-          mongoId: book._id.toString(),
+          mongoId: bookIdStr,
           title: book.title,
           authors: book.authors ?? [],
           genres: book.categories ?? [],
@@ -91,20 +93,21 @@ async function indexUsers(tasteMap: Map<string, string[]>): Promise<void> {
       u.wishlist || [],
       [],
       [],
-      tasteMap.get(u._id.toString()) || []
+      tasteMap.get((u._id as any).toString()) || []
     ));
     const embeddings = await generateEmbeddingsBatch(texts);
 
     for (let j = 0; j < batch.length; j++) {
       const user = batch[j];
+      const userIdStr = (user._id as any).toString();
       chunks.push({
-        sourceId: `profile:${user._id.toString()}`,
+        sourceId: `profile:${userIdStr}`,
         bookId: "N/A",
         type: "profile",
         text: texts[j],
         embedding: embeddings[j],
         metadata: {
-          userId: user._id.toString(),
+          userId: userIdStr,
           username: user.username,
           type: "profile"
         },
@@ -118,38 +121,48 @@ async function indexUsers(tasteMap: Map<string, string[]>): Promise<void> {
 async function indexReviews(tasteMap: Map<string, string[]>): Promise<void> {
   const reviews = await UserReviewModel.find({});
   const allBooks = await BookModel.find({}, { _id: 1, title: 1 });
-  const bookMap = new Map(allBooks.map(b => [b._id.toString(), b.title]));
+  const bookTitlesMap = new Map(allBooks.map(b => [(b._id as any).toString(), b.title]));
+  
   const allUsers = await User.find({}, { _id: 1, username: 1 });
-  const userMap = new Map(allUsers.map(u => [u._id.toString(), u.username]));
+  const userNamesMap = new Map(allUsers.map(u => [(u._id as any).toString(), u.username]));
 
   logger.info(`[IndexData] Indexing ${reviews.length} reviews…`);
 
   const chunks: VectorChunk[] = [];
   for (let i = 0; i < reviews.length; i += BATCH_SIZE) {
     const batch = reviews.slice(i, i + BATCH_SIZE);
-    const texts = batch.map(r => buildReviewChunk(
-      userMap.get(r.user.toString()) || "User",
-      bookMap.get(r.book.toString()) || "Unknown Book",
-      r.rating,
-      r.review,
-      tasteMap.get(r.user.toString()) || []
-    ));
+    const texts = batch.map(r => {
+      const uId = (r.user as any).toString();
+      const bId = (r.book as any).toString();
+      return buildReviewChunk(
+        userNamesMap.get(uId) || "User",
+        bookTitlesMap.get(bId) || "Unknown Book",
+        r.rating,
+        r.review,
+        tasteMap.get(uId) || []
+      );
+    });
+    
     const embeddings = await generateEmbeddingsBatch(texts);
 
     for (let j = 0; j < batch.length; j++) {
       const review = batch[j];
+      const rIdStr = (review._id as any).toString();
+      const bIdStr = (review.book as any).toString();
+      const uIdStr = (review.user as any).toString();
+
       chunks.push({
-        sourceId: `review:${review._id.toString()}`,
-        bookId: review.book.toString(),
+        sourceId: `review:${rIdStr}`,
+        bookId: bIdStr,
         type: "review",
         text: texts[j],
         embedding: embeddings[j],
         rating: review.rating,
         metadata: {
-          mongoId: review._id.toString(),
-          bookId: review.book.toString(),
-          userId: review.user.toString(),
-          username: userMap.get(review.user.toString()),
+          mongoId: rIdStr,
+          bookId: bIdStr,
+          userId: uIdStr,
+          username: userNamesMap.get(uIdStr),
           rating: review.rating,
         },
       });

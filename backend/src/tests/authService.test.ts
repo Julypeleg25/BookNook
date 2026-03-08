@@ -1,15 +1,13 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import * as authService from '../services/authService';
 import { Response } from 'express';
 import { jest } from '@jest/globals';
 import { IUser } from '../models/User';
 
-jest.mock('jsonwebtoken');
-
 jest.mock('@config/config', () => ({
     ENV: {
-        JWT_ACCESS_SECRET: 'access-secret',
-        JWT_REFRESH_SECRET: 'refresh-secret',
+        JWT_ACCESS_SECRET: 'test-access-secret',
+        JWT_REFRESH_SECRET: 'test-refresh-secret',
         ACCESS_TOKEN_EXPIRES_IN: '15m',
         REFRESH_TOKEN_EXPIRES_IN: '7d',
         COOKIE_SECURE: false,
@@ -17,10 +15,9 @@ jest.mock('@config/config', () => ({
 }));
 
 describe('AuthService', () => {
-    const mockedSign = jwt.sign as jest.MockedFunction<typeof jwt.sign>;
-    const mockedVerify = jwt.verify as jest.MockedFunction<typeof jwt.verify>;
 
     beforeEach(() => {
+        jest.restoreAllMocks();
         jest.clearAllMocks();
     });
 
@@ -28,7 +25,7 @@ describe('AuthService', () => {
         it('should generate access and refresh tokens', () => {
             const mockUser = { _id: 'user123' } as unknown as IUser;
             
-            mockedSign.mockReturnValue('mock-token' as any); 
+            const signSpy = jest.spyOn(jwt, 'sign').mockImplementation(() => 'mock-token' as any);
 
             const tokens = authService.generateTokens(mockUser);
 
@@ -36,7 +33,8 @@ describe('AuthService', () => {
                 accessToken: 'mock-token',
                 refreshToken: 'mock-token',
             });
-            expect(mockedSign).toHaveBeenCalledTimes(2);
+            
+            expect(signSpy).toHaveBeenCalledTimes(2);
         });
     });
 
@@ -58,18 +56,19 @@ describe('AuthService', () => {
 
     describe('verifyRefreshToken', () => {
         it('should verify and return decoded payload', () => {
-            const mockPayload: JwtPayload = { _id: 'user123' };
+            const mockPayload = { _id: 'user123' } as any;
             
-            mockedVerify.mockReturnValue(mockPayload as any);
+            const verifySpy = jest.spyOn(jwt, 'verify').mockReturnValue(mockPayload);
 
             const decoded = authService.verifyRefreshToken('valid-token');
 
             expect(decoded).toEqual(mockPayload);
-            expect(mockedVerify).toHaveBeenCalledWith('valid-token', 'refresh-secret');
+            
+            expect(verifySpy).toHaveBeenCalledWith('valid-token', 'test-refresh-secret');
         });
 
         it('should throw error on invalid token', () => {
-            mockedVerify.mockImplementation(() => {
+            jest.spyOn(jwt, 'verify').mockImplementation(() => {
                 throw new Error('invalid');
             });
 

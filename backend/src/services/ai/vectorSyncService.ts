@@ -7,13 +7,13 @@ import { generateEmbedding } from "@services/ai/embeddingService";
 import { upsertChunk, deleteChunkBySourceId } from "@services/ai/vectorRepository";
 import { logger } from "@utils/logger";
 
-
 async function getUserTopGenres(userId: string): Promise<string[]> {
     const reviews = await UserReviewModel.find({ user: userId });
     const genresCount: Record<string, number> = {};
 
     for (const review of reviews) {
-        const book = await bookRepository.findById(review.book.toString());
+        const bookId = (review.book as any).toString();
+        const book = await bookRepository.findById(bookId);
         if (book && book.categories) {
             book.categories.forEach(g => {
                 genresCount[g] = (genresCount[g] || 0) + 1;
@@ -27,21 +27,21 @@ async function getUserTopGenres(userId: string): Promise<string[]> {
         .map(([genre]) => genre);
 }
 
-
 export const syncBookToVector = async (book: IBook): Promise<void> => {
     try {
+        const bookIdStr = (book._id as any).toString();
         const text = buildBookChunk(book);
         const embedding = await generateEmbedding(text);
 
         await upsertChunk({
-            sourceId: `book:${book._id.toString()}`,
-            bookId: book._id.toString(),
+            sourceId: `book:${bookIdStr}`,
+            bookId: bookIdStr,
             type: "book",
             text,
             embedding,
             rating: book.avgRating ?? null,
             metadata: {
-                mongoId: book._id.toString(),
+                mongoId: bookIdStr,
                 title: book.title,
                 authors: book.authors ?? [],
                 genres: book.categories ?? [],
@@ -49,16 +49,17 @@ export const syncBookToVector = async (book: IBook): Promise<void> => {
             },
         });
 
-        logger.info(`[VectorSync] Synced book ${book._id} to vector store.`);
+        logger.info(`[VectorSync] Synced book ${bookIdStr} to vector store.`);
     } catch (err) {
-        logger.error(`[VectorSync] Failed to sync book ${book._id}:`, err);
+        logger.error(`[VectorSync] Failed to sync book ${(book._id as any)}:`, err);
     }
 };
 
 export const syncReviewToVector = async (review: IUserReview): Promise<void> => {
     try {
-        const bookId = review.book?.toString() ?? "";
-        const userId = review.user?.toString() ?? "";
+        const bookId = (review.book as any)?.toString() ?? "";
+        const userId = (review.user as any)?.toString() ?? "";
+        const reviewIdStr = (review._id as any).toString();
 
         const [book, user] = await Promise.all([
             bookRepository.findById(bookId),
@@ -81,14 +82,14 @@ export const syncReviewToVector = async (review: IUserReview): Promise<void> => 
         const embedding = await generateEmbedding(text);
 
         await upsertChunk({
-            sourceId: `review:${review._id.toString()}`,
+            sourceId: `review:${reviewIdStr}`,
             bookId,
             type: "review",
             text,
             embedding,
             rating: review.rating,
             metadata: {
-                mongoId: review._id.toString(),
+                mongoId: reviewIdStr,
                 bookId,
                 bookTitle: book.title,
                 genres: book.categories ?? [],
@@ -98,9 +99,9 @@ export const syncReviewToVector = async (review: IUserReview): Promise<void> => 
             },
         });
 
-        logger.info(`[VectorSync] Synced review ${review._id} to vector store.`);
+        logger.info(`[VectorSync] Synced review ${reviewIdStr} to vector store.`);
     } catch (err) {
-        logger.error(`[VectorSync] Failed to sync review ${review._id}:`, err);
+        logger.error(`[VectorSync] Failed to sync review ${(review._id as any)}:`, err);
     }
 };
 
@@ -113,10 +114,9 @@ export const deleteReviewFromVector = async (reviewId: string): Promise<void> =>
     }
 };
 
-
 export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
     try {
-        const userId = user._id.toString();
+        const userId = (user._id as any).toString();
 
         const [likedReviews, ownReviews] = await Promise.all([
             UserReviewModel.find({ likes: userId }),
@@ -128,7 +128,8 @@ export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
         const interestThemes: Record<string, number> = {};
 
         const processReview = async (review: IUserReview) => {
-            const book = await bookRepository.findById(review.book.toString());
+            const bookId = (review.book as any).toString();
+            const book = await bookRepository.findById(bookId);
             if (!book) return;
 
             const bookIdentifier = `${book.title} (by ${book.authors?.join(", ")})`;
@@ -180,4 +181,3 @@ export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
         logger.error(`[VectorSync] Failed to sync profile for user ${user.username}:`, err);
     }
 };
-

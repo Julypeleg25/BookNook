@@ -10,7 +10,7 @@ import { IBook } from "@models/Book";
 import { syncReviewToVector, deleteReviewFromVector, syncUserProfileToVector } from "@services/ai/vectorSyncService";
 import User from "@models/User";
 import { logger } from "@utils/logger";
-
+import { userRepository } from "@repositories/userRepository";
 
 export const createReview = async (
   userId: Types.ObjectId,
@@ -21,17 +21,17 @@ export const createReview = async (
 ): Promise<IUserReview> => {
   const book = await getOrCreateLocalBook(externalBookId);
 
-  const finalPicturePath = picturePath || book.thumbnail;
+  const finalPicturePath = picturePath || (book as any).thumbnail;
 
   const newReview = await userReviewRepository.create({
     user: userId,
-    book: book._id,
+    book: (book._id as any),
     rating,
     review: reviewText,
     picturePath: finalPicturePath,
   });
 
-  await recomputeBookRating(book._id.toString());
+  await recomputeBookRating((book._id as any).toString());
 
   await syncReviewToVector(newReview);
 
@@ -42,8 +42,6 @@ export const createReview = async (
 
   return newReview;
 };
-
-import { userRepository } from "@repositories/userRepository";
 
 export const getAllReviews = async (
   minLikes?: number,
@@ -59,7 +57,7 @@ export const getAllReviews = async (
     if (matchingUsers.length === 0) {
       return [];
     }
-    userIdFilter = matchingUsers.map((u: IUser) => u._id as Types.ObjectId);
+    userIdFilter = matchingUsers.map((u: IUser) => (u._id as any) as Types.ObjectId);
   }
 
   let genreBookIds: Types.ObjectId[] | undefined;
@@ -69,7 +67,7 @@ export const getAllReviews = async (
       limit: 1000
     });
     if (booksInGenre.length === 0) return [];
-    genreBookIds = booksInGenre.map((b: IBook) => b._id as Types.ObjectId);
+    genreBookIds = booksInGenre.map((b: IBook) => (b._id as any) as Types.ObjectId);
   }
 
   let searchBookIds: Types.ObjectId[] | undefined;
@@ -78,7 +76,7 @@ export const getAllReviews = async (
       title: searchQuery
     });
     if (matchingBooks.length > 0) {
-      searchBookIds = matchingBooks.map((b: IBook) => b._id as Types.ObjectId);
+      searchBookIds = matchingBooks.map((b: IBook) => (b._id as any) as Types.ObjectId);
     }
   }
 
@@ -141,18 +139,18 @@ export const getEnrichedReviews = async (reviews: (IUserReview | PopulatedUserRe
 
   return Promise.all(
     reviews.map(async (review) => {
-      const reviewObj = typeof review.toObject === 'function' ? review.toObject() : review;
+      const reviewObj = typeof (review as any).toObject === 'function' ? (review as any).toObject() : review;
       const bookId = extractBookId(reviewObj.book);
 
       try {
         if (!bookId) {
-          throw new Error(`Could not determine book ID for review ${review._id}`);
+          throw new Error(`Could not determine book ID for review ${(review as any)._id}`);
         }
         const fullBook = await getGoogleBookByLocalId(bookId);
         const normalizedBook = normalizeBookDetail(fullBook);
         return { ...reviewObj, book: normalizedBook };
       } catch (error) {
-        logger.warn(`Error enriching review ${review._id}:`, error);
+        logger.warn(`Error enriching review ${(review as any)._id}:`, error);
         return {
           ...reviewObj,
           book: {
@@ -191,13 +189,13 @@ export const getPopulatedReviewById = async (
     const normalizedBook = normalizeBookDetail(fullBook);
 
     return {
-      ...review.toObject(),
+      ...(review as any).toObject(),
       book: normalizedBook
     };
   } catch (error) {
     logger.warn(`Error enriching review ${reviewId}:`, error);
     return {
-      ...review.toObject(),
+      ...(review as any).toObject(),
       book: {
         id: bookId || "unknown",
         title: "Book Unavailable",
@@ -227,11 +225,11 @@ export const updateReview = async (
     throw new NotFoundError("Review not found");
   }
 
-  await recomputeBookRating(updatedReview.book.toString());
+  await recomputeBookRating((updatedReview.book as any).toString());
 
   await syncReviewToVector(updatedReview);
 
-  const user = await User.findById(updatedReview.user.toString());
+  const user = await User.findById((updatedReview.user as any).toString());
   if (user) {
     await syncUserProfileToVector(user);
   }
@@ -246,11 +244,11 @@ export const deleteReview = async (reviewId: string): Promise<void> => {
   }
 
   await userReviewRepository.delete(reviewId);
-  await recomputeBookRating(review.book.toString());
+  await recomputeBookRating((review.book as any).toString());
 
   await deleteReviewFromVector(reviewId);
 
-  const user = await User.findById(review.user.toString());
+  const user = await User.findById((review.user as any).toString());
   if (user) {
     await syncUserProfileToVector(user);
   }
@@ -264,6 +262,5 @@ export const isReviewAuthor = async (
   if (!review) {
     return false;
   }
-  return review.user.toString() === userId;
+  return (review.user as any).toString() === userId;
 };
-
