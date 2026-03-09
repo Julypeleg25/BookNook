@@ -96,7 +96,7 @@ export const getReviewsByUserIdHandler = async (
       throw new ValidationError("User ID is required");
     }
 
-    const reviews = await getReviewsByUserId(userId);
+    const reviews = await getReviewsByUserId(userId as string);
     const enriched = await getEnrichedReviews(reviews);
     res.json(enriched);
   } catch (error: unknown) {
@@ -119,7 +119,7 @@ export const getReviewsByBookIdHandler = async (
       throw new ValidationError("Book ID is required");
     }
 
-    const reviews = await getReviewsByBookId(bookId);
+    const reviews = await getReviewsByBookId(bookId as string);
     const enriched = await getEnrichedReviews(reviews);
     res.json(enriched);
   } catch (error: unknown) {
@@ -142,7 +142,7 @@ export const getReviewByIdHandler = async (
       throw new ValidationError("Review ID is required");
     }
 
-    const review = await getPopulatedReviewById(id);
+    const review = await getPopulatedReviewById(id as string);
     res.json(review);
   } catch (error: unknown) {
     logger.error(`Error fetching review ${req.params.id}:`, error);
@@ -187,7 +187,7 @@ export const updateReviewHandler = async (
       updateData.picturePath = `/uploads/${req.file.filename}`;
     }
 
-    const updatedReview = await updateReview(id, updateData);
+    const updatedReview = await updateReview(id as string, updateData);
     res.json(updatedReview);
   } catch (error: unknown) {
     if (req.file) await deleteFile(req.file.path);
@@ -208,13 +208,13 @@ export const deleteReviewHandler = async (
     }
 
     const userId = req.authenticatedUser!.id;
-    const isOwner = await isReviewAuthor(id, userId);
+    const isOwner = await isReviewAuthor(id as string, userId as string);
 
     if (!isOwner) {
       throw new ForbiddenError("You are not authorized to delete this review");
     }
 
-    await deleteReview(id);
+    await deleteReview(id as string);
     res.json({ message: "Review deleted successfully" });
   } catch (error) {
     logger.error(`Error deleting review ${req.params.id}:`, error);

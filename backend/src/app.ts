@@ -2,6 +2,9 @@ import { ENV } from "@config/config";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+import http from "http";
+import https from "https";
+import fs from "fs";
 import authRoutes from "@routes/auth";
 import listRouter from "@routes/list";
 import swaggerUi from "swagger-ui-express";
@@ -49,10 +52,15 @@ app.use(errorHandler);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(express.static(path.join(__dirname, 'public')));
+const publicPath = path.resolve(process.cwd(), "public");
+app.use(express.static(publicPath));
 
-app.get('/*any', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get("*", (req, res, next) => {
+  // If it's an API route, don't serve index.html
+  if (req.path.startsWith("/api") || req.path.startsWith("/auth") || req.path.startsWith("/userReviews")) {
+    return next();
+  }
+  res.sendFile(path.join(publicPath, "index.html"));
 });
 
 mongoose
@@ -67,10 +75,32 @@ mongoose
       logger.error("Failed to initialize pgvector:", err);
     }
 
+    if (process.env.NODE_ENV === "production") {
+      logger.info("Starting production server...");
 
-    app.listen(PORT, () => {
-      logger.info(`Server is running on http://localhost:${PORT}`);
-    });
+      // HTTP server
+      http.createServer(app).listen(PORT, () => {
+        logger.info(`HTTP Server running on port ${PORT}`);
+      });
+
+      // HTTPS server
+      try {
+        const options = {
+          key: fs.readFileSync(path.resolve(process.cwd(), "client-key.pem")),
+          cert: fs.readFileSync(path.resolve(process.cwd(), "client-cert.pem")),
+        };
+        const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
+        https.createServer(options, app).listen(HTTPS_PORT, () => {
+          logger.info(`HTTPS Server running on port ${HTTPS_PORT}`);
+        });
+      } catch (err) {
+        logger.warn("HTTPS certificates not found or invalid in CWD, HTTPS server not started.");
+      }
+    } else {
+      app.listen(PORT, () => {
+        logger.info(`Development server is running on http://localhost:${PORT}`);
+      });
+    }
   })
   .catch((err) => {
     logger.error("MongoDB connection error:", err);

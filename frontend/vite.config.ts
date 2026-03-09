@@ -4,6 +4,10 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
+  build: {
+    outDir: "../backend/public",
+    emptyOutDir: true,
+  },
   server: {
     port: 5173,
     strictPort: true,

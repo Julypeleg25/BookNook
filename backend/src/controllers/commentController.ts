@@ -17,7 +17,7 @@ export const addCommentHandler = async (
     if (!comment) throw new ValidationError("Comment is required");
 
     const comments = await addComment(
-      id,
+      id as string,
       new Types.ObjectId(req.authenticatedUser!.id),
       comment
     );
@@ -40,8 +40,8 @@ export const deleteCommentHandler = async (
     if (!commentId) throw new ValidationError("Comment ID is required");
 
     const comments = await deleteComment(
-      id,
-      commentId,
+      id as string,
+      commentId as string,
       req.authenticatedUser!.id
     );
     res.json(comments);

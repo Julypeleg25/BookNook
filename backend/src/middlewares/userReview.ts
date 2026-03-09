@@ -19,7 +19,7 @@ export const isReviewAuthorMiddleware = async (
       throw new UnauthorizedError("User not authenticated");
     }
 
-    const isAuthor = await isReviewAuthor(id, userId);
+    const isAuthor = await isReviewAuthor(id as string, userId as string);
     if (!isAuthor) {
       throw new ForbiddenError("Not authorized to edit this review");
     }

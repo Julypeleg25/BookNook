@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "dist",
+        "sourceMap": false,
+        "removeComments": true,
+        "declaration": false
+    },
+    "exclude": [
+        "src/tests",
+        "**/*.test.ts",
+        "jest.config.cjs",
+        "jest.setup.js"
+    ]
+}

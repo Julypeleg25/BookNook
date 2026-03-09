@@ -69,7 +69,7 @@ export const updateUser = async (
 ): Promise<IUser> => {
   if (updateData.username) {
     const existingUser = await userRepository.findByUsername(updateData.username);
-    if (existingUser && existingUser._id.toString() !== userId.toString()) {
+    if (existingUser && String(existingUser._id) !== String(userId)) {
       throw new ConflictError("Username already exists");
     }
   }

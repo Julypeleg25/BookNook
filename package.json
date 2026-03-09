@@ -1,0 +1,23 @@
+{
+    "name": "booknook-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "backend",
+        "frontend",
+        "packages/*"
+    ],
+    "scripts": {
+        "dev:backend": "npm run dev -w backend",
+        "dev:frontend": "npm run dev -w frontend",
+        "build:backend": "npm run build -w backend",
+        "build:frontend": "npm run build -w frontend",
+        "build:all": "npm run build -w frontend && npm run build:prod -w backend",
+        "test:backend": "npm run test -w backend",
+        "install:all": "npm install",
+        "prod": "npm run prod -w backend"
+    },
+    "overrides": {
+        "zod": "^4.3.6"
+    }
+}

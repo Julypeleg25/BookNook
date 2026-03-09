@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -13,20 +15,51 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@controllers/*": ["./src/controllers/*"],
-      "@routes/*": ["./src/routes/*"],
-      "@middlewares/*": ["./src/middlewares/*"],
-      "@services/*": ["./src/services/*"],
-      "@repositories/*": ["./src/repositories/*"],
-      "@models/*": ["./src/models/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@types/*": ["./src/types/*"],
-      "@config/*": ["./src/config/*"],
-      "@shared/schemas/*": ["../packages/shared/src/schemas/*"],
-      "@shared/dtos/*": ["../packages/shared/src/dtos/*"],
-      "@shared/*": ["../packages/shared/src/*"]
-    }
+      "@controllers/*": [
+        "./src/controllers/*"
+      ],
+      "@routes/*": [
+        "./src/routes/*"
+      ],
+      "@middlewares/*": [
+        "./src/middlewares/*"
+      ],
+      "@services/*": [
+        "./src/services/*"
+      ],
+      "@repositories/*": [
+        "./src/repositories/*"
+      ],
+      "@models/*": [
+        "./src/models/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@types/*": [
+        "./src/types/*"
+      ],
+      "@config/*": [
+        "./src/config/*"
+      ],
+      "@shared/schemas/*": [
+        "../packages/shared/src/schemas/*"
+      ],
+      "@shared/dtos/*": [
+        "../packages/shared/src/dtos/*"
+      ],
+      "@shared/*": [
+        "../packages/shared/src/*"
+      ]
+    },
+    "skipLibCheck": true
   },
-  "include": ["src/**/*", "../packages/shared/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*",
+    "../packages/shared/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
