@@ -2,6 +2,7 @@
   "name": "booknook",
   "version": "1.0.0",
   "description": "BookNook is a platform for readers of all sorts to share and review books of all genres!",
+  "type": "module",
   "main": "app.ts",
   "scripts": {
     "dev": "vite --config vite.config.ts",
