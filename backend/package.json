@@ -8,7 +8,7 @@
     "build": "tsc && tsc-alias",
     "build:prod": "tsc -p tsconfig_prod.json && tsc-alias -p tsconfig_prod.json",
     "start": "node dist/backend/src/app.js",
-    "prod": "tsc -p tsconfig_prod.json && tsc-alias -p tsconfig_prod.json && pm2 start ecosystem.config.js --env production",
+    "prod": "tsc -p tsconfig_prod.json && tsc-alias -p tsconfig_prod.json && pm2 start ecosystem.config.cjs --env production",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --forceExit --detectOpenHandles",
     "lint": "eslint src"
   },
