@@ -7,7 +7,7 @@
     "dev": "nodemon --watch src --ext ts,js,json --exec tsx src/app.ts",
     "build": "tsc && tsc-alias",
     "build:prod": "tsc -p tsconfig_prod.json && tsc-alias -p tsconfig_prod.json",
-    "start": "node dist/backend/src/app.js",
+    "start": "tsx src/app.ts",
     "prod": "tsc -p tsconfig_prod.json && tsc-alias -p tsconfig_prod.json && pm2 start ecosystem.config.cjs --env production",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --forceExit --detectOpenHandles",
     "lint": "eslint src"
@@ -45,6 +45,7 @@
     "pg": "^8.19.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "tsx": "^4.21.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -80,7 +81,6 @@
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1"
   }

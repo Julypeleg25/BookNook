@@ -52,15 +52,21 @@ app.use(errorHandler);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const publicPath = path.resolve(process.cwd(), "public");
+const publicPath = path.join(__dirname, "..", "public");
 app.use(express.static(publicPath));
 
-app.get("*", (req, res, next) => {
-  // If it's an API route, don't serve index.html
-  if (req.path.startsWith("/api") || req.path.startsWith("/auth") || req.path.startsWith("/userReviews")) {
-    return next();
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.use((req, res, next) => {
+  if (req.method === "GET" &&
+    !req.path.startsWith("/api") &&
+    !req.path.startsWith("/auth") &&
+    !req.path.startsWith("/userReviews")) {
+    return res.sendFile(path.join(publicPath, "index.html"));
   }
-  res.sendFile(path.join(publicPath, "index.html"));
+  next();
 });
 
 mongoose
