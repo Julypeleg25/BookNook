@@ -1,15 +1,18 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
+        "rootDir": "../",
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "target": "ES2022",
+        "moduleResolution": "node",
+        "sourceMap": true,
         "outDir": "dist",
-        "sourceMap": false,
-        "removeComments": true,
-        "declaration": false
+        "lib": [
+            "ES2022"
+        ]
     },
     "exclude": [
-        "src/tests",
-        "**/*.test.ts",
-        "jest.config.cjs",
-        "jest.setup.js"
+        "./src/tests"
     ]
 }

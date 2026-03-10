@@ -4,11 +4,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts,js,json --exec tsx src/app.ts",
+    "dev": "nodemon --watch src --ext ts,js,json --exec tsx src/server.ts",
     "build": "tsc && tsc-alias",
-    "build:prod": "tsc -p tsconfig_prod.json && tsc-alias -p tsconfig_prod.json",
-    "start": "tsx src/app.ts",
-    "prod": "tsc -p tsconfig_prod.json && tsc-alias -p tsconfig_prod.json && pm2 start ecosystem.config.cjs --env production",
+    "build:prod": "tsc -p tsconfig_prod.json && tsc-alias -p tsconfig_prod.json && echo '{\"type\": \"commonjs\"}' > dist/package.json",
+    "start": "tsx src/server.ts",
+    "prod": "cp .envprod .env && tsc -p tsconfig_prod.json && pm2 restart ecosystem.config.cjs --env production",
+    "prod1": "cp .envprod .env && tsc -p tsconfig_prod.json && node ./dist/backend/src/server.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --forceExit --detectOpenHandles",
     "lint": "eslint src"
   },
