@@ -8,8 +8,8 @@
     "build": "tsc && tsc-alias",
     "build:prod": "tsc -p tsconfig_prod.json && tsc-alias -p tsconfig_prod.json && echo '{\"type\": \"commonjs\"}' > dist/package.json",
     "start": "tsx src/server.ts",
-    "prod": "cp .envprod .env && tsc -p tsconfig_prod.json && pm2 restart ecosystem.config.cjs --env production",
-    "prod1": "cp .envprod .env && tsc -p tsconfig_prod.json && node ./dist/src/server.js",
+    "prod": "cp .envprod .env && npm run build:prod && pm2 restart ecosystem.config.cjs --env production",
+    "prod1": "cp .envprod .env && npm run build:prod && node ./dist/backend/src/server.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --forceExit --detectOpenHandles",
     "lint": "eslint src"
   },
