@@ -2,8 +2,6 @@ import { ENV } from "@config/config";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import http from "http";
-import https from "https";
 import fs from "fs";
 import authRoutes from "@routes/auth";
 import listRouter from "@routes/list";
@@ -32,8 +30,14 @@ const initApp = async () => {
     cors({
       origin: ENV.FRONTEND_URL,
       credentials: true,
+      exposedHeaders: ["set-cookie"],
     })
   );
+
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Credentials", "true");
+    next();
+  });
 
   app.use(express.json({ limit: "10mb" }));
 
@@ -49,23 +53,19 @@ const initApp = async () => {
 
   app.use(errorHandler);
 
-  // Use a safer way to get __dirname that works in both ESM and CJS for TS
-  const __dirname = path.resolve(); // Simple fallback for path resolving
-  const publicPath = path.join(__dirname, "public");
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const publicPath = path.resolve(__dirname, "../public");
+
   app.use(express.static(publicPath));
 
   app.get("/api/health", (req, res) => {
     res.status(200).json({ status: "ok" });
   });
 
-  app.use((req, res, next) => {
-    if (req.method === "GET" &&
-      !req.path.startsWith("/api") &&
-      !req.path.startsWith("/auth") &&
-      !req.path.startsWith("/userReviews")) {
-      return res.sendFile(path.join(publicPath, "index.html"));
-    }
-    next();
+
+  app.get("/*any", (req, res) => {
+    res.sendFile(path.resolve(publicPath, "index.html"));
   });
 
   try {
