@@ -1,4 +1,3 @@
-import { pipeline } from "@xenova/transformers";
 import { logger } from "@utils/logger";
 
 const EMBEDDING_DIMENSIONS = 384;
@@ -9,6 +8,7 @@ let extractor: unknown = null;
 const getExtractor = async () => {
     if (!extractor) {
         logger.info("[EmbeddingService] Loading all-MiniLM-L6-v2 pipeline...");
+        const { pipeline } = await import('@xenova/transformers');
         extractor = await pipeline("feature-extraction", EMBEDDING_MODEL);
         logger.info("[EmbeddingService] Pipeline loaded.");
     }
