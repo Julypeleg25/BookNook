@@ -53,9 +53,8 @@ const initApp = async () => {
 
   app.use(errorHandler);
 
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const publicPath = path.resolve(__dirname, "../public");
+  const __dirname = path.resolve();
+  const publicPath = path.join(__dirname, "public");
 
   app.use(express.static(publicPath));
 
