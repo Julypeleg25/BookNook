@@ -117,6 +117,8 @@ export const refresh = async (
   }
 };
 
+
+console.log(ENV)
 const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
 
 export const googleSignIn = async (
