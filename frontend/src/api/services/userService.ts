@@ -18,7 +18,11 @@ export const userService = {
 
     Object.entries(data).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
-        formData.append(key, String(value));
+        if (typeof value === 'object' && (value as any) instanceof File) {
+          formData.append(key, value as unknown as Blob);
+        } else {
+          formData.append(key, String(value));
+        }
       }
     });
 

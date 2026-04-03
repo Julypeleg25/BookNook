@@ -59,7 +59,7 @@ export class UserRepository {
     try {
       const user = new User(userData);
       const savedUser = await user.save();
-      await syncUserProfileToVector(savedUser);
+      // await syncUserProfileToVector(savedUser);
       return savedUser;
     } catch (error: unknown) {
       logger.error("Error creating user:", error);

@@ -86,7 +86,7 @@ export class UserReviewRepository {
       }
 
       if (minLikes && minLikes > 0) {
-        query[`likes.${minLikes - 1}`] = { $exists: true };
+        query.$expr = { $gte: [{ $size: { $ifNull: ["$likes", []] } }, minLikes] };
       }
 
       if (rating && rating > 0) {

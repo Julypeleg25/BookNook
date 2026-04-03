@@ -5,8 +5,7 @@ import fs from "fs";
 
 initApp().then((app) => {
     if (process.env.NODE_ENV !== "production") {
-        console.log("development");
-        http.createServer(app).listen(process.env.PORT);
+        http.createServer(app).listen(process.env.PORT || 3000);
     } else {
         console.log("PRODUCTION");
         const options2 = {
