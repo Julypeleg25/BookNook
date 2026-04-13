@@ -82,6 +82,7 @@ const PostImageUpload = ({ value, onChange }: PostImageUploadProps) => {
         <Button
           variant="outlined"
           onClick={() => fileInputRef.current?.click()}
+          sx={{width: 240}}
         >
           Upload Image
         </Button>
