@@ -12,7 +12,11 @@ import { Typography } from "@mui/material";
 
 const BATCH_SIZE = 8;
 
-const MyPosts = () => {
+interface MyPostsProps {
+  disablePadding?: boolean;
+}
+
+const MyPosts = ({ disablePadding }: MyPostsProps) => {
   const {
     user: { username },
   } = useUserStore();
@@ -56,7 +60,7 @@ const MyPosts = () => {
   });
 
   return (
-    <Box sx={{ width: "100%", mt: 2 }}>
+    <Box sx={{ width: "100%", p: disablePadding ? 0 : 4, pt: disablePadding ? 0 : 2 }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
         My posts
       </Typography>

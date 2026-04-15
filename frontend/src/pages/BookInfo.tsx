@@ -149,9 +149,6 @@ const BookInfo = () => {
           </Box>
         </Box>
       </Box>
-      <Box mt="5rem">
-        <AiBookRecommendation response={AI_RESPONSE} />
-      </Box>
     </Box>
   );
 };

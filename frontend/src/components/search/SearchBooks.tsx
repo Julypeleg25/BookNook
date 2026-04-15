@@ -34,8 +34,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
     const hasActiveFilters =
         filters.author.trim().length > 0 ||
         filters.genre.trim().length > 0 ||
-        filters.rating > 0 ||
-        filters.reviewsAmount > 0;
+        filters.rating > 0
 
     const hasValidQuery = urlQuery.trim().length > 0 || hasActiveFilters;
 
@@ -46,7 +45,6 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 author: filters.author || undefined,
                 subject: filters.genre || undefined,
                 title: urlQuery,
-                reviewCount: filters.reviewsAmount || undefined,
                 rating: filters.rating || undefined,
                 page: pageParam as number,
                 limit: PAGE_SIZE

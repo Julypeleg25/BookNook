@@ -50,7 +50,7 @@ const Profile = () => {
         </Card>
 
         <Box sx={{ width: "100%" }}>
-          <MyPosts />
+          <MyPosts disablePadding />
         </Box>
       </Stack>
     </Box>

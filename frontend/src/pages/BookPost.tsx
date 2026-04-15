@@ -130,7 +130,6 @@ const BookPost = () => {
         mt="2rem"
       >
         <BookInfoSection book={bookPost.book} />
-        <AiBookRecommendation response={AI_RESPONSE} />
       </Box>
       <div id="comments-section">
         <CommentsSection ref={commentsRef} bookPost={bookPost} />

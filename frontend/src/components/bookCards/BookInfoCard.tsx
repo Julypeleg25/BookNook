@@ -62,6 +62,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
             e.currentTarget.src = "https://via.placeholder.com/150*200?text=No+Cover";
           }}
           alt={book.title}
+          loading="lazy"
           sx={{
             width: "100%",
             height: "100%",
