@@ -5,7 +5,6 @@ import User, { JwtDecodedUser } from "../models/User";
 import { IUser } from "../models/User";
 import dotenv from "dotenv";
 dotenv.config();
-// Generate JWT tokens
 
 function generateTokens(user: IUser) {
   const accessToken = jwt.sign(
@@ -21,7 +20,6 @@ function generateTokens(user: IUser) {
   return { accessToken, refreshToken };
 }
 
-// Set tokens as HTTP-only cookies
 function setAuthCookies(
   res: Response,
   accessToken: string,
@@ -41,7 +39,6 @@ function setAuthCookies(
   });
 }
 
-// Save tokens to user in DB
 async function saveTokensToUser(
   id: string,
   accessToken: string,
@@ -68,7 +65,6 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, username, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    // Ensure local registrations use provider='local' and do NOT set providerId
     const user = new User({
       name,
       email,
@@ -77,7 +73,6 @@ export const register = async (req: Request, res: Response) => {
       password: hashedPassword,
     });
     await user.save();
-    // After successful registration, generate tokens and set cookies (auto-login)
     const { accessToken, refreshToken } = generateTokens(user);
     await saveTokensToUser(String(user._id), accessToken, refreshToken);
     setAuthCookies(res, accessToken, refreshToken);
@@ -143,7 +138,6 @@ export const refresh = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid refresh token" });
     }
 
-    // Rotate access token
     const { accessToken } = generateTokens(user);
     user.accessToken = accessToken;
     await user.save();
