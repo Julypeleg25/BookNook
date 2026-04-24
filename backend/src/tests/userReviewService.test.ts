@@ -1,50 +1,55 @@
 import { Types } from "mongoose";
-import { jest } from '@jest/globals';
-
-// 1. STANDALONE MOCKS (The Bridge)
-// We define these as 'any' to stop the ts(2345) 'never' errors immediately.
-const mockCreate: any = jest.fn();
-const mockFindById: any = jest.fn();
-const mockGetOrCreate: any = jest.fn();
-const mockUserFind: any = jest.fn();
-
-// 2. THE IRON WALL (Mocking every possible way the repo/service is called)
-// This kills the "Buffering Timeout" for good.
-const bookRepoMock = { bookRepository: { getOrCreate: mockGetOrCreate, findByExternalId: jest.fn() } };
-
-jest.mock("../repositories/userReviewRepository", () => ({
-    userReviewRepository: { create: mockCreate, findById: mockFindById, update: jest.fn(), delete: jest.fn() }
-}));
-
-jest.mock("../services/bookService", () => ({ getOrCreateLocalBook: mockGetOrCreate }));
-
-// Catch both relative and alias paths
-jest.mock("../repositories/bookRepository", () => bookRepoMock);
-jest.mock("@repositories/bookRepository", () => bookRepoMock); 
-
-jest.mock("../models/User", () => ({ __esModule: true, default: { findById: mockUserFind } }));
-jest.mock("../services/ratingService", () => ({ recomputeBookRating: jest.fn() }));
-jest.mock("../services/ai/vectorSyncService", () => ({ syncReviewToVector: jest.fn(), deleteReviewFromVector: jest.fn() }));
-jest.mock("../utils/logger", () => ({ logger: { error: jest.fn(), info: jest.fn(), warn: jest.fn() } }));
-
-// 3. IMPORT THE SERVICE LAST
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import * as userReviewService from "../services/userReviewService";
+import { userReviewRepository } from "../repositories/userReviewRepository";
 
 describe("UserReviewService", () => {
-    beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+  });
 
-    it("should finally work without timeouts or type errors", async () => {
-        const userId = new Types.ObjectId();
-        const review = { _id: new Types.ObjectId(), user: userId };
+  it("creates a review and triggers the related side effects", async () => {
+    const userId = new Types.ObjectId();
+    const bookId = new Types.ObjectId();
+    const review = { _id: new Types.ObjectId(), user: userId };
 
-        // No more 'as never' needed here because the mock constants were typed 'any'
-        mockGetOrCreate.mockResolvedValue({ _id: new Types.ObjectId() });
-        mockCreate.mockResolvedValue(review);
-        mockUserFind.mockResolvedValue({ _id: userId });
+    const getOrCreateSpy = jest
+      .spyOn(userReviewService.userReviewServiceDeps, "getOrCreateLocalBook")
+      .mockResolvedValue({ _id: bookId, thumbnail: "cover.jpg" } as any);
+    const createSpy = jest
+      .spyOn(userReviewRepository, "create")
+      .mockResolvedValue(review as any);
+    const recomputeSpy = jest
+      .spyOn(userReviewService.userReviewServiceDeps, "recomputeBookRating")
+      .mockResolvedValue(undefined as any);
+    const syncReviewSpy = jest
+      .spyOn(userReviewService.userReviewServiceDeps, "syncReviewToVector")
+      .mockResolvedValue(undefined as any);
+    const syncUserSpy = jest
+      .spyOn(userReviewService.userReviewServiceDeps, "syncUserProfileToVector")
+      .mockResolvedValue(undefined as any);
+    jest
+      .spyOn(userReviewService.userReviewServiceDeps, "findUserById")
+      .mockResolvedValue({ _id: userId } as any);
 
-        const result = await userReviewService.createReview(userId, "id", 5, "text");
+    const result = await userReviewService.createReview(userId, "id", 5, "text");
 
-        expect(result).toEqual(review);
-        expect(mockCreate).toHaveBeenCalled();
+    expect(result).toEqual(review);
+    expect(getOrCreateSpy).toHaveBeenCalledWith("id");
+    expect(createSpy).toHaveBeenCalledWith({
+      user: userId,
+      book: bookId,
+      rating: 5,
+      review: "text",
+      picturePath: "cover.jpg",
     });
+    expect(recomputeSpy).toHaveBeenCalledWith(bookId.toString());
+    expect(syncReviewSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ _id: review._id, user: userId }),
+    );
+    expect(syncUserSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ _id: userId }),
+    );
+  });
 });

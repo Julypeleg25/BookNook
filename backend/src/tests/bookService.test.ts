@@ -45,7 +45,7 @@ describe('BookService', () => {
     });
 
     describe('normalizeBookSummary', () => {
-        it('should correctly normalize Google Books volume data', () => {
+        it('maps Google Books volume data into the BookNook summary shape', () => {
             const mockVolume = {
                 id: 'vol123',
                 volumeInfo: {
@@ -73,7 +73,7 @@ describe('BookService', () => {
     });
 
     describe('searchBooks', () => {
-        it('should call Google Books API and return normalized results', async () => {
+        it('queries Google Books and returns normalized summary results', async () => {
             const mockResponse = {
                 data: {
                     items: [
@@ -92,7 +92,7 @@ describe('BookService', () => {
     });
 
     describe('getBookDetails', () => {
-        it('should combine Google data with local repository data', async () => {
+        it('merges Google book data with local rating metadata', async () => {
             const mockGoogleBook = { id: 'ext123', volumeInfo: { title: 'Google Title', authors: [] } };
             const mockLocalBook = { externalId: 'ext123', avgRating: 4.5, ratingCount: 10 };
 

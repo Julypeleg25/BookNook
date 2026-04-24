@@ -1,16 +1,26 @@
 import { Types } from "mongoose";
 import { IUserReview } from "@models/UserReview";
 import { userReviewRepository, PopulatedUserReview } from "@repositories/userReviewRepository";
-import { getOrCreateLocalBook, getGoogleBookByLocalId } from "./bookService";
-import { recomputeBookRating } from "./ratingService";
+import * as bookService from "./bookService";
+import * as ratingService from "./ratingService";
 import { NotFoundError } from "@utils/errors";
 import { bookRepository } from "@repositories/bookRepository";
 import { IUser } from "@models/User";
 import { IBook } from "@models/Book";
-import { syncReviewToVector, deleteReviewFromVector, syncUserProfileToVector } from "@services/ai/vectorSyncService";
+import * as vectorSyncService from "@services/ai/vectorSyncService";
 import User from "@models/User";
 import { logger } from "@utils/logger";
 import { userRepository } from "@repositories/userRepository";
+
+export const userReviewServiceDeps = {
+  getOrCreateLocalBook: bookService.getOrCreateLocalBook,
+  getGoogleBookByLocalId: bookService.getGoogleBookByLocalId,
+  recomputeBookRating: ratingService.recomputeBookRating,
+  syncReviewToVector: vectorSyncService.syncReviewToVector,
+  deleteReviewFromVector: vectorSyncService.deleteReviewFromVector,
+  syncUserProfileToVector: vectorSyncService.syncUserProfileToVector,
+  findUserById: User.findById.bind(User),
+};
 
 export const createReview = async (
   userId: Types.ObjectId,
@@ -19,7 +29,7 @@ export const createReview = async (
   reviewText?: string,
   picturePath?: string
 ): Promise<IUserReview> => {
-  const book = await getOrCreateLocalBook(externalBookId);
+  const book = await userReviewServiceDeps.getOrCreateLocalBook(externalBookId);
 
   const finalPicturePath = picturePath || (book as any).thumbnail;
 
@@ -31,13 +41,13 @@ export const createReview = async (
     picturePath: finalPicturePath,
   });
 
-  await recomputeBookRating((book._id as any).toString());
+  await userReviewServiceDeps.recomputeBookRating((book._id as any).toString());
 
-  await syncReviewToVector(newReview);
+  await userReviewServiceDeps.syncReviewToVector(newReview);
 
-  const user = await User.findById(userId);
+  const user = await userReviewServiceDeps.findUserById(userId);
   if (user) {
-    await syncUserProfileToVector(user);
+    await userReviewServiceDeps.syncUserProfileToVector(user);
   }
 
   return newReview;
@@ -146,7 +156,7 @@ export const getEnrichedReviews = async (reviews: (IUserReview | PopulatedUserRe
         if (!bookId) {
           throw new Error(`Could not determine book ID for review ${(review as any)._id}`);
         }
-        const fullBook = await getGoogleBookByLocalId(bookId);
+        const fullBook = await userReviewServiceDeps.getGoogleBookByLocalId(bookId);
         const normalizedBook = normalizeBookDetail(fullBook);
         return { ...reviewObj, book: normalizedBook };
       } catch (error) {
@@ -184,7 +194,7 @@ export const getPopulatedReviewById = async (
       throw new Error(`Could not determine book ID for review ${reviewId}`);
     }
 
-    const fullBook = await getGoogleBookByLocalId(bookId);
+    const fullBook = await userReviewServiceDeps.getGoogleBookByLocalId(bookId);
     const { normalizeBookDetail } = await import("./bookService");
     const normalizedBook = normalizeBookDetail(fullBook);
 
@@ -225,13 +235,13 @@ export const updateReview = async (
     throw new NotFoundError("Review not found");
   }
 
-  await recomputeBookRating((updatedReview.book as any).toString());
+  await userReviewServiceDeps.recomputeBookRating((updatedReview.book as any).toString());
 
-  await syncReviewToVector(updatedReview);
+  await userReviewServiceDeps.syncReviewToVector(updatedReview);
 
-  const user = await User.findById((updatedReview.user as any).toString());
+  const user = await userReviewServiceDeps.findUserById((updatedReview.user as any).toString());
   if (user) {
-    await syncUserProfileToVector(user);
+    await userReviewServiceDeps.syncUserProfileToVector(user);
   }
 
   return updatedReview;
@@ -244,13 +254,13 @@ export const deleteReview = async (reviewId: string): Promise<void> => {
   }
 
   await userReviewRepository.delete(reviewId);
-  await recomputeBookRating((review.book as any).toString());
+  await userReviewServiceDeps.recomputeBookRating((review.book as any).toString());
 
-  await deleteReviewFromVector(reviewId);
+  await userReviewServiceDeps.deleteReviewFromVector(reviewId);
 
-  const user = await User.findById((review.user as any).toString());
+  const user = await userReviewServiceDeps.findUserById((review.user as any).toString());
   if (user) {
-    await syncUserProfileToVector(user);
+    await userReviewServiceDeps.syncUserProfileToVector(user);
   }
 };
 

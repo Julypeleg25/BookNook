@@ -13,7 +13,7 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "baseUrl": ".",
+    "types": ["node", "jest"],
     "paths": {
       "@controllers/*": [
         "./src/controllers/*"

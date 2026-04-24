@@ -34,7 +34,7 @@ describe('ListService', () => {
     });
 
     describe('addBookToUserList', () => {
-        it('should call userRepository.addBookToList', async () => {
+        it('adds the requested book to the selected user list', async () => {
             mockAddBookToList.mockResolvedValue(['book1', 'book2']);
 
             const result = await listService.addBookToUserList(userId, bookId, 'wish');
@@ -45,7 +45,7 @@ describe('ListService', () => {
     });
 
     describe('getUserWishOrReadlist', () => {
-        it('should fetch list and enrich with Google Books data', async () => {
+        it('returns the saved list enriched with Google Books details', async () => {
             mockGetList.mockResolvedValue(['id1']);
             mockGetBook.mockResolvedValue({ id: 'id1', volumeInfo: { title: 'Book 1' } });
             mockNormalize.mockReturnValue({ id: 'id1', title: 'Book 1' });
