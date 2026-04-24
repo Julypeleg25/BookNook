@@ -2,7 +2,6 @@ import { ENV } from "@config/config";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import fs from "fs";
 import authRoutes from "@routes/auth";
 import listRouter from "@routes/list";
 import swaggerUi from "swagger-ui-express";
@@ -17,7 +16,6 @@ import { errorHandler } from "@middlewares/errorHandler";
 import { logger } from "@utils/logger";
 import ragRoutes from "@routes/ragRoutes";
 import { ensureSchema } from "@services/ai/vectorRepository";
-import { fileURLToPath } from "url";
 import path from "path";
 
 

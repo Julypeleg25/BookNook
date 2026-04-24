@@ -11,6 +11,12 @@ import * as vectorSyncService from "@services/ai/vectorSyncService";
 import User from "@models/User";
 import { logger } from "@utils/logger";
 import { userRepository } from "@repositories/userRepository";
+import { FlattenMaps } from "mongoose";
+
+type ReviewDocumentLike = (IUserReview | PopulatedUserReview) & {
+  _id: Types.ObjectId;
+  toObject?: () => FlattenMaps<IUserReview | PopulatedUserReview>;
+};
 
 export const userReviewServiceDeps = {
   getOrCreateLocalBook: bookService.getOrCreateLocalBook,
@@ -30,18 +36,19 @@ export const createReview = async (
   picturePath?: string
 ): Promise<IUserReview> => {
   const book = await userReviewServiceDeps.getOrCreateLocalBook(externalBookId);
+  const bookId = book._id as Types.ObjectId;
 
-  const finalPicturePath = picturePath || (book as any).thumbnail;
+  const finalPicturePath = picturePath || book.thumbnail;
 
   const newReview = await userReviewRepository.create({
     user: userId,
-    book: (book._id as any),
+    book: bookId,
     rating,
     review: reviewText,
     picturePath: finalPicturePath,
   });
 
-  await userReviewServiceDeps.recomputeBookRating((book._id as any).toString());
+  await userReviewServiceDeps.recomputeBookRating(bookId.toString());
 
   await userReviewServiceDeps.syncReviewToVector(newReview);
 
@@ -67,7 +74,7 @@ export const getAllReviews = async (
     if (matchingUsers.length === 0) {
       return [];
     }
-    userIdFilter = matchingUsers.map((u: IUser) => (u._id as any) as Types.ObjectId);
+    userIdFilter = matchingUsers.map((u: IUser) => u._id as Types.ObjectId);
   }
 
   let genreBookIds: Types.ObjectId[] | undefined;
@@ -77,7 +84,7 @@ export const getAllReviews = async (
       limit: 1000
     });
     if (booksInGenre.length === 0) return [];
-    genreBookIds = booksInGenre.map((b: IBook) => (b._id as any) as Types.ObjectId);
+    genreBookIds = booksInGenre.map((b: IBook) => b._id as Types.ObjectId);
   }
 
   let searchBookIds: Types.ObjectId[] | undefined;
@@ -86,7 +93,7 @@ export const getAllReviews = async (
       title: searchQuery
     });
     if (matchingBooks.length > 0) {
-      searchBookIds = matchingBooks.map((b: IBook) => (b._id as any) as Types.ObjectId);
+      searchBookIds = matchingBooks.map((b: IBook) => b._id as Types.ObjectId);
     }
   }
 
@@ -149,18 +156,19 @@ export const getEnrichedReviews = async (reviews: (IUserReview | PopulatedUserRe
 
   return Promise.all(
     reviews.map(async (review) => {
-      const reviewObj = typeof (review as any).toObject === 'function' ? (review as any).toObject() : review;
+      const reviewDoc = review as ReviewDocumentLike;
+      const reviewObj = typeof reviewDoc.toObject === 'function' ? reviewDoc.toObject() : reviewDoc;
       const bookId = extractBookId(reviewObj.book);
 
       try {
         if (!bookId) {
-          throw new Error(`Could not determine book ID for review ${(review as any)._id}`);
+          throw new Error(`Could not determine book ID for review ${String(reviewDoc._id)}`);
         }
         const fullBook = await userReviewServiceDeps.getGoogleBookByLocalId(bookId);
         const normalizedBook = normalizeBookDetail(fullBook);
         return { ...reviewObj, book: normalizedBook };
       } catch (error) {
-        logger.warn(`Error enriching review ${(review as any)._id}:`, error);
+        logger.warn(`Error enriching review ${String(reviewDoc._id)}:`, error);
         return {
           ...reviewObj,
           book: {
@@ -199,13 +207,13 @@ export const getPopulatedReviewById = async (
     const normalizedBook = normalizeBookDetail(fullBook);
 
     return {
-      ...(review as any).toObject(),
+      ...review.toObject(),
       book: normalizedBook
     };
   } catch (error) {
     logger.warn(`Error enriching review ${reviewId}:`, error);
     return {
-      ...(review as any).toObject(),
+      ...review.toObject(),
       book: {
         id: bookId || "unknown",
         title: "Book Unavailable",
@@ -235,11 +243,11 @@ export const updateReview = async (
     throw new NotFoundError("Review not found");
   }
 
-  await userReviewServiceDeps.recomputeBookRating((updatedReview.book as any).toString());
+  await userReviewServiceDeps.recomputeBookRating((updatedReview.book as Types.ObjectId).toString());
 
   await userReviewServiceDeps.syncReviewToVector(updatedReview);
 
-  const user = await userReviewServiceDeps.findUserById((updatedReview.user as any).toString());
+  const user = await userReviewServiceDeps.findUserById((updatedReview.user as Types.ObjectId).toString());
   if (user) {
     await userReviewServiceDeps.syncUserProfileToVector(user);
   }
@@ -254,11 +262,11 @@ export const deleteReview = async (reviewId: string): Promise<void> => {
   }
 
   await userReviewRepository.delete(reviewId);
-  await userReviewServiceDeps.recomputeBookRating((review.book as any).toString());
+  await userReviewServiceDeps.recomputeBookRating((review.book as Types.ObjectId).toString());
 
   await userReviewServiceDeps.deleteReviewFromVector(reviewId);
 
-  const user = await userReviewServiceDeps.findUserById((review.user as any).toString());
+  const user = await userReviewServiceDeps.findUserById((review.user as Types.ObjectId).toString());
   if (user) {
     await userReviewServiceDeps.syncUserProfileToVector(user);
   }
@@ -272,5 +280,5 @@ export const isReviewAuthor = async (
   if (!review) {
     return false;
   }
-  return (review.user as any).toString() === userId;
+  return (review.user as Types.ObjectId).toString() === userId;
 };

@@ -2,12 +2,13 @@ import initApp from "./app";
 import https from "https";
 import http from "http";
 import fs from "fs";
+import { logger } from "@utils/logger";
 
 initApp().then((app) => {
     if (process.env.NODE_ENV !== "production") {
         http.createServer(app).listen(process.env.PORT || 3000);
     } else {
-        console.log("PRODUCTION");
+        logger.info("Starting HTTPS server in production mode");
         const options2 = {
             key: fs.readFileSync("../client-key.pem"),
             cert: fs.readFileSync("../client-cert.pem")

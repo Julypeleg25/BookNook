@@ -1,7 +1,6 @@
 import multer, { FileFilterCallback } from "multer";
 import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
 import { Request } from "express";
 import { IMAGE_EXTENSIONS, MAX_FILE_SIZE_BYTES } from "./constants";
 

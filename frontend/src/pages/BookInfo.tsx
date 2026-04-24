@@ -6,12 +6,9 @@ import BookInfoHeader from "@components/bookHeaders/BookInfoHeader";
 import { FaTheaterMasks } from "react-icons/fa";
 import { FaUserPen } from "react-icons/fa6";
 import { MdMenuBook, MdNumbers } from "react-icons/md";
-import AiBookRecommendation from "@components/post/AiBookRecommendation";
 import { GrLanguage } from "react-icons/gr";
 import { booksService, BookDetail } from "@/api/services/bookService";
 import { formatDate } from "@/utils/dateUtils";
-
-const AI_RESPONSE = "Based on your prompt, I believe this book will fit you perfectly";
 
 const BookInfo = () => {
   const { id } = useParams<{ id: string }>();

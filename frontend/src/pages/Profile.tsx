@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   IconButton,
-  Tooltip,
   Stack,
 } from "@mui/material";
 import { useState } from "react";

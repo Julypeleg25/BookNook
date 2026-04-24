@@ -6,16 +6,12 @@ import CommentsSection, {
 } from "@components/post/comments/CommentsSection";
 import BookPostHeader from "@components/bookHeaders/BookPostHeader";
 import BookInfoSection from "@components/post/BookInfoSection";
-import AiBookRecommendation from "@components/post/AiBookRecommendation";
 import NotFound from "./NotFound";
 import { useQuery } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import type { Book, BookPost } from "@models/Book";
 import env from "@/config/env";
 import PostActionsMenu from "@components/bookCards/post/PostActionsMenu";
-
-const AI_RESPONSE =
-  "Based on your prompt and this review, I believe this book will fit you perfectly";
 
 const BookPost = () => {
   const { id } = useParams<{ id: string }>();

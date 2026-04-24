@@ -6,7 +6,6 @@ import env from "./config/env";
 import { AuthInitializer } from "./components/auth/AuthInitializer";
 
 const App = () => {
-  console.log(env)
   if (!env.GOOGLE_CLIENT_ID) {
     return <div>Google OAuth is not configured. Please set VITE_GOOGLE_CLIENT_ID.</div>;
   }

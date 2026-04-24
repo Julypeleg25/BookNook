@@ -22,4 +22,12 @@ export default defineConfig([
             'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
         },
     },
+    {
+        files: ['src/tests/**/*.ts', 'src/verifyRAG.ts'],
+        rules: {
+            '@typescript-eslint/no-explicit-any': 'off',
+            'no-console': 'off',
+            '@typescript-eslint/no-unused-vars': 'off',
+        },
+    },
 ])

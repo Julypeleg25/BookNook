@@ -15,7 +15,7 @@ export const AuthInitializer = ({ children }: { children: React.ReactNode }) => 
       }
     };
     init();
-  }, []);
+  }, [syncUser]);
 
   if (loading) {
     return <div>Loading...</div>;

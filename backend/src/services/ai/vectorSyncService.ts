@@ -1,6 +1,7 @@
 import { IBook } from "@models/Book";
 import { IUserReview, UserReviewModel } from "@models/UserReview";
 import User, { IUser } from "@models/User";
+import { Types } from "mongoose";
 import { bookRepository } from "@repositories/bookRepository";
 import { buildBookChunk, buildReviewChunk, buildProfileChunk } from "@services/ai/chunkBuilder";
 import { generateEmbedding } from "@services/ai/embeddingService";
@@ -12,7 +13,7 @@ async function getUserTopGenres(userId: string): Promise<string[]> {
     const genresCount: Record<string, number> = {};
 
     for (const review of reviews) {
-        const bookId = (review.book as any).toString();
+        const bookId = (review.book as Types.ObjectId).toString();
         const book = await bookRepository.findById(bookId);
         if (book && book.categories) {
             book.categories.forEach(g => {
@@ -29,7 +30,7 @@ async function getUserTopGenres(userId: string): Promise<string[]> {
 
 export const syncBookToVector = async (book: IBook): Promise<void> => {
     try {
-        const bookIdStr = (book._id as any).toString();
+        const bookIdStr = (book._id as Types.ObjectId).toString();
         const text = buildBookChunk(book);
         const embedding = await generateEmbedding(text);
 
@@ -51,15 +52,15 @@ export const syncBookToVector = async (book: IBook): Promise<void> => {
 
         logger.info(`[VectorSync] Synced book ${bookIdStr} to vector store.`);
     } catch (err) {
-        logger.error(`[VectorSync] Failed to sync book ${(book._id as any)}:`, err);
+        logger.error(`[VectorSync] Failed to sync book ${String(book._id)}:`, err);
     }
 };
 
 export const syncReviewToVector = async (review: IUserReview): Promise<void> => {
     try {
-        const bookId = (review.book as any)?.toString() ?? "";
-        const userId = (review.user as any)?.toString() ?? "";
-        const reviewIdStr = (review._id as any).toString();
+        const bookId = (review.book as Types.ObjectId)?.toString() ?? "";
+        const userId = (review.user as Types.ObjectId)?.toString() ?? "";
+        const reviewIdStr = (review._id as Types.ObjectId).toString();
 
         const [book, user] = await Promise.all([
             bookRepository.findById(bookId),
@@ -101,7 +102,7 @@ export const syncReviewToVector = async (review: IUserReview): Promise<void> => 
 
         logger.info(`[VectorSync] Synced review ${reviewIdStr} to vector store.`);
     } catch (err) {
-        logger.error(`[VectorSync] Failed to sync review ${(review._id as any)}:`, err);
+        logger.error(`[VectorSync] Failed to sync review ${String(review._id)}:`, err);
     }
 };
 
@@ -116,7 +117,7 @@ export const deleteReviewFromVector = async (reviewId: string): Promise<void> =>
 
 export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
     try {
-        const userId = (user._id as any).toString();
+        const userId = (user._id as Types.ObjectId).toString();
 
         const [likedReviews, ownReviews] = await Promise.all([
             UserReviewModel.find({ likes: userId }),
@@ -128,7 +129,7 @@ export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
         const interestThemes: Record<string, number> = {};
 
         const processReview = async (review: IUserReview) => {
-            const bookId = (review.book as any).toString();
+            const bookId = (review.book as Types.ObjectId).toString();
             const book = await bookRepository.findById(bookId);
             if (!book) return;
 
