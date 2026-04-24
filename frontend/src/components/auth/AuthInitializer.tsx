@@ -11,7 +11,6 @@ export const AuthInitializer = ({ children }: { children: React.ReactNode }) => 
         await syncUser();
       } finally {
         setLoading(false);
-
       }
     };
     init();

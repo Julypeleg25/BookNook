@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/state/useUserStore";
 import { AuthService } from "@/api/services/authService";
@@ -34,7 +35,7 @@ export const useAuth = () => {
     }
   };
 
-  const syncUser = async () => {
+  const syncUser = useCallback(async () => {
     const token = tokenService.getAccess();
 
     if (!token) {
@@ -50,7 +51,7 @@ export const useAuth = () => {
       tokenService.clear();
       resetUser();
     }
-  };
+  }, [navigate, resetUser, setUser]);
 
   return { login, register, logout, syncUser };
 };
