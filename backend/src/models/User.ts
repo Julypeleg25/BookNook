@@ -65,19 +65,17 @@ const userSchema = new Schema<IUser>(
 
     wishlist: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "Book",
+        type: String,
       },
     ],
 
     readlist: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "Book",
+        type: String,
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const User = mongoose.model<IUser>("User", userSchema);

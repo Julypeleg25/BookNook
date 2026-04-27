@@ -3,16 +3,19 @@ import type { Book } from "@models/Book";
 import { useState, useMemo, type ReactNode } from "react";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa6";
 import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
+import BookCardSkeleton from "../bookCards/BookCardSkeleton";
 import BookInfoCard from "../bookCards/BookInfoCard";
 
 interface BooksListProps {
   booksList: Book[];
   title?: ReactNode;
+  loading?: boolean;
+  listType?: "wish" | "read";
 }
 
 const BATCH_SIZE = 4;
 
-const BooksList = ({ booksList, title }: BooksListProps) => {
+const BooksList = ({ booksList, title, loading, listType }: BooksListProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { visibleItems, loaderRef, reset } = useInfiniteLoader({
@@ -23,7 +26,7 @@ const BooksList = ({ booksList, title }: BooksListProps) => {
 
   const visibleBooks = useMemo(
     () => (isExpanded ? booksList : visibleItems),
-    [isExpanded, booksList, visibleItems]
+    [isExpanded, booksList, visibleItems],
   );
 
   const toggleExpand = () => {
@@ -71,9 +74,11 @@ const BooksList = ({ booksList, title }: BooksListProps) => {
         }}
         gap="1.5rem"
       >
-        {visibleBooks.map((book) => (
-          <BookInfoCard book={book} key={book.id} />
-        ))}
+        {loading
+          ? [...Array(4)].map((_, i) => <BookCardSkeleton key={i} />)
+          : visibleBooks.map((book) => (
+            <BookInfoCard book={book} key={book.id} listType={listType} />
+          ))}
       </Box>
 
       {isExpanded && <Box ref={loaderRef} />}

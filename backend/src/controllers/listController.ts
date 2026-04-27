@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { addBookToUserList } from "@services/listService";
+import {
+  addBookToUserList,
+  getUserWishOrReadlist,
+  removeBookFromUserList,
+} from "@services/listService";
 import { getBookByGoogleIdFromGoogle } from "@services/bookService";
 import { getUserById } from "@services/userService";
 import { logger } from "@utils/logger";
@@ -14,7 +18,7 @@ const isValidListType = (value: unknown): value is ListType => {
 export const addBookToList = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.authenticatedUser!.id;
@@ -37,25 +41,38 @@ export const addBookToList = async (
   }
 };
 
+export const removeBookFromList = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const userId = req.authenticatedUser!.id;
+    const { bookId } = req.params;
+    const { listType } = req.body;
+
+    if (!isValidListType(listType)) {
+      throw new ValidationError("Invalid list type. Must be 'wish' or 'read'");
+    }
+
+    const updatedList = await removeBookFromUserList(userId, bookId, listType);
+    res.json({ updatedList });
+  } catch (error) {
+    logger.error("Error removing book from list:", error);
+    next(error);
+  }
+};
+
 export const getWishlist = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.authenticatedUser!.id;
     const user = await getUserById(userId);
 
-    const fullBooksOfWishlist = await Promise.all(
-      user.wishlist.map(async (bookId) => {
-        try {
-          return await getBookByGoogleIdFromGoogle(bookId.toString());
-        } catch (error) {
-          logger.warn(`Error fetching book ${bookId} for wishlist:`, error);
-          return null;
-        }
-      })
-    );
+    const fullBooksOfWishlist = await getUserWishOrReadlist(userId, "wish");
 
     res.json(fullBooksOfWishlist.filter(Boolean));
   } catch (error) {
@@ -67,22 +84,13 @@ export const getWishlist = async (
 export const getReadlist = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.authenticatedUser!.id;
     const user = await getUserById(userId);
 
-    const fullBooksOfReadlist = await Promise.all(
-      user.readlist.map(async (bookId) => {
-        try {
-          return await getBookByGoogleIdFromGoogle(bookId.toString());
-        } catch (error) {
-          logger.warn(`Error fetching book ${bookId} for readlist:`, error);
-          return null;
-        }
-      })
-    );
+    const fullBooksOfReadlist = await getUserWishOrReadlist(userId, "read");
 
     res.json(fullBooksOfReadlist.filter(Boolean));
   } catch (error) {

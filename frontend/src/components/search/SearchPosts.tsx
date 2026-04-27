@@ -1,4 +1,5 @@
 import { Box, Typography } from "@mui/material";
+import PostCardSkeleton from "../bookCards/post/PostCardSkeleton";
 import BookPostCard from "@components/bookCards/post/BookPostCard";
 import { useState, useMemo } from "react";
 import SearchHeader from "./SearchHeader";
@@ -8,19 +9,6 @@ import { userReviewService } from "@/api/services/userReviewService";
 import type { BookPost } from "@models/Book";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParamsState } from "@/hooks/useSearchParamsState";
-import FullBookPostCard from "../bookCards/FullBookPostCard";
-
-const defaultFilters = {
-  genre: "",
-  author: "",
-  rating: 0,
-  reviewsAmount: 0,
-  language: "",
-  yearPublishedFrom: "",
-  yearPublishedTo: "",
-  likesAmount: 0,
-  username: "",
-};
 
 const SearchPosts = () => {
   const {
@@ -40,7 +28,6 @@ const SearchPosts = () => {
     data: reviews = [],
     isLoading,
     isError,
-    refetch,
   } = useQuery({
     queryKey: ["allReviews", urlQuery, filters],
     queryFn: () =>
@@ -59,7 +46,6 @@ const SearchPosts = () => {
     filters.genre.trim().length > 0 ||
     filters.username.trim().length > 0;
 
-  // Map backend UserReview to frontend BookPost
   const bookPosts: BookPost[] = useMemo(
     () =>
       reviews.map((r: any) => ({
@@ -108,23 +94,19 @@ const SearchPosts = () => {
         }}
         gap={"2rem"}
       >
-        {visibleItems.map((post: BookPost) => (
-                    <BookPostCard key={post.id} post={post} />
-        ))}
+        {isLoading
+          ? [...Array(8)].map((_, i) => <PostCardSkeleton key={i} />)
+          : visibleItems.map((post: BookPost) => (
+            <BookPostCard key={post.id} post={post} />
+          ))}
       </Box>
 
-      {isLoading && (
-        <Typography sx={{ textAlign: "center", mt: 4 }}>
-          Loading posts...
-        </Typography>
-      )}
-
-      {!isLoading && visibleItems.length === 0 && (
+      {!isLoading && bookPosts.length === 0 && (
         <Box sx={{ textAlign: "center", mt: 8 }}>
           <Typography variant="h6" color="text.secondary">
             {urlQuery.trim() !== "" ||
-            filters.likesAmount > 0 ||
-            filters.rating > 0
+              filters.likesAmount > 0 ||
+              filters.rating > 0
               ? "No posts found"
               : "No posts yet"}
           </Typography>

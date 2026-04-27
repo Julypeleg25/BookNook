@@ -1,4 +1,5 @@
-import { Box, CircularProgress, Typography, Skeleton } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import BookCardSkeleton from "../bookCards/BookCardSkeleton";
 import { useRef, useCallback, useEffect, useState } from "react";
 import SearchHeader from "./SearchHeader";
 import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
@@ -30,7 +31,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
     const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
     const observerTarget = useRef<HTMLDivElement>(null);
 
-    const hasActiveFilters = 
+    const hasActiveFilters =
         filters.author.trim().length > 0 ||
         filters.genre.trim().length > 0 ||
         filters.rating > 0 ||
@@ -96,11 +97,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
             {isLoading && !isFetchingNextPage && (
                 <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={3} mt={4}>
                     {[...Array(8)].map((_, i) => (
-                        <Box key={i}>
-                            <Skeleton variant="rectangular" width="100%" height={288} sx={{ borderRadius: 2 }} />
-                            <Skeleton width="80%" sx={{ mt: 1 }} />
-                            <Skeleton width="60%" />
-                        </Box>
+                        <BookCardSkeleton key={i} />
                     ))}
                 </Box>
             )}

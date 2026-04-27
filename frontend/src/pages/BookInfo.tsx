@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, Divider, CircularProgress } from "@mui/material";
+import { Box, Stack, Typography, Divider, Skeleton } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NotFound from "./NotFound";
@@ -35,7 +35,53 @@ const BookInfo = () => {
     fetchBook();
   }, [id]);
 
-  if (loading) return <Box display="flex" justifyContent="center" mt={5}><CircularProgress /></Box>;
+  if (loading) {
+    return (
+      <Box sx={{ margin: "1.5rem", px: "1rem", py: "2rem" }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Skeleton variant="text" width="40%" height={60} />
+          <Skeleton variant="rectangular" width="30%" height={40} />
+        </Stack>
+        <Box
+          display="grid"
+          gridTemplateColumns={{ xs: "1fr", md: "2fr 1fr" }}
+          gap="3rem"
+          mt="3rem"
+          alignItems="start"
+        >
+          <Stack spacing={3}>
+            <Skeleton variant="text" width="100%" height={24} />
+            <Skeleton variant="text" width="100%" height={24} />
+            <Skeleton variant="text" width="80%" height={24} />
+            <Divider />
+            <Box
+              display="grid"
+              gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
+              gap="1.5rem"
+            >
+              {[...Array(4)].map((_, i) => (
+                <Stack key={i} direction="row" spacing={1.2} alignItems="center">
+                  <Skeleton variant="circular" width={24} height={24} />
+                  <Box sx={{ flex: 1 }}>
+                    <Skeleton width="40%" />
+                    <Skeleton width="60%" />
+                  </Box>
+                </Stack>
+              ))}
+            </Box>
+          </Stack>
+          <Box display="flex" justifyContent="center">
+            <Skeleton
+              variant="rectangular"
+              width="18rem"
+              height="25rem"
+              sx={{ borderRadius: "1rem" }}
+            />
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
   if (error || !book) return <NotFound />;
 
   const displayAuthors = book.authors?.join(", ") || "Unknown Author";
@@ -43,8 +89,8 @@ const BookInfo = () => {
 
   return (
     <Box sx={{ margin: "1.5rem", px: "1rem", py: "2rem" }}>
-      <BookInfoHeader book={book as any} /> 
-      
+      <BookInfoHeader book={book as any} />
+
       <Box
         display="grid"
         gridTemplateColumns={{ xs: "1fr", md: "2fr 1fr" }}
@@ -73,9 +119,9 @@ const BookInfo = () => {
               value={displayGenres}
             />
             <InfoRow
-               icon={<GrLanguage />}
-               label="Published"
-               value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"}
+              icon={<GrLanguage />}
+              label="Published"
+              value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"}
             />
           </Box>
         </Stack>

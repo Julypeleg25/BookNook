@@ -15,7 +15,9 @@ import { IBook } from "@models/Book";
 const GOOGLE_BOOKS_API = ENV.GOOGLE_BOOKS_API;
 const API_KEY = ENV.GOOGLE_BOOKS_API_KEY;
 
-const normalizeBookSummary = (volume: GoogleBooksVolume): BookSummary => {
+export const normalizeBookSummary = (
+  volume: GoogleBooksVolume,
+): BookSummary => {
   const info = volume.volumeInfo;
   return {
     id: volume.id,
@@ -69,7 +71,9 @@ interface PaginatedBooks {
   hasNextPage: boolean;
 }
 
-export const searchBooks = async (query: BooksQuery): Promise<PaginatedBooks> => {
+export const searchBooks = async (
+  query: BooksQuery,
+): Promise<PaginatedBooks> => {
   const { title, author, subject, page = "1", limit = "20" } = query;
 
   const queryParts: string[] = [];
@@ -107,7 +111,7 @@ export const searchBooks = async (query: BooksQuery): Promise<PaginatedBooks> =>
 };
 
 export const localSearchBooks = async (
-  query: BooksQuery
+  query: BooksQuery,
 ): Promise<PaginatedBooks> => {
   const {
     page = "1",
@@ -143,39 +147,39 @@ export const localSearchBooks = async (
 };
 
 export const getBookByGoogleIdFromGoogle = async (
-  googleId: string
+  googleId: string,
 ): Promise<GoogleBooksVolume> => {
   try {
     const response = await axios.get<GoogleBooksVolume>(
       `${GOOGLE_BOOKS_API}/${googleId}`,
       {
         params: API_KEY ? { key: API_KEY } : undefined,
-      }
+      },
     );
     return response.data;
   } catch (error) {
     logger.error(
       `Error fetching book ${googleId} from Google Books API:`,
-      error
+      error,
     );
     throw new NotFoundError("Book not found in Google Books");
   }
 };
 
 export const getLocalBookByGoogleId = async (
-  googleId: string
+  googleId: string,
 ): Promise<IBook | null> => {
   return await bookRepository.findByExternalId(googleId);
 };
 
 export const getLocalBookByLocalId = async (
-  localId: string
+  localId: string,
 ): Promise<IBook | null> => {
   return await bookRepository.findById(localId);
 };
 
 export const getGoogleBookByLocalId = async (
-  localId: string
+  localId: string,
 ): Promise<GoogleBooksVolume> => {
   if (!localId || localId === "[object Object]") {
     throw new Error(`Invalid localId provided: ${localId}`);
@@ -200,6 +204,8 @@ export const getBookDetails = async (googleId: string): Promise<BookDetail> => {
   return bookDetail;
 };
 
-export const getOrCreateLocalBook = async (googleId: string): Promise<IBook> => {
+export const getOrCreateLocalBook = async (
+  googleId: string,
+): Promise<IBook> => {
   return await bookRepository.getOrCreate(googleId);
 };

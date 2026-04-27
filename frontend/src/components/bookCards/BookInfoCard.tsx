@@ -2,7 +2,7 @@ import { Box, Typography, Stack, Rating, Button } from "@mui/material";
 import type { Book } from "@models/Book";
 import { formatDate } from "@utils/dateUtils";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import BookInfoActions from "./BookInfoActions";
+import BookActionsMenu from "./BookActionsMenu";
 import React from "react";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 
@@ -10,9 +10,10 @@ interface BookInfoCardProps {
   book: Book;
   isOnlyInfo?: boolean;
   onSelect?: (book: Book) => void;
+  listType?: "wish" | "read";
 }
 
-const BookInfoCard = ({ book, isOnlyInfo, onSelect }: BookInfoCardProps) => {
+const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProps) => {
   const displayAuthor = book.authors?.length > 0 ? book.authors.join(", ") : "Unknown Author";
   const navigate = useNavigate();
 
@@ -24,11 +25,15 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect }: BookInfoCardProps) => {
     onSelect?.(book);
   };
 
-  // In select mode, don't make the image/title clickable
   const isSelectMode = !!onSelect;
 
   return (
-    <Stack alignItems="center" spacing="0.6rem">
+    <Stack alignItems="center" spacing="0.6rem" position="relative">
+      {!isSelectMode && (
+        <Box sx={{ position: "absolute", top: 4, right: 4, zIndex: 1 }}>
+          <BookActionsMenu book={book} listType={listType} />
+        </Box>
+      )}
       <Box
         {...(!isSelectMode && {
           component: RouterLink,
@@ -134,7 +139,6 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect }: BookInfoCardProps) => {
             Create Review
           </Button>
         )}
-        {!isOnlyInfo && <BookInfoActions bookId={book.id} />}
       </div>
     </Stack>
   );

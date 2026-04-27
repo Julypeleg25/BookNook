@@ -1,27 +1,47 @@
+import { axiosClient } from "@/api/axios/axiosClient";
+import { endpoints } from "@/api/endpoints";
+import useUserStore from "@/state/useUserStore";
 import { bookPosts } from "../exampleData";
 import BooksList from "@components/lists/BooksList";
 import { Stack } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 import { BsBookmark } from "react-icons/bs";
 import { LuBookCheck } from "react-icons/lu";
-
-const exampleUserRead = bookPosts
-  .filter((b) => b)
-  .map((p) => p.book);
-const exampleUserRead2 = bookPosts
-  .filter((b) => b.user.id === "u1")
-  .map((p) => p.book);
+import { Book } from "@/models/Book";
 
 const MyLists = () => {
+  const {
+    user: { username },
+  } = useUserStore();
+  const { data: wishlistBooks = [], isLoading: isWishlistLoading } = useQuery({
+    queryKey: ["wishlist", "lists", username],
+    queryFn: async () => {
+      const res = await axiosClient.get<Book[]>(endpoints.lists.wishlist);
+
+      return res.data;
+    },
+  });
+
+  const { data: readlistBooks = [], isLoading: isReadlistLoading } = useQuery({
+    queryKey: ["readlist", "lists", username],
+    queryFn: async () => {
+      const res = await axiosClient.get<Book[]>(endpoints.lists.readlist);
+
+      return res.data;
+    },
+  });
   return (
     <Stack margin="2rem">
       <BooksList
         title={
           <Stack direction="row" alignItems="center" spacing={1}>
-            <LuBookCheck size="1.3rem"/>
+            <LuBookCheck size="1.3rem" />
             <h2>My read list</h2>
           </Stack>
         }
-        booksList={exampleUserRead}
+        booksList={readlistBooks}
+        loading={isReadlistLoading}
+        listType="read"
       />
       <BooksList
         title={
@@ -29,7 +49,9 @@ const MyLists = () => {
             <BsBookmark size="1.3rem" /> <h2>My wish list</h2>
           </Stack>
         }
-        booksList={exampleUserRead2}
+        booksList={wishlistBooks}
+        loading={isWishlistLoading}
+        listType="wish"
       />
     </Stack>
   );

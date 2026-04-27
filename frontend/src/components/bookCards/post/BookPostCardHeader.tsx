@@ -1,4 +1,4 @@
-import { CardHeader, CardMedia, Typography, Box, Avatar } from "@mui/material";
+import { CardHeader, CardMedia, Typography, Box, Avatar, Skeleton } from "@mui/material";
 import type { BookPost } from "@models/Book";
 import { Link as RouterLink } from "react-router-dom";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
@@ -17,11 +17,17 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
     if (post.imageUrl.startsWith("http")) return post.imageUrl;
     return `${env.API_BASE_URL}${post.imageUrl}`;
   });
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   const handleImageError = () => {
+    setIsImageLoading(false);
     if (imgSrc !== post.book.thumbnail) {
       setImgSrc(post.book.thumbnail);
     }
+  };
+
+  const handleImageLoad = () => {
+    setIsImageLoading(false);
   };
 
   return (
@@ -56,14 +62,22 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
       <Box
         component={RouterLink}
         to={`/posts/${post.id}`}
-        sx={{ textDecoration: "none" }}
+        sx={{ textDecoration: "none", position: "relative", display: "block" }}
       >
+        {isImageLoading && (
+          <Skeleton variant="rectangular" height="16rem" width="100%" />
+        )}
         {imgSrc && (
           <CardMedia
             component="img"
             image={imgSrc}
             onError={handleImageError}
-            sx={{ height: "16rem", objectFit: "cover" }}
+            onLoad={handleImageLoad}
+            sx={{
+              height: "16rem",
+              objectFit: "cover",
+              display: isImageLoading ? "none" : "block"
+            }}
           />
         )}
       </Box>

@@ -4,6 +4,9 @@ import { BiBookmark } from "react-icons/bi";
 import { LuBookCheck } from "react-icons/lu";
 import { TbPencilPlus } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ListsService } from "@/api/services/ListsService";
+import useUserStore from "@/state/useUserStore";
 
 interface BookInfoActionsProps {
   bookId: string;
@@ -11,11 +14,24 @@ interface BookInfoActionsProps {
 
 const BookInfoActions = ({ bookId }: BookInfoActionsProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useUserStore();
+
+  const { mutate: addBookToList } = useMutation({
+    mutationFn: (listType: "wish" | "read") =>
+      ListsService.addBookToList(bookId, listType),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [variables === "wish" ? "wishlist" : "readlist", "lists", user.username],
+      });
+      navigate("/lists");
+    },
+  });
 
   return (
     <div style={{ display: "flex", gap: "1.6rem" }}>
       <Tooltip title="add to wish list">
-        <IconButton size="small">
+        <IconButton size="small" onClick={() => addBookToList("wish")}>
           <BiBookmark size={"1.2rem"} />
         </IconButton>
       </Tooltip>
@@ -25,7 +41,7 @@ const BookInfoActions = ({ bookId }: BookInfoActionsProps) => {
         </IconButton>
       </Tooltip>
       <Tooltip title="add to read list">
-        <IconButton size="small">
+        <IconButton size="small" onClick={() => addBookToList("read")}>
           <LuBookCheck size={"1.2rem"} />
         </IconButton>
       </Tooltip>
