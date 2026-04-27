@@ -1,11 +1,12 @@
 import Select from "@/components/common/Select";
 import { Chip } from "@mui/material";
 import { TbArrowsSort } from "react-icons/tb";
+import type { CommentSortOrder } from "@/utils/commentUtils";
 
 interface CommentsHeaderProps {
   length: number;
-  sortOrder: string;
-  onSortChange: (value: string) => void;
+  sortOrder: CommentSortOrder;
+  onSortChange: (value: CommentSortOrder) => void;
 }
 
 const CommentsHeader = ({ length, sortOrder, onSortChange }: CommentsHeaderProps) => {
@@ -38,7 +39,7 @@ const CommentsHeader = ({ length, sortOrder, onSortChange }: CommentsHeaderProps
         style={{ marginRight: "2.8rem" }}
         label=""
         startIcon={<TbArrowsSort size={"2rem"} />}
-        onChange={(values) => onSortChange(values[0] as string)}
+        onChange={(values) => onSortChange(values[0] as CommentSortOrder)}
         selectedValues={[sortOrder]}
         menuItems={[
           { label: "Most recent", value: "mostRecent" },

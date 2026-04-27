@@ -1,7 +1,12 @@
-import { Controller, type Control, type FieldValues } from "react-hook-form";
+import { Controller, type Control } from "react-hook-form";
 import ImageUpload from "../common/ImageUpload";
+import type { ProfileFormValues } from "@/models/ProfileForm";
 
-const AvatarField = ({ control }: { control: Control<FieldValues> }) => {
+interface AvatarFieldProps {
+  control: Control<ProfileFormValues>;
+}
+
+const AvatarField = ({ control }: AvatarFieldProps) => {
   return (
     <Controller
       name="avatar"

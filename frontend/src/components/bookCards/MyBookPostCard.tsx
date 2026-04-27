@@ -78,7 +78,7 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => {
 
       <Stack direction="row" spacing="0.4rem">
         <Tooltip title="edit post">
-          <IconButton size="small">
+          <IconButton size="small" onClick={() => navigate(`/post/edit/${post.id}`)}>
             <FiEdit />
           </IconButton>
         </Tooltip>

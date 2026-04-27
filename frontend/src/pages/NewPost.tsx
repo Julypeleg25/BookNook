@@ -12,14 +12,12 @@ import {
   Controller,
   useForm,
   useWatch,
-  type ControllerRenderProps,
 } from "react-hook-form";
 import PostImageUpload from "@components/common/PostImageUpload";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import { booksService } from "@/api/services/bookService";
-import { useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { useEffect } from "react";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
@@ -27,12 +25,14 @@ import {
   REVIEW_TEXT_MAX_LENGTH,
   REVIEW_TEXT_MIN_LENGTH,
 } from "@shared/constants/validation";
-
-interface INewPostInputs {
-  review: string;
-  image: File | string;
-  rating: number;
-}
+import { queryKeys } from "@/api/queryKeys";
+import { invalidateReviewCaches } from "@/api/queryCache";
+import type {
+  PostFormLocationState,
+  PostFormValues,
+  UpdateReviewFormData,
+} from "@/models/PostForm";
+import { getErrorMessage } from "@/api/apiError";
 
 const NewPost = () => {
   const { bookId: routeBookId, id: reviewId } = useParams<{ bookId?: string; id?: string }>();
@@ -40,38 +40,39 @@ const NewPost = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const locationState = location.state as PostFormLocationState | null;
 
-  const bookFromState = location.state?.book;
+  const bookFromState = locationState?.book;
 
   const { data: reviewData, isLoading: isLoadingReview } = useQuery({
-    queryKey: ["review", reviewId],
+    queryKey: reviewId ? queryKeys.review(reviewId) : queryKeys.reviewPrefix,
     queryFn: () => userReviewService.getReviewById(reviewId!),
     enabled: !!reviewId,
   });
 
   const bookId = routeBookId ||
-    (typeof reviewData?.book === 'string'
+    (typeof reviewData?.book === "string"
       ? reviewData.book
       : (reviewData?.book?.id || reviewData?.book?._id));
 
   const { data: bookData, isLoading: isLoadingBook } = useQuery({
-    queryKey: ["book", bookId],
+    queryKey: bookId ? queryKeys.book(bookId) : queryKeys.bookPrefix,
     queryFn: async () => {
-      if (!bookId || typeof bookId !== 'string') return null;
+      if (!bookId || typeof bookId !== "string") return null;
       const response = await booksService.getById(bookId);
       return response.book;
     },
     enabled: !!bookId && !bookFromState,
   });
 
-  const book = bookFromState || bookData || (typeof reviewData?.book === 'object' ? reviewData.book : null);
+  const book = bookFromState || bookData || (typeof reviewData?.book === "object" ? reviewData.book : null);
 
   const {
     control,
     handleSubmit,
     formState: { errors, isDirty },
     reset,
-  } = useForm<INewPostInputs>({
+  } = useForm<PostFormValues>({
     defaultValues: {
       review: "",
       image: "",
@@ -99,17 +100,12 @@ const NewPost = () => {
     mutationFn: userReviewService.createReview,
     onSuccess: () => {
       enqueueSnackbar("Review created successfully!", { variant: "success" });
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
-      if (bookId) {
-        queryClient.invalidateQueries({ queryKey: ["reviews", bookId] });
-      }
+      invalidateReviewCaches(queryClient, { bookId });
       navigate("/posts");
     },
     onError: (error: unknown) => {
-      const axiosError = error as { response?: { data?: { message?: string } } };
       enqueueSnackbar(
-        axiosError?.response?.data?.message || "Failed to create review",
+        getErrorMessage(error, "Failed to create review"),
         { variant: "error" }
       );
     },
@@ -118,7 +114,7 @@ const NewPost = () => {
 
 
   const updateReviewMutation = useMutation({
-    mutationFn: (data: { id: string; review: Partial<INewPostInputs> }) =>
+    mutationFn: (data: UpdateReviewFormData) =>
       userReviewService.updateReview(data.id, {
         review: data.review.review,
         rating: data.review.rating,
@@ -126,27 +122,21 @@ const NewPost = () => {
       }),
     onSuccess: () => {
       enqueueSnackbar("Review updated successfully!", { variant: "success" });
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
-      if (bookId) {
-        queryClient.invalidateQueries({ queryKey: ["reviews", bookId] });
-      }
-      if (reviewId) {
-        queryClient.invalidateQueries({ queryKey: ["review", reviewId] });
-      }
+      invalidateReviewCaches(queryClient, { bookId, reviewId });
       navigate(`/posts/${reviewId}`);
     },
     onError: (error: unknown) => {
-      const axiosError = error as { response?: { data?: { message?: string } } };
       enqueueSnackbar(
-        axiosError?.response?.data?.message || "Failed to update review",
+        getErrorMessage(error, "Failed to update review"),
         { variant: "error" }
       );
     },
   });
 
-  const onSubmit = (data: INewPostInputs) => {
-    if (!isDirty && !reviewId) return;
+  const isSaving = createReviewMutation.isPending || updateReviewMutation.isPending;
+
+  const onSubmit = (data: PostFormValues) => {
+    if (isSaving || !isDirty) return;
 
     if (reviewId) {
       updateReviewMutation.mutate({
@@ -227,11 +217,9 @@ const NewPost = () => {
       <Controller
         name="image"
         control={control}
-        render={({
-          field,
-        }: {
-          field: ControllerRenderProps<INewPostInputs, "image">;
-        }) => <PostImageUpload value={field.value} onChange={field.onChange} />}
+        render={({ field }) => (
+          <PostImageUpload value={field.value} onChange={field.onChange} />
+        )}
       />
 
       <Controller
@@ -248,11 +236,7 @@ const NewPost = () => {
             message: `Max ${REVIEW_TEXT_MAX_LENGTH} characters`,
           },
         }}
-        render={({
-          field,
-        }: {
-          field: ControllerRenderProps<INewPostInputs, "review">;
-        }) => (
+        render={({ field }) => (
           <TextField
             {...field}
             slotProps={{ htmlInput: { maxLength: REVIEW_TEXT_MAX_LENGTH } }}
@@ -278,11 +262,7 @@ const NewPost = () => {
           min: { value: 1, message: "Rating is required (1-5)" },
           max: { value: 5, message: "Rating must be between 1 and 5" },
         }}
-        render={({
-          field,
-        }: {
-          field: ControllerRenderProps<INewPostInputs, "rating">;
-        }) => (
+        render={({ field }) => (
           <Box>
             <Typography mb={"1rem"}>Rating (1-5 whole numbers)</Typography>
             <Rating
@@ -301,15 +281,15 @@ const NewPost = () => {
       />
 
       <Stack direction="row" justifyContent="flex-end" spacing={2}>
-        <Button variant="outlined" onClick={onCancel} disabled={createReviewMutation.isPending}>
+        <Button variant="outlined" onClick={onCancel} disabled={isSaving}>
           Cancel
         </Button>
         <Button
           type="submit"
           variant="contained"
-          disabled={(!isDirty && !reviewId) || createReviewMutation.isPending}
+          disabled={!isDirty || isSaving}
         >
-          {createReviewMutation.isPending ? "Saving..." : (reviewId ? "Update" : "Publish")}
+          {isSaving ? "Saving..." : (reviewId ? "Update" : "Publish")}
         </Button>
       </Stack>
     </Stack>
