@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "@pages/Login";
 import SignUp from "@pages/SignUp";
 import ExploreBooks from "@pages/ExploreBooks";
@@ -14,14 +14,9 @@ import NotFound from "@pages/NotFound";
 import SelectBookForPost from "@pages/SelectBookForPost";
 import AppLayout from "./AppLayout";
 import PublicLayout from "./layout/PublicLayout";
-import useUserStore from "@/state/useUserStore";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const Router = () => {
-  const ProtectedRoute = () => {
-    const { isAuthenticated } = useUserStore();
-    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-  };
-
   return (
     <Routes>
       {/* Public routes */}
@@ -30,26 +25,28 @@ const Router = () => {
         <Route path="/register" element={<SignUp />} />
       </Route>
 
+      {/* Public browse routes */}
+      <Route element={<AppLayout />}>
+        <Route path="/posts">
+          <Route index element={<ExplorePosts />} />
+          <Route path=":id" element={<BookPost />} />
+        </Route>
+
+        <Route path="/books">
+          <Route index element={<ExploreBooks />} />
+          <Route path=":id" element={<BookInfo />} />
+        </Route>
+      </Route>
+
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/posts">
-            <Route index element={<ExplorePosts />} />
-            <Route path=":id" element={<BookPost />} />
-          </Route>
-
-          <Route path="/books">
-            <Route index element={<ExploreBooks />} />
-            <Route path="select" element={<SelectBookForPost />} />
-            <Route path=":id" element={<BookInfo />} />
-          </Route>
-
+          <Route path="/books/select" element={<SelectBookForPost />} />
           <Route path="/post">
             <Route index element={<NewPost />} />
             <Route path="create/:bookId" element={<NewPost />} />
             <Route path="edit/:id" element={<NewPost />} />
           </Route>
-
           <Route path="/myPosts" element={<MyPosts />} />
           <Route path="/lists" element={<MyLists />} />
           <Route path="/profile" element={<Profile />} />

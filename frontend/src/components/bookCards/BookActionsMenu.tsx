@@ -15,6 +15,7 @@ import { ListsService } from "@/api/services/ListsService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { useSnackbar } from "notistack";
+import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
 
 interface BookActionsMenuProps {
     book: Book;
@@ -28,6 +29,7 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
     const queryClient = useQueryClient();
     const { enqueueSnackbar } = useSnackbar();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const { navigateProtected } = useProtectedNavigation();
 
     const { mutate: removeFromList, isPending } = useMutation({
         mutationFn: () => ListsService.removeBookFromList(book.id, listType!),
@@ -66,8 +68,12 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
 
     const handleWriteReview = (event: React.MouseEvent) => {
         event.stopPropagation();
-        navigate(`/post/create/${book.id}`, { state: { book } });
-        handleClose();
+        const didNavigate = navigateProtected(`/post/create/${book.id}`, {
+            state: { book }
+        });
+        if (didNavigate) {
+            handleClose();
+        }
     };
 
     return (

@@ -11,11 +11,12 @@ import { useNavigate } from "react-router-dom";
 import useUserStore from "@state/useUserStore";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { useState } from "react";
-import { AuthService } from "@/api/services/authService";
+import { useAuth } from "@/hooks/useAuth";
 
 const UserMenu = () => {
-  const { user, resetUser } = useUserStore();
+  const { user } = useUserStore();
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -29,14 +30,7 @@ const UserMenu = () => {
 
   const handleLogout = async () => {
     handleClose();
-    try {
-      await AuthService.logout();
-    } catch (error) {
-      console.error("Logout failed", error);
-    } finally {
-      resetUser();
-      navigate("/login");
-    }
+    await logout();
   };
 
   const handleProfile = () => {

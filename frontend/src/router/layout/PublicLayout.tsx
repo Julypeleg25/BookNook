@@ -1,8 +1,16 @@
 import { Box, AppBar as MuiAppBar, Toolbar } from "@mui/material";
 import bookNookLogo from "@assets/booknook.png";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
+import useUserStore from "@/state/useUserStore";
+import { DEFAULT_AUTH_REDIRECT } from "@/utils/redirects";
 
 const PublicLayout = () => {
+  const { isAuthenticated } = useUserStore();
+
+  if (isAuthenticated) {
+    return <Navigate to={DEFAULT_AUTH_REDIRECT} replace />;
+  }
+
   return (
     <div>
       <MuiAppBar position="sticky" style={{ top: 0, width: "100%" }}>

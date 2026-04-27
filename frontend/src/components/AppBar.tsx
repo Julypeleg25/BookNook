@@ -3,12 +3,14 @@ import {
   AppBar as MuiAppBar,
   Toolbar,
   Typography,
+  Button,
 } from "@mui/material";
 import bookNookLogo from "@assets/booknook.png";
 import { NavLink } from "react-router-dom";
 import useUserStore from "@state/useUserStore";
 import { getTimeOfDay } from "@utils/dateUtils";
 import UserMenu from "./UserMenu";
+import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
 
 const navItemSx = {
   position: "relative",
@@ -39,7 +41,8 @@ const navItemSx = {
 };
 
 const AppBar = () => {
-  const { user } = useUserStore();
+  const { user, isAuthenticated } = useUserStore();
+  const { redirectToLogin } = useProtectedNavigation();
 
   return (
     <MuiAppBar position="sticky" sx={{ top: 0, width: "100%" }}>
@@ -64,21 +67,34 @@ const AppBar = () => {
             <Typography component={NavLink} to="/books" sx={navItemSx}>
               Books
             </Typography>
-            <Typography component={NavLink} to="/lists" sx={navItemSx}>
-              My Lists
-            </Typography>
-
-            <Typography component={NavLink} to="/myPosts" sx={navItemSx}>
-              My Posts
-            </Typography>
-            <Typography component={NavLink} to="/ai-assistant" sx={navItemSx}>
-              AI Assistant
-            </Typography>
+            {isAuthenticated && (
+              <>
+                <Typography component={NavLink} to="/lists" sx={navItemSx}>
+                  My Lists
+                </Typography>
+                <Typography component={NavLink} to="/myPosts" sx={navItemSx}>
+                  My Posts
+                </Typography>
+                <Typography component={NavLink} to="/ai-assistant" sx={navItemSx}>
+                  AI Assistant
+                </Typography>
+              </>
+            )}
           </Box>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          Good {getTimeOfDay()}, {user.username}
-          <UserMenu />
+          {isAuthenticated ? (
+            <>
+              <Typography>
+                Good {getTimeOfDay()}, {user.username}
+              </Typography>
+              <UserMenu />
+            </>
+          ) : (
+            <Button color="inherit" variant="outlined" onClick={redirectToLogin}>
+              Log in
+            </Button>
+          )}
         </Box>
       </Toolbar>
     </MuiAppBar>

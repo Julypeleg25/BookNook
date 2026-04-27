@@ -7,6 +7,7 @@ import { LiaBookmark } from "react-icons/lia";
 import { LuBookCheck } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/state/useUserStore";
+import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
 
 interface BookHeaderProps {
   id: string;
@@ -17,6 +18,7 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useUserStore();
+  const { isAuthenticated, navigateProtected, redirectToLogin } = useProtectedNavigation();
 
   const { mutate: addBookToList } = useMutation({
     mutationFn: (listType: "wish" | "read") =>
@@ -30,11 +32,23 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
   });
 
   const handleAddToWishlist = () => {
+    if (!isAuthenticated) {
+      redirectToLogin();
+      return;
+    }
     addBookToList("wish");
   };
 
   const handleAddToReadlist = () => {
+    if (!isAuthenticated) {
+      redirectToLogin();
+      return;
+    }
     addBookToList("read");
+  };
+
+  const handleProtectedReviewNavigation = () => {
+    navigateProtected(`/post/create/${id}`);
   };
 
   return (
@@ -60,7 +74,7 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
       ) : (
         <Button
           variant="contained"
-          onClick={() => navigate(`/post/create/${id}`)}
+          onClick={handleProtectedReviewNavigation}
           startIcon={<BiBookAdd />}
           sx={{ borderRadius: "2rem", px: 3 }}
         >
