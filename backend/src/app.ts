@@ -18,7 +18,6 @@ import ragRoutes from "@routes/ragRoutes";
 import { ensureSchema } from "@services/ai/vectorRepository";
 import path from "path";
 
-
 const app = express();
 
 const initApp = async () => {
