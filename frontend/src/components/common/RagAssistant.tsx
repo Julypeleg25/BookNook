@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
   Box,
   TextField,
@@ -9,7 +9,6 @@ import {
   Alert,
   ToggleButtonGroup,
   ToggleButton,
-  Divider,
   Tooltip,
 } from "@mui/material";
 import { Send as SendIcon, AutoAwesome as AiIcon } from "@mui/icons-material";
@@ -81,7 +80,7 @@ export const RagAssistant: React.FC = () => {
                   General
                 </ToggleButton>
               </Tooltip>
-               <Tooltip title="based on your preferences">
+              <Tooltip title="based on your preferences">
                 <ToggleButton value={RAGMode.PERSONAL}>
                   Personal Helper
                 </ToggleButton>

@@ -4,7 +4,7 @@ import { logger } from "@utils/logger";
 const EMBEDDING_DIMENSIONS = 384;
 const EMBEDDING_MODEL = "Xenova/all-MiniLM-L6-v2";
 
-let extractor: any = null;
+let extractor: unknown = null;
 
 const getExtractor = async () => {
     if (!extractor) {
@@ -12,7 +12,7 @@ const getExtractor = async () => {
         extractor = await pipeline("feature-extraction", EMBEDDING_MODEL);
         logger.info("[EmbeddingService] Pipeline loaded.");
     }
-    return extractor;
+    return extractor as (text: string, options?: object) => Promise<{ data: Float32Array }>;
 };
 
 export const generateEmbedding = async (text: string): Promise<number[]> => {

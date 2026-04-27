@@ -8,26 +8,7 @@ export interface CreateReviewData {
     picture?: File;
 }
 
-import { Book } from "@/models/Book";
-
-export interface UserReview {
-    _id: string;
-    user: {
-        _id: string;
-        username: string;
-        avatar?: string;
-        bio?: string;
-    };
-    book: Book | string;
-    review: string;
-    rating: number;
-    picturePath?: string;
-    imageUrl?: string;
-    likes: string[];
-    comments: any[];
-    createdAt: string;
-    updatedAt: string;
-}
+import { UserReview, ReviewComment } from "@/models/UserReview";
 
 
 
@@ -61,8 +42,8 @@ export const userReviewService = {
     },
 
     async getAllReviews(
-        minLikes?: number, 
-        searchQuery?: string, 
+        minLikes?: number,
+        searchQuery?: string,
         username?: string,
         rating?: number,
         genre?: string
@@ -118,8 +99,8 @@ export const userReviewService = {
         return res.data;
     },
 
-    async addComment(reviewId: string, comment: string): Promise<any[]> {
-        const res = await axiosClient.post<any[]>(
+    async addComment(reviewId: string, comment: string): Promise<ReviewComment[]> {
+        const res = await axiosClient.post<ReviewComment[]>(
             endpoints.userReviews.comments(reviewId),
             { comment }
         );

@@ -45,6 +45,8 @@ export interface GoogleBooksVolume {
       thumbnail?: string;
     };
     previewLink?: string;
+    averageRating?: number;
+    ratingsCount?: number;
   };
 }
 

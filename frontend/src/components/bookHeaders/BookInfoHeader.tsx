@@ -1,7 +1,6 @@
-import { IconButton, Tooltip, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import type { Book } from "@models/Book";
 import BookHeader from "./BookHeaderButtons";
-import { BiArrowBack } from "react-icons/bi";
 
 interface BookInfoHeaderProps {
   book: Book;

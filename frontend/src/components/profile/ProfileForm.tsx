@@ -38,9 +38,10 @@ const ProfileForm = ({ onCancel }: Props) => {
       if (!isDirty) return;
       await updateUser(data);
       enqueueSnackbar("Profile updated successfully!", { variant: "success" });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Invalid details, try again";
       setError("root", {
-        message: error.details.error || "Invalid details, try again",
+        message: (error as { details?: { error: string } }).details?.error || errorMessage,
       });
     } finally {
       setLoading(false);

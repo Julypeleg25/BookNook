@@ -1,4 +1,3 @@
-import env from "@/config/env";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import {
   TextField,

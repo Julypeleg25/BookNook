@@ -185,7 +185,7 @@ export const fetchChunksByMetadata = async (
     const client = await getPool().connect();
     try {
         let query = `SELECT id, book_id, type, text, rating, metadata, 1.0 as score FROM vector_search WHERE 1=1`;
-        const values: any[] = [];
+        const values: unknown[] = [];
         let i = 1;
 
         for (const [key, val] of Object.entries(filters)) {
@@ -217,7 +217,7 @@ export const similaritySearch = async (
     const client = await getPool().connect();
     try {
         let whereClause = `WHERE 1=1`;
-        const params: any[] = [JSON.stringify(embedding)];
+        const params: (string | number | null)[] = [JSON.stringify(embedding)];
         let pIdx = 2;
 
         if (typeFilter) {

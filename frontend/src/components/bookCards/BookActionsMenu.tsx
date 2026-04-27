@@ -87,6 +87,7 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
+                disableScrollLock
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                 onClick={(e) => e.stopPropagation()}

@@ -21,7 +21,7 @@ interface CommentsSectionProps {
 }
 
 const CommentsSection = ({ postId, comments: initialComments }: CommentsSectionProps) => {
-    const { user, isAuthenticated } = useUserStore();
+    const { isAuthenticated } = useUserStore();
     const [comments, setComments] = useState<PostComment[]>(initialComments);
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,9 +38,13 @@ const CommentsSection = ({ postId, comments: initialComments }: CommentsSectionP
         try {
             const updatedCommentsRaw = await userReviewService.addComment(postId, newComment);
 
-            const updatedComments: PostComment[] = updatedCommentsRaw.map((c: any) => ({
+            const updatedComments: PostComment[] = updatedCommentsRaw.map((c) => ({
                 id: c._id,
-                user: c.user,
+                user: {
+                    id: c.user.id,
+                    username: c.user.username,
+                    avatar: c.user.avatar,
+                },
                 createdDate: c.createdAt,
                 content: c.comment
             }));
@@ -48,7 +52,7 @@ const CommentsSection = ({ postId, comments: initialComments }: CommentsSectionP
             setComments(updatedComments);
             setNewComment("");
             enqueueSnackbar("Comment added!", { variant: "success" });
-        } catch (error) {
+        } catch {
             enqueueSnackbar("Error adding comment", { variant: "error" });
         } finally {
             setIsSubmitting(false);

@@ -14,8 +14,8 @@ export const usePostActions = () => {
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       queryClient.invalidateQueries({ queryKey: ["allReviews"] });
     },
-    onError: (error: any) => {
-      enqueueSnackbar(error.message || "Failed to delete review", {
+    onError: (error: unknown) => {
+      enqueueSnackbar((error as Error).message || "Failed to delete review", {
         variant: "error",
       });
     },

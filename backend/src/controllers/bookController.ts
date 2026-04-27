@@ -36,7 +36,7 @@ export const searchBooksHandler = async (
 
     const result = await searchBooks(query);
     res.json(result);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error searching books:", error);
     next(error);
   }
@@ -55,7 +55,7 @@ export const getBookByIdHandler = async (
 
     const bookDetail = await getBookDetails(externalBookId);
     res.json({ book: bookDetail });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error(`Error getting book ${req.params.externalBookId}:`, error);
     next(error);
   }

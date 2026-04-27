@@ -1,8 +1,8 @@
-import FullBookPostCard from "@components/bookCards/FullBookPostCard";
 import { Box } from "@mui/material";
 import { useMemo } from "react";
 import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
-import type { BookPost } from "@models/Book";
+import type { BookPost, Book } from "@models/Book";
+import { UserReview, ReviewComment } from "@/models/UserReview";
 import { useQuery } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
@@ -23,18 +23,26 @@ const MyPosts = () => {
 
   const bookPosts: BookPost[] = useMemo(
     () =>
-      reviews.map((r: any) => ({
+      reviews.map((r: UserReview) => ({
         id: r._id,
-        book: r.book,
-        user: r.user,
-        createdDate: r.createdDate,
+        book: r.book as Book,
+        user: {
+          id: r.user._id,
+          username: r.user.username,
+          avatar: r.user.avatar,
+        },
+        createdDate: r.createdAt,
         description: r.review,
         rating: r.rating,
         imageUrl: r.picturePath,
         likes: r.likes,
-        comments: r.comments.map((c: any) => ({
+        comments: r.comments.map((c: ReviewComment) => ({
           id: c._id,
-          user: c.user,
+          user: {
+            id: c.user.id,
+            username: c.user.username,
+            avatar: c.user.avatar,
+          },
           createdDate: c.createdAt,
           content: c.comment,
         })),
@@ -48,26 +56,19 @@ const MyPosts = () => {
   });
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gap: "1.25rem",
-        borderRadius: "1rem",
-        padding: "1rem",
-        width: "100%",
-        margin: "0.75rem",
-      }}
-    >
-      <h2>My posts</h2>
+    <Box sx={{ width: "100%", mt: 2 }}>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
+        My posts
+      </Typography>
 
       <Box
         display="grid"
         gridTemplateColumns={{
           xs: "1fr",
           sm: "1fr 1fr",
-          md: "1fr 1fr 1fr 1fr",
+          md: "1fr 1fr 1fr",
         }}
-        gap={"2rem"}
+        gap="1.5rem"
       >
         {isLoading
           ? [...Array(BATCH_SIZE)].map((_, i) => <PostCardSkeleton key={i} />)
@@ -84,11 +85,11 @@ const MyPosts = () => {
 
       {!isLoading && bookPosts.length === 0 && (
         <Typography sx={{ textAlign: "center", mt: 4 }} color="text.secondary">
-          No posts yet
+          No posts yet.
         </Typography>
       )}
 
-      {visibleItems.length < bookPosts.length && <Box ref={loaderRef} />}
+      {visibleItems.length < bookPosts.length && <Box ref={loaderRef} sx={{ height: 20 }} />}
     </Box>
   );
 };

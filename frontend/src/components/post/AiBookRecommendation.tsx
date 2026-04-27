@@ -9,8 +9,6 @@ import {
   Stack,
 } from "@mui/material";
 import { BiSend } from "react-icons/bi";
-import { AiFillAlert } from "react-icons/ai";
-import { GiSparkles } from "react-icons/gi";
 import { IoSparkles } from "react-icons/io5";
 
 const EXAMPLE_AI_PROMPT =

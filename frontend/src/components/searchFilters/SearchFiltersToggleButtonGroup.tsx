@@ -3,7 +3,7 @@ import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 interface SearchFiltersToggleButtonGroupProps {
   options: { value: string; label: string }[];
   selectedValue?: string;
-  onChange: (event: React.MouseEvent<HTMLElement>, value: any) => void;
+  onChange: (event: React.MouseEvent<HTMLElement>, value: string | null) => void;
   style?: React.CSSProperties;
 }
 

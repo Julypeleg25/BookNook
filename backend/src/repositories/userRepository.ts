@@ -15,7 +15,7 @@ export class UserRepository {
       return await User.findById(new Types.ObjectId(String(userId)));
     } catch (error) {
       logger.error(`Error finding user by ID ${userId}:`, error);
-      throw error;
+      throw new Error(`Failed to find user by ID ${userId}`, { cause: error });
     }
   }
 
@@ -24,7 +24,7 @@ export class UserRepository {
       return await User.findOne({ username: username.toLowerCase() });
     } catch (error) {
       logger.error(`Error finding user by username ${username}:`, error);
-      throw error;
+      throw new Error(`Failed to find user by username ${username}`, { cause: error });
     }
   }
 
@@ -33,7 +33,7 @@ export class UserRepository {
       return await User.find({ username: { $regex: username, $options: "i" } });
     } catch (error) {
       logger.error(`Error finding users by partial username ${username}:`, error);
-      throw error;
+      throw new Error(`Failed to find users by partial username ${username}`, { cause: error });
     }
   }
 
@@ -42,7 +42,7 @@ export class UserRepository {
       return await User.findOne({ email: email.toLowerCase() });
     } catch (error) {
       logger.error(`Error finding user by email ${email}:`, error);
-      throw error;
+      throw new Error(`Failed to find user by email ${email}`, { cause: error });
     }
   }
 
@@ -51,7 +51,7 @@ export class UserRepository {
       return await User.findOne({ providerId });
     } catch (error) {
       logger.error(`Error finding user by providerId ${providerId}:`, error);
-      throw error;
+      throw new Error(`Failed to find user by providerId ${providerId}`, { cause: error });
     }
   }
 
@@ -67,9 +67,9 @@ export class UserRepository {
       const mongoError = error as MongoError;
       if (mongoError.code === 11000 && mongoError.keyPattern) {
         const field = Object.keys(mongoError.keyPattern)[0];
-        throw new Error(`${field} already exists`);
+        throw new Error(`${field} already exists`, { cause: error });
       }
-      throw error;
+      throw new Error("Failed to create user", { cause: error });
     }
   }
 
@@ -93,9 +93,9 @@ export class UserRepository {
       const mongoError = error as MongoError;
       if (mongoError.code === 11000 && mongoError.keyPattern) {
         const field = Object.keys(mongoError.keyPattern)[0];
-        throw new Error(`${field} already exists`);
+        throw new Error(`${field} already exists`, { cause: error });
       }
-      throw error;
+      throw new Error(`Failed to update user ${userId}`, { cause: error });
     }
   }
 

@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { updateUser } from "@services/userService";
 import { ValidationError } from "@utils/errors";
-import { logger } from "@utils/logger";
 import { isImageFile, deleteFile, deleteOldAvatar } from "@utils/fileUtils";
 import { HttpStatusCode } from "axios";
 import { sanitizeUser } from "@utils/userUtils";

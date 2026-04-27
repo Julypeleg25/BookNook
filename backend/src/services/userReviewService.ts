@@ -9,6 +9,7 @@ import { IUser } from "@models/User";
 import { IBook } from "@models/Book";
 import { syncReviewToVector, deleteReviewFromVector, syncUserProfileToVector } from "@services/ai/vectorSyncService";
 import User from "@models/User";
+import { logger } from "@utils/logger";
 
 
 export const createReview = async (
@@ -52,7 +53,6 @@ export const getAllReviews = async (
   genre?: string
 ): Promise<PopulatedUserReview[]> => {
   let userIdFilter: Types.ObjectId | Types.ObjectId[] | undefined;
-  let bookIdsFilter: Types.ObjectId[] | undefined;
 
   if (username) {
     const matchingUsers = await userRepository.findByUsernamePartial(username);
@@ -115,13 +115,15 @@ export const getReviewById = async (
   return review;
 };
 
-const extractBookId = (bookField: any): string | null => {
+const extractBookId = (bookField: unknown): string | null => {
   if (!bookField) return null;
   if (typeof bookField === 'string') return bookField;
 
-  if (bookField._id) {
-    if (typeof bookField._id === 'string') return bookField._id;
-    if (bookField._id.toString) return bookField._id.toString();
+  const bookObj = bookField as { _id?: string | Types.ObjectId; toString?: () => string };
+
+  if (bookObj._id) {
+    if (typeof bookObj._id === 'string') return bookObj._id;
+    if (bookObj._id instanceof Types.ObjectId) return bookObj._id.toString();
   }
 
   if (bookField instanceof Types.ObjectId) return bookField.toString();
@@ -134,7 +136,7 @@ const extractBookId = (bookField: any): string | null => {
   }
 };
 
-export const getEnrichedReviews = async (reviews: any[]): Promise<any[]> => {
+export const getEnrichedReviews = async (reviews: (IUserReview | PopulatedUserReview)[]): Promise<PopulatedUserReview[]> => {
   const { normalizeBookDetail } = await import("./bookService");
 
   return Promise.all(
@@ -150,7 +152,7 @@ export const getEnrichedReviews = async (reviews: any[]): Promise<any[]> => {
         const normalizedBook = normalizeBookDetail(fullBook);
         return { ...reviewObj, book: normalizedBook };
       } catch (error) {
-        console.warn(`Error enriching review ${review._id}:`, error);
+        logger.warn(`Error enriching review ${review._id}:`, error);
         return {
           ...reviewObj,
           book: {
@@ -171,7 +173,7 @@ export const getEnrichedReviews = async (reviews: any[]): Promise<any[]> => {
 
 export const getPopulatedReviewById = async (
   reviewId: string
-): Promise<any> => {
+): Promise<PopulatedUserReview> => {
   const review = await userReviewRepository.findByIdWithUser(reviewId);
   if (!review) {
     throw new NotFoundError("Review not found");
@@ -193,7 +195,7 @@ export const getPopulatedReviewById = async (
       book: normalizedBook
     };
   } catch (error) {
-    console.warn(`Error enriching review ${reviewId}:`, error);
+    logger.warn(`Error enriching review ${reviewId}:`, error);
     return {
       ...review.toObject(),
       book: {

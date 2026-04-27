@@ -75,7 +75,7 @@ export class UserReviewRepository {
     genreBookIds?: Types.ObjectId[]
   ): Promise<PopulatedUserReview[]> {
     try {
-      const query: any = {};
+      const query: Record<string, any> = {};
 
       if (userId) {
         if (Array.isArray(userId)) {
@@ -98,12 +98,12 @@ export class UserReviewRepository {
       }
 
       if (searchQuery) {
-        const searchConditions = [
+        const searchConditions: Record<string, any>[] = [
           { review: { $regex: searchQuery, $options: "i" } }
         ];
 
         if (bookIds && bookIds.length > 0) {
-          searchConditions.push({ book: { $in: bookIds } } as any);
+          searchConditions.push({ book: { $in: bookIds } });
         }
 
         if (query.book) {

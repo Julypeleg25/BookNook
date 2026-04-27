@@ -1,6 +1,5 @@
 import { Box, AppBar as MuiAppBar, Toolbar } from "@mui/material";
 import bookNookLogo from "@assets/booknook.png";
-import Login from "@/pages/Login";
 import { Outlet } from "react-router-dom";
 
 const PublicLayout = () => {
@@ -17,7 +16,7 @@ const PublicLayout = () => {
           </Box>
         </Toolbar>
       </MuiAppBar>
-      <Outlet/>
+      <Outlet />
     </div>
   );
 };

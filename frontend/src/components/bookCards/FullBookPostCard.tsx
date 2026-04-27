@@ -5,10 +5,7 @@ import {
   Rating,
   Stack,
   Typography,
-  Link as MuiLink,
-  Tooltip,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
 import type { BookPost } from "@models/Book";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
@@ -37,15 +34,15 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
               justifyContent="space-between"
               alignItems="flex-start"
             >
-                  <Typography
-                    sx={{
-                      fontSize: "1.4rem",
-                      fontWeight: 600,
-                      transition: "text-decoration 0.2s ease",
-                    }}
-                  >
-                    {post.book.title}
-                  </Typography>
+              <Typography
+                sx={{
+                  fontSize: "1.4rem",
+                  fontWeight: 600,
+                  transition: "text-decoration 0.2s ease",
+                }}
+              >
+                {post.book.title}
+              </Typography>
               <PostActionsMenu post={post} />
             </Stack>
             <Rating value={post.rating} readOnly size="small" />
