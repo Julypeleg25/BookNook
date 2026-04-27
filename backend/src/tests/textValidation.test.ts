@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import {
   COMMENT_TEXT_MAX_LENGTH,
+  RATING_STEP,
   REVIEW_TEXT_MAX_LENGTH,
   SEARCH_QUERY_MAX_LENGTH,
 } from "@shared/constants/validation";
@@ -41,6 +42,31 @@ describe("shared validation limits", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it("accepts half-step decimal ratings", () => {
+    const result = CreateUserReviewSchema.safeParse({
+      user: "507f191e810c19729de860ea",
+      book: "507f191e810c19729de860eb",
+      review: "a".repeat(REVIEW_TEXT_MAX_LENGTH),
+      rating: 3.5,
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects ratings outside the shared rating step", () => {
+    const result = CreateUserReviewSchema.safeParse({
+      user: "507f191e810c19729de860ea",
+      book: "507f191e810c19729de860eb",
+      review: "valid review",
+      rating: 3.25,
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toContain(String(RATING_STEP));
+    }
   });
 
   it("rejects reviews longer than the shared maximum length", () => {

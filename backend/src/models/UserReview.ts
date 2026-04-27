@@ -2,6 +2,9 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 import {
   COMMENT_TEXT_MAX_LENGTH,
   COMMENT_TEXT_MIN_LENGTH,
+  RATING_MAX,
+  RATING_MIN,
+  RATING_STEP,
   REVIEW_TEXT_MAX_LENGTH,
   REVIEW_TEXT_MIN_LENGTH,
 } from "@shared/constants/validation";
@@ -65,12 +68,12 @@ const UserReviewSchema = new Schema<IUserReview>(
     rating: {
       type: Number,
       required: true,
-      min: 0,
-      max: 5,
+      min: RATING_MIN,
+      max: RATING_MAX,
       validate: {
-        validator: (v: number) => v * 2 === Math.floor(v * 2),
+        validator: (v: number) => Number.isInteger(v / RATING_STEP),
         message: (props) =>
-          `${props.value} is not a valid rating (increments of 0.5)!`,
+          `${props.value} is not a valid rating (increments of ${RATING_STEP})!`,
       },
     },
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
