@@ -1,16 +1,7 @@
 import { axiosClient } from "../axios/axiosClient";
 import { endpoints } from "../endpoints";
 
-export interface CreateReviewData {
-    bookId: string;
-    rating: number;
-    review: string;
-    picture?: File;
-}
-
-import { UserReview, ReviewComment } from "@/models/UserReview";
-
-
+import { UserReview, ReviewComment, CreateReviewData } from "@/models/UserReview";
 
 export const userReviewService = {
     async createReview(data: CreateReviewData): Promise<UserReview> {

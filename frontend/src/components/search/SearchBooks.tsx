@@ -9,6 +9,7 @@ import { booksService } from "@/api/services/bookService";
 import type { Book } from "@/models/Book";
 import { useSearchParamsState } from "@/hooks/useSearchParamsState";
 import { queryKeys } from "@/api/queryKeys";
+import { useIntersectionObserver } from "@hooks/useIntersectionObserver";
 
 const PAGE_SIZE = 20;
 
@@ -62,24 +63,12 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
         enabled: hasValidQuery,
     });
 
-    const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
-        const [target] = entries;
-        if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-        }
-    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-    useEffect(() => {
-        const element = observerTarget.current;
-        if (!element) return;
-
-        const observer = new IntersectionObserver(handleObserver, {
-            threshold: 0.1,
-        });
-
-        observer.observe(element);
-        return () => observer.disconnect();
-    }, [handleObserver, queryResetKey]);
+    useIntersectionObserver({
+        targetRef: observerTarget,
+        onIntersect: fetchNextPage,
+        enabled: !!hasNextPage && !isFetchingNextPage,
+        resetKey: queryResetKey,
+    });
 
     const allBooks = data?.pages.flatMap((page) => page.items) ?? [];
     const showEmptyState = hasValidQuery && !isLoading && allBooks.length === 0;
