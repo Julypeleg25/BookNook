@@ -9,9 +9,14 @@ export interface ApiErrorResponseData {
 export class ApiError extends Error {
   status?: number;
   code?: string;
-  details?: unknown;
+  details?: ApiErrorResponseData;
 
-  constructor(message: string, status?: number, code?: string, details?: unknown) {
+  constructor(
+    message: string,
+    status?: number,
+    code?: string,
+    details?: ApiErrorResponseData,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -36,4 +41,37 @@ export const mapAxiosError = (error: AxiosError<ApiErrorResponseData>): ApiError
   }
 
   return new ApiError(error.message);
+};
+
+interface AxiosLikeErrorData {
+  message?: string;
+  error?: string;
+}
+
+interface AxiosLikeError {
+  response?: {
+    data?: AxiosLikeErrorData;
+  };
+}
+
+const isAxiosLikeError = (error: unknown): error is AxiosLikeError =>
+  typeof error === "object" && error !== null && "response" in error;
+
+export const getErrorMessage = (
+  error: unknown,
+  fallback: string,
+): string => {
+  if (error instanceof ApiError) {
+    return error.details?.error ?? error.details?.message ?? error.message;
+  }
+
+  if (isAxiosLikeError(error)) {
+    return (
+      error.response?.data?.message ??
+      error.response?.data?.error ??
+      fallback
+    );
+  }
+
+  return error instanceof Error ? error.message : fallback;
 };

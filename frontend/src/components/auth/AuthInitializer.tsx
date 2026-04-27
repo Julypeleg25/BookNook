@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@hooks/useAuth";
 
-export const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
+interface AuthInitializerProps {
+  children: React.ReactNode;
+}
+
+export const AuthInitializer = ({ children }: AuthInitializerProps) => {
   const { syncUser } = useAuth();
   const [loading, setLoading] = useState(true);
 

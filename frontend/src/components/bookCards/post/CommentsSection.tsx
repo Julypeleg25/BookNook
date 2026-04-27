@@ -15,6 +15,8 @@ import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
 import { useSnackbar } from "notistack";
 import { useQueryClient } from "@tanstack/react-query";
+import { invalidateReviewCaches } from "@/api/queryCache";
+import { getCommentUser } from "@/utils/reviewUtils";
 
 interface CommentsSectionProps {
     postId: string;
@@ -42,20 +44,15 @@ const CommentsSection = ({ postId, comments: initialComments }: CommentsSectionP
 
             const updatedComments: PostComment[] = updatedCommentsRaw.map((c) => ({
                 id: c._id,
-                user: {
-                    id: c.user.id,
-                    username: c.user.username,
-                    avatar: c.user.avatar,
-                },
+                user: getCommentUser(c.user),
                 createdDate: c.createdAt,
-                content: c.comment
+                content: c.comment,
             }));
 
             setComments(updatedComments);
             setNewComment("");
             enqueueSnackbar("Comment added!", { variant: "success" });
-            queryClient.invalidateQueries({ queryKey: ["allReviews"] });
-            queryClient.invalidateQueries({ queryKey: ["review", postId] });
+            invalidateReviewCaches(queryClient, { reviewId: postId });
         } catch {
             enqueueSnackbar("Error adding comment", { variant: "error" });
         } finally {

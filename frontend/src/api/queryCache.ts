@@ -1,0 +1,89 @@
+import type { QueryClient } from "@tanstack/react-query";
+import type { Book } from "@/models/Book";
+import type { BookListType } from "@/models/List";
+import type { UserReview } from "@/models/UserReview";
+import type { UserDto } from "@shared/dtos/user.dto";
+import { queryKeys, authScopedQueryKeys } from "./queryKeys";
+import { getBookId } from "@/utils/bookUtils";
+import { applyUserToReviews, applyUserToReview } from "@/utils/reviewUtils";
+
+export const invalidateAuthReviewState = (queryClient: QueryClient) => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.allReviews });
+  queryClient.invalidateQueries({ queryKey: queryKeys.reviewPrefix });
+};
+
+export const clearAuthScopedQueries = (queryClient: QueryClient) => {
+  authScopedQueryKeys.forEach((queryKey) => {
+    queryClient.removeQueries({ queryKey });
+  });
+};
+
+export const invalidateReviewCaches = (
+  queryClient: QueryClient,
+  options: { reviewId?: string; bookId?: string } = {},
+) => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.reviews });
+  queryClient.invalidateQueries({ queryKey: queryKeys.allReviews });
+
+  if (options.bookId) {
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.reviewsByBook(options.bookId),
+    });
+  }
+
+  if (options.reviewId) {
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.review(options.reviewId),
+    });
+  }
+};
+
+export const syncUpdatedUserInReviewCaches = (
+  queryClient: QueryClient,
+  user: UserDto,
+) => {
+  queryClient.setQueriesData<UserReview[]>(
+    { queryKey: queryKeys.allReviews },
+    (reviews) => applyUserToReviews(reviews, user),
+  );
+  queryClient.setQueriesData<UserReview>(
+    { queryKey: queryKeys.reviewPrefix },
+    (review) => (review ? applyUserToReview(review, user) : review),
+  );
+  queryClient.invalidateQueries({ queryKey: queryKeys.currentUser });
+  invalidateAuthReviewState(queryClient);
+};
+
+export const setBookListCache = (
+  queryClient: QueryClient,
+  username: string,
+  listType: BookListType,
+  books: Book[],
+) => {
+  queryClient.setQueryData(queryKeys.listByType(username, listType), books);
+};
+
+export const removeBookFromListCache = (
+  queryClient: QueryClient,
+  username: string,
+  listType: BookListType,
+  book: Book,
+) => {
+  queryClient.setQueryData<Book[]>(
+    queryKeys.listByType(username, listType),
+    (currentBooks) =>
+      currentBooks?.filter(
+        (currentBook) => getBookId(currentBook) !== getBookId(book),
+      ) ?? [],
+  );
+};
+
+export const invalidateBookListCache = (
+  queryClient: QueryClient,
+  username: string,
+  listType: BookListType,
+) => {
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.listByType(username, listType),
+  });
+};

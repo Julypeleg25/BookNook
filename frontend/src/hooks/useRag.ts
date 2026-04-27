@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ragService } from "@api/services/ragService";
 import { RagQueryRequest, RagQueryResponse, RAGMode } from "@models/Rag";
+import { getErrorMessage } from "@/api/apiError";
 
 export const useRag = () => {
   const [loading, setLoading] = useState(false);
@@ -23,12 +24,11 @@ export const useRag = () => {
       const result = await ragService.query(data, abortControllerRef.current.signal);
       setResponse(result);
     } catch (err: unknown) {
-      const error = err as { name?: string; response?: { data?: { error?: string } } };
-      const message = error.response?.data?.error || (err as Error).message || "An unexpected error occurred.";
-      if (error.name === "CanceledError" || error.name === "AbortError") {
+      const errorName = err instanceof Error ? err.name : "";
+      if (errorName === "CanceledError" || errorName === "AbortError") {
         return;
       }
-      setError(message);
+      setError(getErrorMessage(err, "An unexpected error occurred."));
     } finally {
       setLoading(false);
     }
