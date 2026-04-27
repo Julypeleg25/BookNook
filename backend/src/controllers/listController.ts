@@ -32,7 +32,7 @@ export const addBookToList = async (
       throw new ValidationError("Book ID is required");
     }
 
-    const updatedList = await addBookToUserList(userId, bookId, listType);
+    const updatedList = await addBookToUserList(userId, bookId as string, listType);
     res.json({ updatedList });
   } catch (error) {
     logger.error("Error adding book to list:", error);
@@ -54,7 +54,7 @@ export const removeBookFromList = async (
       throw new ValidationError("Invalid list type. Must be 'wish' or 'read'");
     }
 
-    const updatedList = await removeBookFromUserList(userId, bookId, listType);
+    const updatedList = await removeBookFromUserList(userId, bookId as string, listType);
     res.json({ updatedList });
   } catch (error) {
     logger.error("Error removing book from list:", error);

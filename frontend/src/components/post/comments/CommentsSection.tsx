@@ -7,6 +7,7 @@ import CommentsHeader from "./CommentsHeader";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
+import useUserStore from "@/state/useUserStore";
 
 interface CommentsSectionProps {
   bookPost: BookPost;
@@ -20,6 +21,7 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
   ({ bookPost }, ref) => {
     const newCommentRef = useRef<NewCommentRef>(null);
     const [sortOrder, setSortOrder] = useState<string>("mostRecent");
+    const { user } = useUserStore();
 
     useImperativeHandle(ref, () => ({
       focusInput: () => newCommentRef.current?.focus(),
@@ -31,6 +33,7 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
         userReviewService.addComment(bookPost.id, comment),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["review", bookPost.id] });
+        queryClient.invalidateQueries({ queryKey: ["allReviews"] });
       },
     });
 
@@ -58,7 +61,7 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
           style={{ backgroundColor: "white" }}
           width="100%"
         >
-          <NewComment ref={newCommentRef} avatarUrl={bookPost.user.avatar} onSubmit={handleAddComment} />
+          <NewComment ref={newCommentRef} avatarUrl={user?.avatar} onSubmit={handleAddComment} />
           <Divider
             style={{ width: "93%", justifySelf: "center", opacity: 0.3 }}
           />

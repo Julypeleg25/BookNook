@@ -16,7 +16,7 @@ export const likeReviewHandler = async (
     }
 
     const likesCount = await likeReview(
-      id,
+      id as string,
       new Types.ObjectId(req.authenticatedUser!.id)
     );
     res.json({ likes: likesCount });
@@ -38,7 +38,7 @@ export const unlikeReviewHandler = async (
     }
 
     const likesCount = await unlikeReview(
-      id,
+      id as string,
       new Types.ObjectId(req.authenticatedUser!.id)
     );
     res.json({ likes: likesCount });

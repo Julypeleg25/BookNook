@@ -14,6 +14,7 @@ import { formatDate } from "@/utils/dateUtils";
 import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
 import { useSnackbar } from "notistack";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CommentsSectionProps {
     postId: string;
@@ -26,6 +27,7 @@ const CommentsSection = ({ postId, comments: initialComments }: CommentsSectionP
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { enqueueSnackbar } = useSnackbar();
+    const queryClient = useQueryClient();
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
@@ -52,6 +54,8 @@ const CommentsSection = ({ postId, comments: initialComments }: CommentsSectionP
             setComments(updatedComments);
             setNewComment("");
             enqueueSnackbar("Comment added!", { variant: "success" });
+            queryClient.invalidateQueries({ queryKey: ["allReviews"] });
+            queryClient.invalidateQueries({ queryKey: ["review", postId] });
         } catch {
             enqueueSnackbar("Error adding comment", { variant: "error" });
         } finally {

@@ -45,7 +45,10 @@ const NewPost = () => {
     enabled: !!reviewId,
   });
 
-  const bookId = routeBookId || (typeof reviewData?.book === 'string' ? reviewData.book : reviewData?.book?._id);
+  const bookId = routeBookId ||
+    (typeof reviewData?.book === 'string'
+      ? reviewData.book
+      : (reviewData?.book?.id || reviewData?.book?._id));
 
   const { data: bookData, isLoading: isLoadingBook } = useQuery({
     queryKey: ["book", bookId],

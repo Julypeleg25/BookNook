@@ -1,16 +1,32 @@
 import { Types } from "mongoose";
 import { IUserReview } from "@models/UserReview";
 import { userReviewRepository, PopulatedUserReview } from "@repositories/userReviewRepository";
-import { getOrCreateLocalBook, getGoogleBookByLocalId } from "./bookService";
-import { recomputeBookRating } from "./ratingService";
+import * as bookService from "./bookService";
+import * as ratingService from "./ratingService";
 import { NotFoundError } from "@utils/errors";
 import { bookRepository } from "@repositories/bookRepository";
 import { IUser } from "@models/User";
 import { IBook } from "@models/Book";
-import { syncReviewToVector, deleteReviewFromVector, syncUserProfileToVector } from "@services/ai/vectorSyncService";
+import * as vectorSyncService from "@services/ai/vectorSyncService";
 import User from "@models/User";
 import { logger } from "@utils/logger";
+import { userRepository } from "@repositories/userRepository";
+import { FlattenMaps } from "mongoose";
 
+type ReviewDocumentLike = (IUserReview | PopulatedUserReview) & {
+  _id: Types.ObjectId;
+  toObject?: () => FlattenMaps<IUserReview | PopulatedUserReview>;
+};
+
+export const userReviewServiceDeps = {
+  getOrCreateLocalBook: bookService.getOrCreateLocalBook,
+  getGoogleBookByLocalId: bookService.getGoogleBookByLocalId,
+  recomputeBookRating: ratingService.recomputeBookRating,
+  syncReviewToVector: vectorSyncService.syncReviewToVector,
+  deleteReviewFromVector: vectorSyncService.deleteReviewFromVector,
+  syncUserProfileToVector: vectorSyncService.syncUserProfileToVector,
+  findUserById: User.findById.bind(User),
+};
 
 export const createReview = async (
   userId: Types.ObjectId,
@@ -19,31 +35,30 @@ export const createReview = async (
   reviewText?: string,
   picturePath?: string
 ): Promise<IUserReview> => {
-  const book = await getOrCreateLocalBook(externalBookId);
+  const book = await userReviewServiceDeps.getOrCreateLocalBook(externalBookId);
+  const bookId = book._id as Types.ObjectId;
 
   const finalPicturePath = picturePath || book.thumbnail;
 
   const newReview = await userReviewRepository.create({
     user: userId,
-    book: book._id,
+    book: bookId,
     rating,
     review: reviewText,
     picturePath: finalPicturePath,
   });
 
-  await recomputeBookRating(book._id.toString());
+  await userReviewServiceDeps.recomputeBookRating(bookId.toString());
 
-  await syncReviewToVector(newReview);
+  await userReviewServiceDeps.syncReviewToVector(newReview);
 
-  const user = await User.findById(userId);
+  const user = await userReviewServiceDeps.findUserById(userId);
   if (user) {
-    await syncUserProfileToVector(user);
+    await userReviewServiceDeps.syncUserProfileToVector(user);
   }
 
   return newReview;
 };
-
-import { userRepository } from "@repositories/userRepository";
 
 export const getAllReviews = async (
   minLikes?: number,
@@ -141,18 +156,19 @@ export const getEnrichedReviews = async (reviews: (IUserReview | PopulatedUserRe
 
   return Promise.all(
     reviews.map(async (review) => {
-      const reviewObj = typeof review.toObject === 'function' ? review.toObject() : review;
+      const reviewDoc = review as ReviewDocumentLike;
+      const reviewObj = typeof reviewDoc.toObject === 'function' ? reviewDoc.toObject() : reviewDoc;
       const bookId = extractBookId(reviewObj.book);
 
       try {
         if (!bookId) {
-          throw new Error(`Could not determine book ID for review ${review._id}`);
+          throw new Error(`Could not determine book ID for review ${String(reviewDoc._id)}`);
         }
-        const fullBook = await getGoogleBookByLocalId(bookId);
+        const fullBook = await userReviewServiceDeps.getGoogleBookByLocalId(bookId);
         const normalizedBook = normalizeBookDetail(fullBook);
         return { ...reviewObj, book: normalizedBook };
       } catch (error) {
-        logger.warn(`Error enriching review ${review._id}:`, error);
+        logger.warn(`Error enriching review ${String(reviewDoc._id)}:`, error);
         return {
           ...reviewObj,
           book: {
@@ -186,7 +202,7 @@ export const getPopulatedReviewById = async (
       throw new Error(`Could not determine book ID for review ${reviewId}`);
     }
 
-    const fullBook = await getGoogleBookByLocalId(bookId);
+    const fullBook = await userReviewServiceDeps.getGoogleBookByLocalId(bookId);
     const { normalizeBookDetail } = await import("./bookService");
     const normalizedBook = normalizeBookDetail(fullBook);
 
@@ -227,13 +243,13 @@ export const updateReview = async (
     throw new NotFoundError("Review not found");
   }
 
-  await recomputeBookRating(updatedReview.book.toString());
+  await userReviewServiceDeps.recomputeBookRating((updatedReview.book as Types.ObjectId).toString());
 
-  await syncReviewToVector(updatedReview);
+  await userReviewServiceDeps.syncReviewToVector(updatedReview);
 
-  const user = await User.findById(updatedReview.user.toString());
+  const user = await userReviewServiceDeps.findUserById((updatedReview.user as Types.ObjectId).toString());
   if (user) {
-    await syncUserProfileToVector(user);
+    await userReviewServiceDeps.syncUserProfileToVector(user);
   }
 
   return updatedReview;
@@ -246,13 +262,13 @@ export const deleteReview = async (reviewId: string): Promise<void> => {
   }
 
   await userReviewRepository.delete(reviewId);
-  await recomputeBookRating(review.book.toString());
+  await userReviewServiceDeps.recomputeBookRating((review.book as Types.ObjectId).toString());
 
-  await deleteReviewFromVector(reviewId);
+  await userReviewServiceDeps.deleteReviewFromVector(reviewId);
 
-  const user = await User.findById(review.user.toString());
+  const user = await userReviewServiceDeps.findUserById((review.user as Types.ObjectId).toString());
   if (user) {
-    await syncUserProfileToVector(user);
+    await userReviewServiceDeps.syncUserProfileToVector(user);
   }
 };
 
@@ -264,6 +280,5 @@ export const isReviewAuthor = async (
   if (!review) {
     return false;
   }
-  return review.user.toString() === userId;
+  return (review.user as Types.ObjectId).toString() === userId;
 };
-

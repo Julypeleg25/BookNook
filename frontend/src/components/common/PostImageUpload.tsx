@@ -79,18 +79,13 @@ const PostImageUpload = ({ value, onChange }: PostImageUploadProps) => {
         />
       )}
 
-      <Box sx={{ display: "flex", gap: 2 }}>
-        <Button variant="outlined" onClick={() => setCameraOpen(true)}>
-          Take Photo
-        </Button>
-
         <Button
           variant="outlined"
           onClick={() => fileInputRef.current?.click()}
+          sx={{width: 240}}
         >
           Upload Image
         </Button>
-      </Box>
 
       <input
         ref={fileInputRef}

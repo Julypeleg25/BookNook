@@ -117,50 +117,30 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters, mode }: Se
                   )}
                 />
               </Box>
-
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>Minimum Reviews</Typography>
-                <Controller
-                  name="reviewsAmount"
-                  control={control}
-                  render={({ field }) => (
-                    <Slider
-                      {...field}
-                      value={field.value || 0}
-                      onChange={(_, value) => field.onChange(value)}
-                      min={0}
-                      max={500}
-                      step={5}
-                      marks={[
-                        { value: 0, label: '0' },
-                        { value: 500, label: '500+' },
-                      ]}
-                    />
-                  )}
-                />
-              </Box>
-
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1, mt: 1 }}>Minimum Likes</Typography>
-                <Controller
-                  name="likesAmount"
-                  control={control}
-                  render={({ field }) => (
-                    <Slider
-                      {...field}
-                      value={field.value || 0}
-                      onChange={(_, value) => field.onChange(value)}
-                      min={0}
-                      max={100}
-                      step={1}
-                      marks={[
-                        { value: 0, label: '0' },
-                        { value: 100, label: '100+' },
-                      ]}
-                    />
-                  )}
-                />
-              </Box>
+              {mode === 'posts' && (
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 1, mt: 1 }}>Minimum Likes</Typography>
+                  <Controller
+                    name="likesAmount"
+                    control={control}
+                    render={({ field }) => (
+                      <Slider
+                        {...field}
+                        value={field.value || 0}
+                        onChange={(_, value) => field.onChange(value)}
+                        min={0}
+                        max={50}
+                        step={1}
+                        valueLabelDisplay="auto"
+                        marks={[
+                          { value: 0, label: '0' },
+                          { value: 50, label: '50+' },
+                        ]}
+                      />
+                    )}
+                  />
+                </Box>
+              )}
             </Box>
           </Box>
         </DialogContent>

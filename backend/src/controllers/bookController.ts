@@ -53,7 +53,7 @@ export const getBookByIdHandler = async (
       throw new ValidationError("Book ID is required");
     }
 
-    const bookDetail = await getBookDetails(externalBookId);
+    const bookDetail = await getBookDetails(externalBookId as string);
     res.json({ book: bookDetail });
   } catch (error: unknown) {
     logger.error(`Error getting book ${req.params.externalBookId}:`, error);

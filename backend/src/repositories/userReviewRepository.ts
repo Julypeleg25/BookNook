@@ -1,5 +1,5 @@
 import { UserReviewModel, IUserReview, ReviewComment } from "@models/UserReview";
-import { Types } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import { IUser } from "@models/User";
 import { logger } from "@utils/logger";
 
@@ -75,7 +75,7 @@ export class UserReviewRepository {
     genreBookIds?: Types.ObjectId[]
   ): Promise<PopulatedUserReview[]> {
     try {
-      const query: Record<string, any> = {};
+      const query: FilterQuery<IUserReview> = {};
 
       if (userId) {
         if (Array.isArray(userId)) {
@@ -86,7 +86,7 @@ export class UserReviewRepository {
       }
 
       if (minLikes && minLikes > 0) {
-        query[`likes.${minLikes - 1}`] = { $exists: true };
+        query.$expr = { $gte: [{ $size: { $ifNull: ["$likes", []] } }, minLikes] };
       }
 
       if (rating && rating > 0) {
@@ -98,7 +98,7 @@ export class UserReviewRepository {
       }
 
       if (searchQuery) {
-        const searchConditions: Record<string, any>[] = [
+        const searchConditions: FilterQuery<IUserReview>[] = [
           { review: { $regex: searchQuery, $options: "i" } }
         ];
 

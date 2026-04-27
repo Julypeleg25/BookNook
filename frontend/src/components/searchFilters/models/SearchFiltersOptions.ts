@@ -7,7 +7,6 @@ export interface ISearchFiltersForm {
   yearPublishedFrom: string;
   yearPublishedTo: string;
   likesAmount: number;
-  reviewsAmount: number;
   rating: number;
   username: string;
 }

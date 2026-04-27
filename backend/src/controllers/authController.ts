@@ -73,7 +73,7 @@ export const login = async (
     }
 
     const { accessToken, refreshToken } = generateTokens(user);
-    await updateUserTokens(user._id.toString(), accessToken, refreshToken);
+    await updateUserTokens(String(user._id), accessToken, refreshToken);
 
     setAuthCookies(res, refreshToken);
 
@@ -156,7 +156,7 @@ export const googleSignIn = async (
     }
 
     const { accessToken, refreshToken } = generateTokens(user);
-    await updateUserTokens(user._id.toString(), accessToken, refreshToken);
+    await updateUserTokens(String(user._id), accessToken, refreshToken);
 
     setAuthCookies(res, refreshToken);
 

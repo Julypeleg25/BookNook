@@ -16,37 +16,57 @@ import { errorHandler } from "@middlewares/errorHandler";
 import { logger } from "@utils/logger";
 import ragRoutes from "@routes/ragRoutes";
 import { ensureSchema } from "@services/ai/vectorRepository";
+import path from "path";
 
 
 const app = express();
-const PORT = ENV.PORT;
 
-app.use(cookieParser());
+const initApp = async () => {
+  app.use(cookieParser());
 
-app.use(
-  cors({
-    origin: ENV.FRONTEND_URL,
-    credentials: true,
-  })
-);
+  app.use(
+    cors({
+      origin: ENV.FRONTEND_URL,
+      credentials: true,
+      exposedHeaders: ["set-cookie"],
+    })
+  );
 
-app.use(express.json({ limit: "10mb" }));
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Credentials", "true");
+    next();
+  });
 
-app.use("/auth", authRoutes);
-app.use("/api/books", authenticate, booksRouter);
-app.use("/userReviews", authenticate, userReviewsRouter);
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use("/api/lists", authenticate, listRouter);
-app.use("/api/users", userRouter);
-app.use("/api/rag", ragRoutes);
+  app.use(express.json({ limit: "10mb" }));
 
-app.use("/uploads", express.static(UPLOADS_FOLDER));
+  app.use("/auth", authRoutes);
+  app.use("/api/books", authenticate, booksRouter);
+  app.use("/userReviews", authenticate, userReviewsRouter);
+  app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use("/api/lists", authenticate, listRouter);
+  app.use("/api/users", userRouter);
+  app.use("/api/rag", ragRoutes);
 
-app.use(errorHandler);
+  app.use("/uploads", express.static(UPLOADS_FOLDER));
 
-mongoose
-  .connect(ENV.MONGODB_URL)
-  .then(async () => {
+  app.use(errorHandler);
+
+  const __dirname = path.resolve();
+  const publicPath = path.join(__dirname, "public");
+
+  app.use(express.static(publicPath));
+
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
+
+  app.get("/*any", (req, res) => {
+    res.sendFile(path.resolve(publicPath, "index.html"));
+  });
+
+  try {
+    await mongoose.connect(ENV.MONGODB_URL);
     logger.info("Connected to MongoDB");
 
     try {
@@ -55,13 +75,12 @@ mongoose
     } catch (err) {
       logger.error("Failed to initialize pgvector:", err);
     }
-
-
-    app.listen(PORT, () => {
-      logger.info(`Server is running on http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
+  } catch (err) {
     logger.error("MongoDB connection error:", err);
-    process.exit(1);
-  });
+    throw err;
+  }
+
+  return app;
+};
+
+export default initApp;

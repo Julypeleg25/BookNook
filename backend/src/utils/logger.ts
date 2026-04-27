@@ -21,7 +21,7 @@ class Logger {
         console.info(logMessage, ...args);
         break;
       case LogLevel.DEBUG:
-        console.debug(logMessage, ...args);
+        console.info(logMessage, ...args);
         break;
     }
   }

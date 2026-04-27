@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   IconButton,
-  Tooltip,
   Stack,
 } from "@mui/material";
 import { useState } from "react";
@@ -50,7 +49,7 @@ const Profile = () => {
         </Card>
 
         <Box sx={{ width: "100%" }}>
-          <MyPosts />
+          <MyPosts disablePadding />
         </Box>
       </Stack>
     </Box>

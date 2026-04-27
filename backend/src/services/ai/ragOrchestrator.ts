@@ -54,7 +54,7 @@ ${chunks.map((c, i) => `[Result #${i + 1}] type: ${c.type}, authorId: ${c.metada
                 type: c.type,
                 text: c.text,
                 score: c.score,
-                metadata: c.metadata,
+                metadata: c.metadata || {},
             })),
         };
     } catch (err) {

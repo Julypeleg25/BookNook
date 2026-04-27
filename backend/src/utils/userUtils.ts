@@ -8,7 +8,7 @@ export const generateUsernameFromEmail = (email: string): string => {
 };
 
 export const sanitizeUser = (user: IUser): UserDto => ({
-  id: user._id.toString(),
+  id: String(user._id),
   username: user.username,
   email: user.email,
   avatar: user.avatar,

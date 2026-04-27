@@ -54,7 +54,9 @@ export const verifyRefreshToken = (token: string): TokenPayload => {
     if (error instanceof UnauthorizedError) {
       throw error;
     }
-    logger.error("Error verifying refresh token:", error);
+    if (!(error instanceof jwt.TokenExpiredError)) {
+      logger.error("Error verifying refresh token:", error);
+    }
     throw new UnauthorizedError("Invalid refresh token");
   }
 };
@@ -72,7 +74,9 @@ export const verifyAccessToken = (token: string): TokenPayload => {
     if (error instanceof UnauthorizedError) {
       throw error;
     }
-    logger.error("Error verifying access token:", error);
+    if (!(error instanceof jwt.TokenExpiredError)) {
+      logger.error("Error verifying access token:", error);
+    }
     throw new UnauthorizedError("Invalid access token");
   }
 };

@@ -1,14 +1,10 @@
 import multer, { FileFilterCallback } from "multer";
 import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
 import { Request } from "express";
 import { IMAGE_EXTENSIONS, MAX_FILE_SIZE_BYTES } from "./constants";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-export const UPLOADS_FOLDER = path.join(__dirname, "./uploads");
+export const UPLOADS_FOLDER = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(UPLOADS_FOLDER)) {
   fs.mkdirSync(UPLOADS_FOLDER, { recursive: true });
 }

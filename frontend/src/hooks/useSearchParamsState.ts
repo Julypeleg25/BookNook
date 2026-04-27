@@ -22,7 +22,6 @@ export const useSearchParamsState = () => {
       yearPublishedTo: searchParams.get("yearPublishedTo") || "",
       rating: Number(searchParams.get("rating")) || 0,
       likesAmount: Number(searchParams.get("likesAmount")) || 0,
-      reviewsAmount: Number(searchParams.get("reviewsAmount")) || 0,
       username: searchParams.get("username") || "",
     };
   }, [searchParams]);
