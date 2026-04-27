@@ -14,6 +14,7 @@ import { userReviewService } from "@/api/services/userReviewService";
 import { enqueueSnackbar } from "notistack";
 import useUserStore from "@/state/useUserStore";
 import { invalidateReviewCaches } from "@/api/queryCache";
+import { RATING_STEP } from "@shared/constants/validation";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -90,7 +91,7 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
         </Stack>
       </Stack>
 
-      <Rating size="small" value={post.rating} precision={0.5} readOnly />
+      <Rating size="small" value={post.rating} precision={RATING_STEP} readOnly />
     </CardActions>
   );
 };

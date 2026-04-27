@@ -18,6 +18,7 @@ import {
   ISearchFiltersForm,
   SearchMode,
 } from "./models/SearchFiltersOptions";
+import { RATING_STEP } from "@shared/constants/validation";
 
 interface SearchFiltersModalProps {
   open: boolean;
@@ -110,7 +111,7 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters, mode }: Se
                   render={({ field }) => (
                     <Rating
                       {...field}
-                      precision={0.5}
+                      precision={RATING_STEP}
                       value={Number(field.value)}
                       onChange={(_, val) => field.onChange(val)}
                     />

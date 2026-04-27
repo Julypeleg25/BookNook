@@ -96,9 +96,22 @@ const BookInfo = () => {
         alignItems="start"
       >
         <Stack spacing={3}>
-          <Stack direction="row" spacing={1.5} alignItems="flex-start">
-            <MdMenuBook size={"1.5rem"} />
-            <Typography variant="body1">
+          <Stack direction="row" spacing={2} alignItems="flex-start">
+            <Box
+              sx={{
+                width: "3rem",
+                height: "3rem",
+                borderRadius: "50%",
+                bgcolor: "action.selected",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <MdMenuBook size={"2rem"} />
+            </Box>
+            <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
               {book.description?.replace(/<[^>]*>?/gm, "") || "No description available."}
             </Typography>
           </Stack>

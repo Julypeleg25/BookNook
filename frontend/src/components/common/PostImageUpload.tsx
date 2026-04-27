@@ -68,15 +68,30 @@ const PostImageUpload = ({ value, onChange }: PostImageUploadProps) => {
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {preview && (
         <Box
-          component="img"
-          src={preview}
           sx={{
-            width: "30%",
-            height: "30%",
-            objectFit: "cover",
+            width: "100%",
+            maxWidth: "32rem",
+            aspectRatio: "16 / 10",
+            bgcolor: "grey.100",
             borderRadius: 2,
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
+        >
+          <Box
+            component="img"
+            src={preview}
+            alt="Post preview"
+            sx={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              display: "block",
+            }}
+          />
+        </Box>
       )}
 
         <Button

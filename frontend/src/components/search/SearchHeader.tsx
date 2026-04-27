@@ -50,7 +50,7 @@ const SearchHeader = ({
               '&:hover': { textDecoration: 'underline' }
             }}
           >
-            Clear all filters
+            Clear filters
           </Box>
         )}
       </Box>

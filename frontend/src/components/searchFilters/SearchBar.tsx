@@ -15,7 +15,7 @@ interface SearchBarProps {
 
 const SearchBar = ({ onSearch, onClearSearch, searchTerm, setSearchTerm, setIsFiltersModalOpen, hasActiveFilters }: SearchBarProps) => {
   const [placeholder, setPlaceholder] = useState("");
-  const fullPlaceholder = "Search by book title...";
+  const fullPlaceholder = "Search books or review text...";
   
   useEffect(() => {
     let i = 0;
@@ -69,17 +69,6 @@ const SearchBar = ({ onSearch, onClearSearch, searchTerm, setSearchTerm, setIsFi
       >
         <HiOutlineAdjustmentsVertical size={"2rem"} />
       </IconButton>
-      <Button
-        variant="text"
-        onClick={onClearSearch}
-        sx={{
-          textTransform: "none",
-          color: "text.secondary",
-          whiteSpace: "nowrap"
-        }}
-      >
-        Clear Search
-      </Button>
       <Button variant="contained" onClick={handleSearch}>
         Search
       </Button>

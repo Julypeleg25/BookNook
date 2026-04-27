@@ -25,19 +25,29 @@ interface SelectProps {
 }
 
 const Select = (props: SelectProps) => {
+  const value = props.multiple
+    ? props.selectedValues
+    : props.selectedValues[0] ?? "";
+
   return (
     <FormControl style={props.style} fullWidth={props.fullWidth} sx={props.sx}>
       {props.label && <InputLabel>{props.label}</InputLabel>}
       <MuiSelect
         onChange={(event) => {
-          const value = event.target.value;
-          props.onChange(typeof value === 'string' ? value.split(',') : (value as (string | number)[]));
+          const selectedValue = event.target.value;
+          props.onChange(
+            props.multiple
+              ? typeof selectedValue === "string"
+                ? selectedValue.split(",")
+                : (selectedValue as (string | number)[])
+              : [selectedValue as string | number],
+          );
         }}
         startAdornment={props.startIcon}
         variant="outlined"
         fullWidth
         multiple={props.multiple}
-        value={props.selectedValues}
+        value={value}
         label={props.label}
       >
         {props.menuItems.map((item) => (

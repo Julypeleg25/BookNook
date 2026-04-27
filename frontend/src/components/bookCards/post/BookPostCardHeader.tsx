@@ -45,8 +45,13 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             sx={{
               fontSize: "1rem",
               fontWeight: 600,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
               transition: "text-decoration 0.2s ease",
             }}
+            title={post.book?.title || "Book Unavailable"}
           >
             {post.book?.title || "Book Unavailable"}
           </Typography>
@@ -74,7 +79,9 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             onError={handleImageError}
             onLoad={handleImageLoad}
             sx={{
-              height: "16rem",
+              width: "100%",
+              aspectRatio: "4 / 3",
+              maxHeight: "18rem",
               objectFit: "cover",
               display: isImageLoading ? "none" : "block"
             }}

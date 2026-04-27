@@ -1,10 +1,10 @@
 import {
+  Box,
   Card,
   CardContent,
   Chip,
-  Typography,
   Stack,
-  Box,
+  Typography,
 } from "@mui/material";
 import type { BookPost } from "@models/Book";
 import BookPostCardActions from "./BookPostCardActions";
@@ -43,13 +43,21 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         },
       }}
     >
-
       <BookPostCardHeader post={post} />
 
       <CardContent>
-        <Typography color="text.secondary">
+        <Typography
+          color="text.secondary"
+          sx={{
+            minHeight: "3.25rem",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
           {post.description.slice(0, MAX_DESCRIPTION_LENGTH)}
-          {post.description.length > MAX_DESCRIPTION_LENGTH ? "…" : ""}
+          {post.description.length > MAX_DESCRIPTION_LENGTH ? "..." : ""}
         </Typography>
       </CardContent>
 
@@ -63,7 +71,20 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
       >
         <Stack direction="row" spacing="0.4rem" flexWrap="wrap">
           {(post.book?.genres ?? []).map((genre) => (
-            <Chip key={genre} label={genre} size="small" />
+            <Chip
+              key={genre}
+              label={genre}
+              size="small"
+              title={genre}
+              sx={{
+                maxWidth: "8rem",
+                "& .MuiChip-label": {
+                  display: "block",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                },
+              }}
+            />
           ))}
         </Stack>
       </Box>

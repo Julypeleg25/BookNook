@@ -1,5 +1,5 @@
 import { Avatar, Box, Divider } from "@mui/material";
-import { forwardRef, useRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useRef, useImperativeHandle, useMemo, useState } from "react";
 import { timeAgo } from "@utils/dateUtils";
 import type { BookPost } from "@models/Book";
 import NewComment, { type NewCommentRef } from "./NewComment";
@@ -42,20 +42,27 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
       addComment(comment);
     };
 
-    const sortedComments = sortComments(bookPost.comments, sortOrder);
+    const sortedComments = useMemo(
+      () => sortComments(bookPost.comments, sortOrder),
+      [bookPost.comments, sortOrder],
+    );
 
     return (
       <Box
         sx={{
           borderRadius: "1rem",
+          border: "1px solid",
+          borderColor: "divider",
           maxHeight: "30rem",
-          overflowY: "scroll",
+          minHeight: "18rem",
+          overflowY: "auto",
+          scrollbarGutter: "stable",
           marginTop: "2rem",
+          bgcolor: "background.paper",
         }}
       >
         <Box
           justifySelf="center"
-          style={{ backgroundColor: "white" }}
           width="100%"
         >
           <NewComment ref={newCommentRef} avatarUrl={user?.avatar} onSubmit={handleAddComment} />
