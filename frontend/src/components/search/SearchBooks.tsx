@@ -104,6 +104,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                                 book={bookSummary}
                                 isOnlyInfo={true}
                                 onSelect={isSelectMode ? () => onBookSelect?.(bookSummary as Book) : undefined}
+                                hideMenu={true}
                             />
                         ))}
                     </Box>

@@ -13,9 +13,10 @@ interface BookInfoCardProps {
   isOnlyInfo?: boolean;
   onSelect?: (book: Book) => void;
   listType?: "wish" | "read";
+  hideMenu?: boolean;
 }
 
-const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProps) => {
+const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType, hideMenu }: BookInfoCardProps) => {
   const displayAuthor = book.authors?.length > 0 ? book.authors.join(", ") : "Unknown Author";
   const navigate = useNavigate();
   const bookId = getBookId(book);
@@ -32,7 +33,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
 
   return (
     <Stack alignItems="center" spacing="0.6rem" position="relative">
-      {!isSelectMode && (
+      {!isSelectMode && !hideMenu && (
         <Box sx={{ position: "absolute", top: 4, right: 4, zIndex: 1 }}>
           <BookActionsMenu book={book} listType={listType} />
         </Box>

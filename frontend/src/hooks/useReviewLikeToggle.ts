@@ -41,18 +41,18 @@ export const useReviewLikeToggle = ({
   const isAuthor = Boolean(userId) && reviewUserId === userId;
   const isLiked = Boolean(userId) && likes.includes(userId);
 
-  const mutation = useMutation<void, Error, void, LikeMutationContext>({
-    mutationFn: async () => {
-      if (isLiked) {
+  const mutation = useMutation<void, Error, boolean, LikeMutationContext>({
+    mutationFn: async (wasLiked: boolean) => {
+      if (wasLiked) {
         await userReviewService.unlikeReview(reviewId);
         return;
       }
 
       await userReviewService.likeReview(reviewId);
     },
-    onMutate: async () => {
+    onMutate: async (wasLiked: boolean) => {
       const previousLikes = normalizeLikes(likes);
-      const nextLikes = isLiked
+      const nextLikes = wasLiked
         ? previousLikes.filter((id) => id !== userId)
         : [...previousLikes, userId];
 
@@ -94,7 +94,7 @@ export const useReviewLikeToggle = ({
       return;
     }
 
-    mutation.mutate();
+    mutation.mutate(isLiked);
   };
 
   return {

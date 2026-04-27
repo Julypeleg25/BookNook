@@ -6,7 +6,6 @@ export interface ISearchFiltersForm {
   likesAmount: number;
   rating: number;
   username: string;
-  minComments: number;
   minReviews: number;
 }
 

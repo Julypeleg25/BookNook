@@ -87,8 +87,7 @@ export const getAllReviews = async (
   searchQuery?: string,
   username?: string,
   rating?: number,
-  genre?: string,
-  minComments?: number
+  genre?: string
 ): Promise<PopulatedUserReview[]> => {
   let userIdFilter: Types.ObjectId | Types.ObjectId[] | undefined;
 
@@ -131,12 +130,6 @@ export const getAllReviews = async (
     genre,
     genreBookIds
   );
-
-  if (minComments && minComments > 0) {
-    return reviews.filter(
-      (review) => (review.comments?.length ?? 0) >= minComments
-    );
-  }
 
   return reviews;
 };

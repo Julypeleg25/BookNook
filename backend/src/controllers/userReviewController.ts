@@ -107,10 +107,7 @@ export const getAllReviewsHandler = async (
       : undefined;
     const rating = req.query.rating ? Number(req.query.rating) : undefined;
     const genre = req.query.genre ? String(req.query.genre) : undefined;
-    const minComments = req.query.minComments
-      ? Number(req.query.minComments)
-      : undefined;
-    const reviews = await getAllReviews(minLikes, searchQuery, username, rating, genre, minComments);
+    const reviews = await getAllReviews(minLikes, searchQuery, username, rating, genre);
     const enriched = await getEnrichedReviews(reviews);
 
     res.json(enriched);

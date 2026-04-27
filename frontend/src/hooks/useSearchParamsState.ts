@@ -8,7 +8,6 @@ const filterParamKeys = [
   "rating",
   "likesAmount",
   "username",
-  "minComments",
   "minReviews",
 ] as const;
 
@@ -30,7 +29,6 @@ export const useSearchParamsState = () => {
       rating: Number(searchParams.get("rating")) || 0,
       likesAmount: Number(searchParams.get("likesAmount")) || 0,
       username: searchParams.get("username") || "",
-      minComments: Number(searchParams.get("minComments")) || 0,
       minReviews: Number(searchParams.get("minReviews")) || 0,
     };
   }, [searchParams]);

@@ -40,7 +40,6 @@ const SearchPosts = () => {
         filters.username,
         filters.rating,
         filters.genre,
-        filters.minComments,
       ),
   });
 
@@ -48,8 +47,7 @@ const SearchPosts = () => {
     filters.likesAmount > 0 ||
     filters.rating > 0 ||
     filters.genre.trim().length > 0 ||
-    filters.username.trim().length > 0 ||
-    filters.minComments > 0;
+    filters.username.trim().length > 0;
 
   const bookPosts: BookPost[] = useMemo(
     () => reviews.map(mapReviewToBookPost),
