@@ -55,7 +55,7 @@ ${context}
 USER QUERY:
 ${query}
 
-Please provide a concise and helpful response based STRICTLY on the context provided.
+Please provide an elaborate answer, 2-5 sentences long, and helpful response based STRICTLY on the context provided.
 `.trim();
 
         const result = await model.generateContent(prompt);
