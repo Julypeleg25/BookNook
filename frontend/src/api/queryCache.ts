@@ -63,6 +63,26 @@ export const setBookListCache = (
   queryClient.setQueryData(queryKeys.listByType(username, listType), books);
 };
 
+export const addBookToListCache = (
+  queryClient: QueryClient,
+  username: string,
+  listType: BookListType,
+  book: Book,
+) => {
+  queryClient.setQueryData<Book[]>(
+    queryKeys.listByType(username, listType),
+    (currentBooks) => {
+      const books = currentBooks ?? [];
+      const bookId = getBookId(book);
+      const alreadyAdded = books.some(
+        (currentBook) => getBookId(currentBook) === bookId,
+      );
+
+      return alreadyAdded ? books : [...books, book];
+    },
+  );
+};
+
 export const removeBookFromListCache = (
   queryClient: QueryClient,
   username: string,

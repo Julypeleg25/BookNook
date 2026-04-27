@@ -10,6 +10,7 @@ import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
 import { useSnackbar } from "notistack";
 import { invalidateReviewCaches } from "@/api/queryCache";
+import { RATING_STEP } from "@shared/constants/validation";
 
 interface BookPostHeaderProps {
   bookPost: BookPost;
@@ -84,7 +85,17 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
         </div>
 
         <Stack direction="row" spacing={3} alignItems="center">
-          <Rating size="large" value={bookPost.rating} readOnly />
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Rating
+              size="large"
+              value={bookPost.rating}
+              precision={RATING_STEP}
+              readOnly
+            />
+            <Typography variant="body2" color="text.secondary">
+              {bookPost.rating.toFixed(1)}
+            </Typography>
+          </Stack>
 
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Tooltip title={isAuthor ? "You cannot like your own post" : isLiked ? "Unlike" : "Like"}>
@@ -113,7 +124,7 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
           </div>
         </Typography>
       </div>
-      <BookHeader id={bookPost.book.id} isBookPost={true} />
+      <BookHeader book={bookPost.book} isBookPost={true} />
     </div>
   );
 };
