@@ -43,7 +43,6 @@ export const register = async (
       password,
       avatar: avatarPath,
     });
-
     const { accessToken, refreshToken } = generateTokens(user);
     await updateUserTokens(String(user._id), accessToken, refreshToken);
     setAuthCookies(res, refreshToken);
