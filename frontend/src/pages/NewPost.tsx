@@ -342,7 +342,7 @@ const NewPost = () => {
         }}
         render={({ field }) => (
           <Box>
-            <Typography mb={"1rem"}>Rating ({RATING_STEP}-{RATING_MAX}, half-star increments)</Typography>
+            <Typography mb={"1rem"}>Rating</Typography>
             <Rating
               precision={RATING_STEP}
               value={Number(field.value) || 0}
