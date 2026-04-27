@@ -1,0 +1,247 @@
+import { Types } from "mongoose";
+import { IUserReview } from "@models/UserReview";
+import { userReviewRepository, PopulatedUserReview } from "@repositories/userReviewRepository";
+import { getOrCreateLocalBook, getGoogleBookByLocalId } from "./bookService";
+import { recomputeBookRating } from "./ratingService";
+import { NotFoundError } from "@utils/errors";
+import { bookRepository } from "@repositories/bookRepository";
+import { IUser } from "@models/User";
+import { IBook } from "@models/Book";
+
+export const createReview = async (
+  userId: Types.ObjectId,
+  externalBookId: string,
+  rating: number,
+  reviewText?: string,
+  picturePath?: string
+): Promise<IUserReview> => {
+  const book = await getOrCreateLocalBook(externalBookId);
+
+  // Fallback image logic: if no picturePath provided, use book thumbnail
+  const finalPicturePath = picturePath || book.thumbnail;
+
+  const newReview = await userReviewRepository.create({
+    user: userId,
+    book: book._id,
+    rating,
+    review: reviewText,
+    picturePath: finalPicturePath,
+  });
+
+  await recomputeBookRating(book._id.toString());
+
+  return newReview;
+};
+
+import { userRepository } from "@repositories/userRepository";
+
+export const getAllReviews = async (
+  minLikes?: number, 
+  searchQuery?: string, 
+  username?: string,
+  rating?: number,
+  genre?: string
+): Promise<PopulatedUserReview[]> => {
+  let userIdFilter: Types.ObjectId | Types.ObjectId[] | undefined;
+  let bookIdsFilter: Types.ObjectId[] | undefined;
+
+  if (username) {
+    const matchingUsers = await userRepository.findByUsernamePartial(username);
+    if (matchingUsers.length === 0) {
+      return []; // No user matched, return nothing
+    }
+    userIdFilter = matchingUsers.map((u: IUser) => u._id as Types.ObjectId);
+  }
+
+  // 1. Resolve genre strictly if provided
+  let genreBookIds: Types.ObjectId[] | undefined;
+  if (genre) {
+    const { items: booksInGenre } = await bookRepository.localSearchBooks({ 
+      subject: genre,
+      limit: 1000 // Get many to be sure
+    });
+    if (booksInGenre.length === 0) return [];
+    genreBookIds = booksInGenre.map((b: IBook) => b._id as Types.ObjectId);
+  }
+
+  // 2. Resolve searchQuery into book IDs (for the OR search)
+  let searchBookIds: Types.ObjectId[] | undefined;
+  if (searchQuery) {
+    const { items: matchingBooks } = await bookRepository.localSearchBooks({ 
+      title: searchQuery 
+    });
+    if (matchingBooks.length > 0) {
+      searchBookIds = matchingBooks.map((b: IBook) => b._id as Types.ObjectId);
+    }
+  }
+
+  return await userReviewRepository.findAll(
+    minLikes, 
+    searchQuery, 
+    userIdFilter, 
+    searchBookIds, 
+    rating, 
+    genre,
+    genreBookIds
+  );
+};
+
+export const getReviewsByUserId = async (
+  userId: string
+): Promise<PopulatedUserReview[]> => {
+  return await userReviewRepository.findByUserId(userId);
+};
+
+export const getReviewsByBookId = async (
+  bookId: string
+): Promise<PopulatedUserReview[]> => {
+  return await userReviewRepository.findByBookId(bookId);
+};
+
+export const getReviewById = async (
+  reviewId: string
+): Promise<PopulatedUserReview> => {
+  const review = await userReviewRepository.findByIdWithUser(reviewId);
+  if (!review) {
+    throw new NotFoundError("Review not found");
+  }
+  return review;
+};
+
+const extractBookId = (bookField: any): string | null => {
+  if (!bookField) return null;
+  if (typeof bookField === 'string') return bookField;
+  
+  if (bookField._id) {
+    if (typeof bookField._id === 'string') return bookField._id;
+    if (bookField._id.toString) return bookField._id.toString();
+  }
+
+  if (bookField instanceof Types.ObjectId) return bookField.toString();
+  
+  try {
+    const s = String(bookField);
+    return (s && s !== "[object Object]") ? s : null;
+  } catch {
+    return null;
+  }
+};
+
+export const getEnrichedReviews = async (reviews: any[]): Promise<any[]> => {
+  const { normalizeBookDetail } = await import("./bookService");
+  
+  return Promise.all(
+    reviews.map(async (review) => {
+      const reviewObj = typeof review.toObject === 'function' ? review.toObject() : review;
+      const bookId = extractBookId(reviewObj.book);
+      
+      try {
+        if (!bookId) {
+          throw new Error(`Could not determine book ID for review ${review._id}`);
+        }
+        const fullBook = await getGoogleBookByLocalId(bookId);
+        const normalizedBook = normalizeBookDetail(fullBook);
+        return { ...reviewObj, book: normalizedBook };
+      } catch (error) {
+        console.warn(`Error enriching review ${review._id}:`, error);
+        return {
+          ...reviewObj,
+          book: {
+            id: bookId || "unknown",
+            title: "Book Unavailable",
+            authors: ["Unknown"],
+            thumbnail: "",
+            description: "Could not load book data.",
+            categories: [],
+            pageCount: 0,
+            previewLink: ""
+          }
+        };
+      }
+    })
+  );
+};
+
+export const getPopulatedReviewById = async (
+  reviewId: string
+): Promise<any> => {
+  const review = await userReviewRepository.findByIdWithUser(reviewId);
+  if (!review) {
+    throw new NotFoundError("Review not found");
+  }
+
+  const bookId = extractBookId(review.book);
+
+  try {
+    if (!bookId) {
+      throw new Error(`Could not determine book ID for review ${reviewId}`);
+    }
+
+    const fullBook = await getGoogleBookByLocalId(bookId);
+    const { normalizeBookDetail } = await import("./bookService");
+    const normalizedBook = normalizeBookDetail(fullBook);
+
+    return {
+      ...review.toObject(),
+      book: normalizedBook
+    };
+  } catch (error) {
+    console.warn(`Error enriching review ${reviewId}:`, error);
+    // Fallback if book not found
+    return {
+      ...review.toObject(),
+      book: {
+        id: bookId || "unknown",
+        title: "Book Unavailable",
+        authors: ["Unknown"],
+        thumbnail: "",
+        description: "Could not load book data.",
+        categories: [],
+        pageCount: 0,
+        previewLink: ""
+      }
+    };
+  }
+};
+
+interface UpdateReviewData {
+  review?: string;
+  rating?: number;
+  picturePath?: string;
+}
+
+export const updateReview = async (
+  reviewId: string,
+  updateData: UpdateReviewData
+): Promise<IUserReview> => {
+  const updatedReview = await userReviewRepository.update(reviewId, updateData);
+  if (!updatedReview) {
+    throw new NotFoundError("Review not found");
+  }
+
+  await recomputeBookRating(updatedReview.book.toString());
+
+  return updatedReview;
+};
+
+export const deleteReview = async (reviewId: string): Promise<void> => {
+  const review = await userReviewRepository.findById(reviewId);
+  if (!review) {
+    throw new NotFoundError("Review not found");
+  }
+
+  await userReviewRepository.delete(reviewId);
+  await recomputeBookRating(review.book.toString());
+};
+
+export const isReviewAuthor = async (
+  reviewId: string,
+  userId: string
+): Promise<boolean> => {
+  const review = await userReviewRepository.findById(reviewId);
+  if (!review) {
+    return false;
+  }
+  return review.user.toString() === userId;
+};
+

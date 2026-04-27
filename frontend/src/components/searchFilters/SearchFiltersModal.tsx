@@ -1,217 +1,185 @@
+import { useEffect } from "react";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Rating,
+  Slider,
   TextField,
+  Typography,
 } from "@mui/material";
-import Select from "../common/Select";
-import SearchFiltersToggleButtonGroup from "./SearchFiltersToggleButtonGroup";
 import { Controller, useForm } from "react-hook-form";
+import Select from "../common/Select";
 import {
   genreMenuItems,
-  languageMenuItems,
-  likesMenuItems,
-  reviewsMenuItems,
-  yearFieldRules,
-  type ISearchFiltersForm,
+  ISearchFiltersForm,
+  SearchMode,
 } from "./models/SearchFiltersOptions";
 
 interface SearchFiltersModalProps {
   open: boolean;
   onClose: () => void;
+  onApply: (data: ISearchFiltersForm) => void;
+  currentFilters: ISearchFiltersForm;
+  mode: SearchMode;
 }
 
-const SearchFiltersModal = (props: SearchFiltersModalProps) => {
-  const {
-    handleSubmit,
-    control,
-    getValues,
-    formState: { errors, isDirty, isValid },
-    reset,
-  } = useForm<ISearchFiltersForm>({
+const SearchFiltersModal = ({ open, onClose, onApply, currentFilters, mode }: SearchFiltersModalProps) => {
+  const { handleSubmit, control, reset, formState: { errors, isDirty } } = useForm<ISearchFiltersForm>({
     defaultValues: {
-      language: "",
-      genre: "",
-      author: "",
-      yearPublishedFrom: "",
-      yearPublishedTo: "",
-      likesAmount: "",
-      reviewsAmount: "",
-      rating: 0,
+      ...currentFilters,
+      username: currentFilters.username || "",
     },
-    mode: "onSubmit",
   });
 
+  useEffect(() => {
+    if (open) reset(currentFilters);
+  }, [open, currentFilters, reset]);
+
+
   const onSubmit = (data: ISearchFiltersForm) => {
-    console.log(data);
-    if (data.yearPublishedFrom > data.yearPublishedTo) {
-      return;
-    }
+    onApply(data);
+    onClose();
   };
 
-  const onCancel = () => reset();
-
   return (
-    <Dialog open={props.open} onClose={props.onClose}>
-      <form onSubmit={handleSubmit(onSubmit)} onReset={onCancel}>
-        <DialogTitle>Search Filters</DialogTitle>
-        <DialogContent style={{ marginTop: "0.5rem" }}>
-          <div
-            style={{
-              marginTop: "1.3rem",
-              justifyContent: "space-between",
-              display: "flex",
-            }}
-          >
-            <Select
-              menuItems={languageMenuItems}
-              style={{ minWidth: "16rem" }}
-              label="Language"
-              selectedValues={[]}
-              onChange={() => {}}
-            />
-            <Select
-              menuItems={genreMenuItems}
-              label="Genre"
-              selectedValues={[]}
-              style={{ minWidth: "16rem" }}
-              onChange={() => {}}
-            />
-          </div>
-          <div
-            style={{
-              marginTop: "1rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Controller
-              name="author"
-              control={control}
-              rules={{
-                minLength: { value: 3, message: "Minimum 3 characters" },
-              }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  helperText={errors.author?.message}
-                  error={!!errors.author}
-                  label="Author"
-                  style={{ marginTop: "1.5rem", width: "16rem" }}
-                />
-              )}
-            />
-            <div>
-              Year published
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                  marginRight: "3rem",
-                }}
-              >
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Search Filters</DialogTitle>
+        <DialogContent dividers >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1, p: 4 }}>
+            {mode === 'books' && (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
                 <Controller
-                  name="yearPublishedFrom"
+                  name="genre"
                   control={control}
-                  rules={{
-                    ...yearFieldRules,
-                    validate: (value) => {
-                      const toYear = getValues("yearPublishedTo");
-                      if (toYear !== undefined && value > toYear) {
-                        return "Years not valid";
-                      }
-                      return true;
-                    },
-                  }}
+                  render={({ field }) => (
+                    <Box sx={{ flex: 1 }}>
+                      <Select
+                        label="Genre"
+                        fullWidth
+                        menuItems={genreMenuItems}
+                        selectedValues={field.value ? [field.value] : []}
+                        onChange={(val) => field.onChange(val.length > 0 ? val[0] : "")}
+                      />
+                    </Box>
+                  )}
+                />
+
+                <Controller
+                  name="author"
+                  control={control}
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      helperText={errors.yearPublishedFrom?.message}
-                      error={!!errors.yearPublishedFrom}
-                      style={{ width: "5rem" }}
+                      label="Author"
+                      variant="outlined"
+                      error={!!errors.author}
+                      helperText={errors.author?.message}
                     />
                   )}
                 />
-                to
-                <Controller
-                  name="yearPublishedTo"
-                  control={control}
-                  rules={{
-                    ...yearFieldRules,
-                    validate: (value) => {
-                      const fromYear = getValues("yearPublishedFrom");
-                      if (fromYear !== undefined && value < fromYear) {
-                        return "Years not valid";
-                      }
-                      return true;
-                    },
-                  }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      helperText={errors.yearPublishedTo?.message}
-                      error={!!errors.yearPublishedTo}
-                      style={{ width: "5rem" }}
-                    />
-                  )}
-                />
-              </div>
-            </div>
-          </div>
-          <div
-            style={{
-              marginTop: "1.5rem",
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            <div>
-              Number of likes
-              <SearchFiltersToggleButtonGroup
-                options={likesMenuItems}
-                selectedValue={"lowAmount"}
-                onChange={() => {}}
-              />
-            </div>
-            <div>
-              Number of reviews
-              <SearchFiltersToggleButtonGroup
-                options={reviewsMenuItems}
-                selectedValue={"lowAmount"}
-                onChange={() => {}}
-              />
-            </div>
-            <div style={{ display: "grid" }}>
-              Rating - at least
+              </Box>
+            )}
+
+            {mode === 'posts' && (
               <Controller
-                name="rating"
+                name="username"
                 control={control}
-                render={({ field }) => <Rating {...field} />}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Username"
+                    variant="outlined"
+                    fullWidth
+                  />
+                )}
               />
-            </div>
-          </div>
+            )}
+
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>Minimum Rating</Typography>
+                <Controller
+                  name="rating"
+                  control={control}
+                  render={({ field }) => (
+                    <Rating
+                      {...field}
+                      precision={0.5}
+                      value={Number(field.value)}
+                      onChange={(_, val) => field.onChange(val)}
+                    />
+                  )}
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>Minimum Reviews</Typography>
+                <Controller
+                  name="reviewsAmount"
+                  control={control}
+                  render={({ field }) => (
+                    <Slider
+                      {...field}
+                      value={field.value || 0}
+                      onChange={(_, value) => field.onChange(value)}
+                      min={0}
+                      max={500}
+                      step={5}
+                      marks={[
+                        { value: 0, label: '0' },
+                        { value: 500, label: '500+' },
+                      ]}
+                    />
+                  )}
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, mt: 1 }}>Minimum Likes</Typography>
+                <Controller
+                  name="likesAmount"
+                  control={control}
+                  render={({ field }) => (
+                    <Slider
+                      {...field}
+                      value={field.value || 0}
+                      onChange={(_, value) => field.onChange(value)}
+                      min={0}
+                      max={100}
+                      step={1}
+                      marks={[
+                        { value: 0, label: '0' },
+                        { value: 100, label: '100+' },
+                      ]}
+                    />
+                  )}
+                />
+              </Box>
+            </Box>
+          </Box>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "1rem 1.5rem",
-          }}
-        >
-          <Button onClick={props.onClose} type="reset" color="error">
-            Cancel
-          </Button>
-          <Button type="submit" disabled={!isDirty}>
+
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={onClose} color="inherit">Cancel</Button>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!isDirty}
+            sx={{ px: 4 }}
+          >
             Apply Filters
           </Button>
+
         </DialogActions>
       </form>
     </Dialog>
   );
 };
+
 export default SearchFiltersModal;

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "rootDir": "src", 
+    "outDir": "dist",
+    "declaration": true,
+    "baseUrl": ".", // This refers to the directory containing tsconfig.json
+    "paths": {
+      /* Use ./src/ to tell TS exactly where to look from the baseUrl */
+      "@schemas/*": ["./src/schemas/*"],
+      "@dtos/*": ["./src/dtos/*"],
+      "@shared/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"]
+}

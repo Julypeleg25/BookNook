@@ -1,18 +1,20 @@
 import { SnackbarProvider } from "notistack";
+import Router from "@router/Router";
 import "./App.css";
-import { AuthProvider } from "./auth/AuthProvider";
-import AppBar from "./components/AppBar";
-import Router from "./router/Router";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import env from "./config/env";
+import { AuthInitializer } from "./components/auth/AuthInitializer";
 
-function App() {
+const App = () => {
   return (
-    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
-      <AuthProvider>
-        <AppBar />
-        <Router />
-      </AuthProvider>
-    </SnackbarProvider>
+    <GoogleOAuthProvider clientId={env.GOOGLE_CLIENT_ID}>
+      <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+        <AuthInitializer>
+          <Router />
+        </AuthInitializer>
+      </SnackbarProvider>
+    </GoogleOAuthProvider>
   );
-}
+};
 
 export default App;

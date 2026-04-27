@@ -1,12 +1,15 @@
+export type SearchMode = "books" | "posts";
+
 export interface ISearchFiltersForm {
   language: string;
   genre: string;
   author: string;
   yearPublishedFrom: string;
   yearPublishedTo: string;
-  likesAmount: string;
-  reviewsAmount: string;
+  likesAmount: number;
+  reviewsAmount: number;
   rating: number;
+  username: string;
 }
 
 export const amountOptions = {

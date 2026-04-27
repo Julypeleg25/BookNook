@@ -1,16 +1,11 @@
-import { Controller, type Control } from "react-hook-form";
+import { Controller, type Control, type FieldValues } from "react-hook-form";
 import { TextField } from "@mui/material";
 
-export default function NameField({ control }: { control: Control<any> }) {
+const NameField = ({ control }: { control: Control<FieldValues> }) => {
   return (
     <Controller
       name="name"
       control={control}
-      rules={{
-        required: "Name is required",
-        minLength: { value: 3, message: "Minimum 3 characters" },
-        maxLength: { value: 14, message: "Maximum 14 characters" },
-      }}
       render={({ field, fieldState }) => (
         <TextField
           {...field}
@@ -22,4 +17,6 @@ export default function NameField({ control }: { control: Control<any> }) {
       )}
     />
   );
-}
+};
+
+export default NameField;

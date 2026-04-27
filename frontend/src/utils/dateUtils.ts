@@ -1,15 +1,19 @@
-export const formatDate = (date: Date) =>
-  date.toLocaleDateString("en-US", {
+export const formatDate = (date: string | Date) =>
+  new Date(date).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
 
-export function timeAgo(date: Date): string {
+export const timeAgo = (dateInput: Date | string): string => {
+  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
 
   const minutes = Math.floor(diffMs / (1000 * 60));
+  if (minutes < 1) {
+    return "just now";
+  }
   if (minutes < 60) {
     return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
   }
@@ -25,7 +29,7 @@ export function timeAgo(date: Date): string {
   }
 
   return date.toLocaleDateString("en-GB");
-}
+};
 
 const timeOfDay = {
   MORNING: "morning",

@@ -6,11 +6,11 @@ interface UseInfiniteLoaderOptions<T> {
   rootMargin?: string;
 }
 
-export function useInfiniteLoader<T>({
+export const useInfiniteLoader = <T,>({
   items,
   batchSize = 20,
   rootMargin = "50px",
-}: UseInfiniteLoaderOptions<T>) {
+}: UseInfiniteLoaderOptions<T>) => {
   const [visibleCount, setVisibleCount] = useState(batchSize);
   
   const loaderRef = useRef<HTMLDivElement | null>(null);
@@ -37,6 +37,6 @@ export function useInfiniteLoader<T>({
     hasMore: visibleCount < items.length,
     reset: () => setVisibleCount(batchSize),
   };
-}
+};
 
 export default useInfiniteLoader;

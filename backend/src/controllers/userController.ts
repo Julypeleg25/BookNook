@@ -1,42 +1,47 @@
-import { Request, Response } from "express";
-import User from "../models/User";
-import Book from "../models/Book";
+import { Request, Response, NextFunction } from "express";
+import { updateUser } from "@services/userService";
+import { ValidationError } from "@utils/errors";
+import { logger } from "@utils/logger";
+import { isImageFile, deleteFile, deleteOldAvatar } from "@utils/fileUtils";
+import { HttpStatusCode } from "axios";
+import { sanitizeUser } from "@utils/userUtils";
+import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
 
-export const addToWishlist = async (req: Request, res: Response) => {
+export const getCurrentUser = (req: Request, res: Response): void => {
+  res.json(req.authenticatedUser);
+};
+
+export const updateUserHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { userId } = req.body; 
-    const { googleBookId, title, authors, thumbnail } = req.body.book;
+    const userId = req.authenticatedUser!.id;
+    const { name, username } = req.body;
+    const updateData: UpdateUserRequestDTO = {};
 
-    // 1. "Upsert" the book: Find it by external ID, or create it if missing
-    const book = await Book.findOneAndUpdate(
-      { googleBookId: googleBookId },
-      { 
-        $setOnInsert: { 
-          title, 
-          authors, 
-          thumbnail,
-          avgRating: 0,
-          ratingCount: 0,
-          ratingSum: 0 
-        } 
-      },
-      { upsert: true, new: true }
-    );
+    if (name) updateData.name = name;
+    if (username) updateData.username = username;
 
-    // 2. Add the book's internal _id to the user's wishlist
-    // $addToSet prevents adding the same book multiple times
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $addToSet: { wishlist: book._id } },
-      { new: true }
-    ).populate("wishlist");
+    if (req.file) {
+      if (!isImageFile(req.file.originalname)) {
+        await deleteFile(req.file.path);
+        throw new ValidationError("Avatar must be an image file");
+      }
 
-    return res.status(200).json({
-      message: "Book added to wishlist",
-      wishlist: updatedUser?.wishlist
+      await deleteOldAvatar(req.authenticatedUser!.avatar);
+      updateData.avatar = `/uploads/${req.file.filename}`;
+    }
+
+    const updatedUser = await updateUser(userId, updateData);
+
+    res.status(HttpStatusCode.Ok).json({
+      message: "User updated successfully",
+      user: sanitizeUser(updatedUser),
     });
-
   } catch (error) {
-    return res.status(500).json({ message: "Error adding to wishlist", error });
+    if (req.file) await deleteFile(req.file.path);
+    next(error);
   }
 };

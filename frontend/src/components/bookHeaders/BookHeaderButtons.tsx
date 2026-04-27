@@ -35,12 +35,13 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate(`/post`)}
+          onClick={() => navigate(`/post/create/${id}`)}
           startIcon={<BiBookAdd />}
         >
           Write a review
         </Button>
-      )}
+      )
+      }
 
       <Button
         variant="contained"
@@ -58,7 +59,7 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
       >
         Add to my read list
       </Button>
-    </div>
+    </div >
   );
 };
 export default BookHeader;

@@ -1,19 +1,18 @@
+import useUserStore from "@/state/useUserStore";
+import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { Box, Typography, Avatar } from "@mui/material";
 
-interface Props {
-  name: string;
-  username: string;
-  avatar: string | null;
-}
+const ProfileView = () => {
+  const { user } = useUserStore();
 
-const ProfileView = ({ name, username, avatar }: Props) => {
   return (
     <Box display="flex" gap={3} alignItems="center">
-      <Avatar src={avatar || undefined} sx={{ width: 80, height: 80 }} />
-
+      <Avatar
+        src={getAvatarSrcUrl(user.avatar)}
+        sx={{ width: "4rem", height: "4rem" }}
+      />
       <Box>
-        <Typography fontWeight={600}>{name}</Typography>
-        <Typography color="text.secondary">@{username}</Typography>
+        <Typography color="text.secondary">@{user.username}</Typography>
       </Box>
     </Box>
   );

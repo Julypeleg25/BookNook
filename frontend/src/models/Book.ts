@@ -1,40 +1,40 @@
-import type { GenreOptionsType } from "../components/searchFilters/models/SearchFiltersOptions";
+import type { GenreOptionsType } from "@components/searchFilters/models/SearchFiltersOptions";
+import type { User } from "./User";
 
 interface Book {
   id: string;
   title: string;
-  author: string;
-  description: string;
-  coverImage: string;
-  publishedDate: Date;
-  genres: GenreOptionsType[];
+  authors: string[];
+  description?: string;
+  thumbnail?: string;
+  publishedDate?: string;
+  genres?: GenreOptionsType[];
+  pageCount?: number;
+  categories?: string[];
+  subtitle?: string;
+  previewLink?: string;
+  avgRating?: number;
+  ratingCount?: number;
 }
 
 interface BookPost {
   id: string;
   book: Book;
   user: User;
-  createdDate: Date;
+  createdDate: string;
   description: string;
   rating: number;
-  imageUrl: string;
-  likes: number;
-  comments: Comment[];
+  imageUrl?: string;
+  likes: string[]; // Updated to string[] (user IDs)
+  comments: PostComment[];
 }
 
-interface Comment {
+interface PostComment {
   id: string;
   user: User;
-  createdDate: Date;
+  createdDate: string;
   content: string;
-  bookPost: BookPost;
+  bookPost?: BookPost;
 }
 
-interface User {
-  id: string;
-  username: string;
-  name: string;
-  avatarUrl: string;
-}
-
-export type { Book, BookPost, Comment, User };
+export type { Book, BookPost, PostComment };

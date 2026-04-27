@@ -1,41 +1,51 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import type { IUser } from "./User";
-import { IBook } from "./Book";
-// Populated comment with user object
-
 
 export interface ReviewComment {
+  _id?: Types.ObjectId;
   user: Types.ObjectId;
   comment: string;
   createdAt: Date;
+  createdDate?: Date; // Virtual
+  content?: string; // Virtual
 }
 
 export interface IUserReview extends Document {
   user: Types.ObjectId;
-  book: string; // Google Books volume ID
+  book: Types.ObjectId;
   review: string;
-  rating: number; // 0-5, increments of 0.5
+  rating: number;
   picturePath?: string;
   comments: ReviewComment[];
   createdAt: Date;
   updatedAt: Date;
   likes: Types.ObjectId[];
+  imageUrl?: string; // Virtual
+  description?: string; // Virtual
+  createdDate?: Date; // Virtual
 }
 
 const ReviewCommentSchema = new Schema<ReviewComment>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    comment: { type: String, required: true },
+    comment: { type: String, required: true, minLength: 1, maxLength: 200 },
     createdAt: { type: Date, default: Date.now },
   },
-  { _id: true }
+  { _id: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+ReviewCommentSchema.virtual("createdDate").get(function () {
+  return this.createdAt;
+});
+
+ReviewCommentSchema.virtual("content").get(function () {
+  return this.comment;
+});
 
 const UserReviewSchema = new Schema<IUserReview>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    book: { type: String, required: true },
-    review: { type: String, required: true },
+    book: { type: Schema.Types.ObjectId, ref: "Book", required: true },
+    review: { type: String, required: true, minLength: 5, maxlength: 1500 },
     rating: {
       type: Number,
       required: true,
@@ -51,8 +61,20 @@ const UserReviewSchema = new Schema<IUserReview>(
     picturePath: { type: String },
     comments: [ReviewCommentSchema],
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+UserReviewSchema.virtual("imageUrl").get(function () {
+  return this.picturePath;
+});
+
+UserReviewSchema.virtual("description").get(function () {
+  return this.review;
+});
+
+UserReviewSchema.virtual("createdDate").get(function () {
+  return this.createdAt;
+});
 
 export const UserReviewModel = mongoose.model<IUserReview>(
   "UserReview",

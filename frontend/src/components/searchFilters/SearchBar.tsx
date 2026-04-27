@@ -1,33 +1,83 @@
-import { TextField, IconButton, Button } from "@mui/material";
+import { TextField, IconButton, Button, Box, InputAdornment } from "@mui/material";
 import { HiOutlineAdjustmentsVertical } from "react-icons/hi2";
+import { MdClear } from "react-icons/md";
+import { useState, useEffect } from "react";
 
-const SearchBar = ({
-  setIsFiltersModalOpen,
-}: {
+interface SearchBarProps {
+  onSearch: (searchTerm: string) => void;
+  onClear: () => void;
+  searchTerm: string;
+  setSearchTerm: (val: string) => void;
   setIsFiltersModalOpen: (open: boolean) => void;
-}) => {
+  hasActiveFilters?: boolean;
+}
+
+const SearchBar = ({ onSearch, onClear, searchTerm, setSearchTerm, setIsFiltersModalOpen, hasActiveFilters }: SearchBarProps) => {
+  const [placeholder, setPlaceholder] = useState("");
+  const fullPlaceholder = "Search by book title...";
+  
+  useEffect(() => {
+    let i = 0;
+    setPlaceholder("");
+    const interval = setInterval(() => {
+      setPlaceholder(fullPlaceholder.slice(0, i));
+      i++;
+      if (i > fullPlaceholder.length) clearInterval(interval);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSearch = () => {
+    onSearch(searchTerm);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        width: "80rem",
-        maxWidth: "90rem",
-      }}
-    >
+    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       <TextField
-        label="Search"
-        placeholder="Search books by title or author"
+        placeholder={placeholder}
         variant="outlined"
-        style={{ width: "60rem", maxWidth: "45rem" }}
+        fullWidth
+        sx={{ maxWidth: "45rem" }}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyPress={handleKeyPress}
+        InputProps={{
+          endAdornment: searchTerm ? (
+            <InputAdornment position="end">
+              <IconButton onClick={onClear} size="small" sx={{ mr: -1 }}>
+                <MdClear />
+              </IconButton>
+            </InputAdornment>
+          ) : null
+        }}
       />
-      <IconButton onClick={() => setIsFiltersModalOpen(true)}>
+      <IconButton 
+        onClick={() => setIsFiltersModalOpen(true)}
+        color={hasActiveFilters ? "primary" : "default"}
+      >
         <HiOutlineAdjustmentsVertical size={"2rem"} />
       </IconButton>
-      <Button style={{ marginLeft: "0.6rem" }} variant="outlined">
+      <Button
+        variant="text"
+        onClick={onClear}
+        sx={{
+          textTransform: "none",
+          color: "text.secondary",
+          whiteSpace: "nowrap"
+        }}
+      >
+        Clear All
+      </Button>
+      <Button variant="contained" onClick={handleSearch}>
         Search
       </Button>
-    </div>
+    </Box>
   );
 };
 export default SearchBar;

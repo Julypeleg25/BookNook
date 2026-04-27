@@ -1,48 +1,50 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useSnackbar } from "notistack";
-import useUserStore from "../../state/useUserStore";
+import useUserStore from "@state/useUserStore";
 import AvatarField from "./AvatarField";
-import NameField from "./NameField";
 import UsernameField from "./UsernameField";
+import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
+import { useState } from "react";
+import { useUserApi } from "@/hooks/useUserApi";
+import { getAvatarSrcUrl } from "@/utils/userUtils";
 
 interface Props {
   onCancel: () => void;
 }
 
-interface IProfileInputs {
-  name: string;
-  username: string;
-  avatar: File | string | null;
-}
-
 const ProfileForm = ({ onCancel }: Props) => {
-  const { name, username, avatar, setName, setUsername, setAvatar } =
-    useUserStore();
+  const { user } = useUserStore();
   const { enqueueSnackbar } = useSnackbar();
+  const { updateUser } = useUserApi();
+  const [loading, setLoading] = useState(false);
 
   const {
     handleSubmit,
     control,
-    reset,
-    formState: { isDirty, dirtyFields },
-  } = useForm<IProfileInputs>({
-    defaultValues: { name, username, avatar },
+    setError,
+    formState: { isDirty, errors },
+  } = useForm<UpdateUserRequestDTO>({
+    defaultValues: {
+      username: user.username,
+      avatar: getAvatarSrcUrl(user.avatar),
+    },
   });
 
-  const onSubmit = (data: IProfileInputs) => {
-    if (!isDirty) return;
+  const onSubmit = async (data: UpdateUserRequestDTO) => {
+    setLoading(true);
 
-    if (dirtyFields.name) setName(data.name);
-    if (dirtyFields.username) setUsername(data.username);
-
-    if (dirtyFields.avatar && data.avatar instanceof File) {
-      setAvatar(URL.createObjectURL(data.avatar));
+    try {
+      if (!isDirty) return;
+      await updateUser(data);
+      enqueueSnackbar("Profile updated successfully!", { variant: "success" });
+    } catch (error: any) {
+      setError("root", {
+        message: error.details.error || "Invalid details, try again",
+      });
+    } finally {
+      setLoading(false);
     }
-
-    enqueueSnackbar("Profile updated successfully!", { variant: "success" });
-    reset(data);
-    onCancel();
   };
 
   return (
@@ -50,7 +52,6 @@ const ProfileForm = ({ onCancel }: Props) => {
       <AvatarField control={control} />
 
       <Box display="flex" gap={2} mt={3}>
-        <NameField control={control} />
         <UsernameField control={control} />
       </Box>
 
@@ -58,9 +59,18 @@ const ProfileForm = ({ onCancel }: Props) => {
         <Button onClick={onCancel} color="error">
           Cancel
         </Button>
-        <Button type="submit" variant="contained" disabled={!isDirty}>
-          Save changes
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={loading || !isDirty}
+        >
+          {loading ? <CircularProgress /> : "Save changes"}
         </Button>
+        {errors.root && (
+          <Typography color="error" variant="body2" textAlign="center">
+            {errors.root.message}
+          </Typography>
+        )}
       </Box>
     </form>
   );

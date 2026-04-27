@@ -1,9 +1,9 @@
-import FullBookPostCard from "../components/bookCards/FullBookPostCard";
+import FullBookPostCard from "@components/bookCards/FullBookPostCard";
 import { bookPosts } from "../exampleData";
 import { Box } from "@mui/material";
-import type { BookPost } from "../models/Book";
 import { useMemo } from "react";
-import { useInfiniteLoader } from "../hooks/useInfiniteLoader";
+import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
+import type { BookPost } from "@models/Book";
 
 const user_id = "u1";
 const BATCH_SIZE = 5;

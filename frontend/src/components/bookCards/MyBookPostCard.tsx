@@ -7,8 +7,8 @@ import {
   Stack,
   Link as MuiLink,
 } from "@mui/material";
-import type { BookPost } from "../../models/Book";
-import { formatDate } from "../../utils/dateUtils";
+import type { BookPost } from "@models/Book";
+import { formatDate } from "@utils/dateUtils";
 import { BsEye } from "react-icons/bs";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { FiEdit } from "react-icons/fi";

@@ -6,54 +6,73 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import loginIcon from "../assets/login-icon.png";
-import { FcGoogle } from "react-icons/fc";
+import loginIcon from "@assets/login-icon.png";
+import { GoogleLogin } from "@react-oauth/google";
+import type { GoogleCredentialResponse } from "@react-oauth/google";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import useUserStore from "../state/useUserStore";
-
-interface ILoginForm {
-  username: string;
-  password: string;
-}
+import { useAuth } from "@hooks/useAuth";
+import type { LoginRequestDTO } from "@shared/dtos/auth.dto";
+import { LoginSchema } from "@shared/schemas/auth.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AuthService } from "@/api/services/authService";
+import useUserStore from "@/state/useUserStore";
+import { tokenService } from "@/api/services/tokenService";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
-  const { setUsername, setName } = useUserStore();
-
-  const handleLogin = () => {
-    login();
-    navigate("/posts");
-  };
-
-  const handleSignup = () => {
-    navigate("/register");
-  };
-
+  const { setUser } = useUserStore();
+  const [loginError, setLoginError] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
   const {
     handleSubmit,
     control,
     formState: { errors },
     reset,
-  } = useForm<ILoginForm>({
+    setError,
+  } = useForm<LoginRequestDTO>({
     defaultValues: {
       username: "",
       password: "",
     },
+    resolver: zodResolver(LoginSchema),
     mode: "onSubmit",
   });
 
-  const onSubmit = (data: ILoginForm) => {
-    setName(data.username);
-    setUsername(data.username);
-    //TODO: data from backend
-    handleLogin();
-    reset();
+  const handleSignup = () => navigate("/register");
+
+  const onSubmit = async (data: LoginRequestDTO) => {
+    try {
+      await login(data);
+      reset();
+    } catch {
+      setError("root", { message: "Invalid username or password" });
+    }
+  };
+
+  const handleGoogleSuccess = async (
+    credentialResponse: GoogleCredentialResponse
+  ) => {
+    try {
+      if (!credentialResponse.credential) {
+        setLoginError("Google login failed — no credential received");
+        return;
+      }
+
+      const data = await AuthService.googleSignIn(credentialResponse.credential);
+      tokenService.setAccess(data.accessToken);
+      setUser(data.user);
+      navigate("/posts");
+    } catch {
+      setLoginError("Google login failed");
+    }
+  };
+
+  const handleGoogleFailure = () => {
+    setLoginError("Google login failed");
   };
 
   return (
@@ -63,13 +82,11 @@ const Login = () => {
           <div>
             <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
               <Typography variant="h4">Welcome to BookNook</Typography>
-              <Button
-                style={{ width: "23rem", display: "flex" }}
-                variant="outlined"
-                startIcon={<FcGoogle />}
-              >
-                Log in with Google
-              </Button>
+              <GoogleLogin
+                shape="circle"
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleFailure}
+              />
               <Divider>or</Divider>
             </div>
             <div
@@ -93,9 +110,6 @@ const Login = () => {
                 <Controller
                   name="username"
                   control={control}
-                  rules={{
-                    required: "Username is required",
-                  }}
                   render={({ field }) => (
                     <TextField
                       {...field}
@@ -120,9 +134,6 @@ const Login = () => {
                 <Controller
                   name="password"
                   control={control}
-                  rules={{
-                    required: "Password is required",
-                  }}
                   render={({ field }) => (
                     <TextField
                       {...field}
@@ -156,6 +167,15 @@ const Login = () => {
                   )}
                 />
               </div>
+              {(errors.root || loginError) && (
+                <Typography
+                  color="error"
+                  textAlign="center"
+                  sx={{ mb: "1rem" }}
+                >
+                  {errors.root?.message || loginError}
+                </Typography>
+              )}
               <Button
                 style={{
                   width: "18rem",

@@ -1,16 +1,37 @@
 import { CardHeader, CardMedia, Typography, Box, Avatar } from "@mui/material";
-import type { BookPost } from "../../../models/Book";
+import type { BookPost } from "@models/Book";
 import { Link as RouterLink } from "react-router-dom";
+import { getAvatarSrcUrl } from "@/utils/userUtils";
+import { formatDate } from "@/utils/dateUtils";
+import env from "@/config/env";
+import { useState } from "react";
 
 interface BookPostCardProps {
   post: BookPost;
 }
 
 const BookPostCardHeader = ({ post }: BookPostCardProps) => {
+  const [imgSrc, setImgSrc] = useState<string | undefined>(() => {
+    if (!post.imageUrl) return post.book.thumbnail;
+    if (post.imageUrl.startsWith("http")) return post.imageUrl;
+    return `${env.API_BASE_URL}${post.imageUrl}`;
+  });
+
+  const handleImageError = () => {
+    if (imgSrc !== post.book.thumbnail) {
+      setImgSrc(post.book.thumbnail);
+    }
+  };
+
   return (
     <>
       <CardHeader
-        avatar={<Avatar src={post.user.avatarUrl} alt={post.user.name} />}
+        avatar={
+          <Avatar
+            src={getAvatarSrcUrl(post.user.avatar)}
+            alt={post.user.username}
+          />
+        }
         title={
           <Typography
             sx={{
@@ -19,13 +40,13 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
               transition: "text-decoration 0.2s ease",
             }}
           >
-            {post.book.title}
+            {post.book?.title || "Book Unavailable"}
           </Typography>
         }
         subheader={
           <Box gap={"0.3rem"} display={"grid"}>
             <div>@{post.user.username}</div>
-            {post.createdDate.toDateString()}
+            {formatDate(post.createdDate)}
           </Box>
         }
       />
@@ -35,11 +56,14 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
         to={`/posts/${post.id}`}
         sx={{ textDecoration: "none" }}
       >
-        <CardMedia
-          component="img"
-          image={post.imageUrl}
-          sx={{ height: "16rem", objectFit: "cover" }}
-        />
+        {imgSrc && (
+          <CardMedia
+            component="img"
+            image={imgSrc}
+            onError={handleImageError}
+            sx={{ height: "16rem", objectFit: "cover" }}
+          />
+        )}
       </Box>
     </>
   );

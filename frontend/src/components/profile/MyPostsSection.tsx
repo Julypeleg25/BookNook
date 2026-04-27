@@ -1,8 +1,8 @@
 import { Box, Button } from "@mui/material";
-import type { BookPost } from "../../models/Book";
-import MyBookPostCard from "../bookCards/MyBookPostCard";
+import type { BookPost } from "@models/Book";
 import { useNavigate } from "react-router-dom";
-import { bookPosts } from "../../exampleData";
+import { bookPosts } from "@/exampleData";
+import MyBookPostCard from "../bookCards/MyBookPostCard";
 
 interface MyPostsSectionProps {
   postsCount: number;

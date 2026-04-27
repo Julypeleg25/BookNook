@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import type { BookPost } from "../../models/Book";
+import type { BookPost } from "@models/Book";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import { useState } from "react";
@@ -77,7 +77,7 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
 
             <Stack direction="row" spacing="1.2rem" alignItems="center">
               <Stack direction="row" gap="0.4rem" alignItems="center">
-                <FiHeart /> {post.likes}
+                <FiHeart /> {post.likes.length}
               </Stack>
               <Stack direction="row" gap="0.4rem" alignItems="center">
                 <FaRegComment /> {post.comments.length}

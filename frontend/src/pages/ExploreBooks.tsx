@@ -1,55 +1,18 @@
-import { Box, Fab } from "@mui/material";
-import { books } from "../exampleData";
-import SearchFiltersModal from "../components/searchFilters/SearchFiltersModal";
-import SearchBar from "../components/searchFilters/SearchBar";
-import BookInfoCard from "../components/bookCards/BookInfoCard";
-import { MdAdd } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
-import { useInfiniteLoader } from "../hooks/useInfiniteLoader";
-import { useState } from "react";
+import { Box } from "@mui/material";
+import SearchBooks from "@components/search/SearchBooks";
+import type { Book } from "@/models/Book";
 
-const ExploreBooks = () => {
-  const navigate = useNavigate();
-  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+interface ExploreBooksProps {
+  isSelectMode?: boolean;
+  onBookSelect?: (book: Book) => void;
+}
 
-  const { visibleItems, loaderRef } = useInfiniteLoader({
-    items: books,
-    batchSize: 20,
-  });
-
+const ExploreBooks = ({ isSelectMode = false, onBookSelect }: ExploreBooksProps) => {
   return (
-    <Box sx={{ p: "1rem", mt: "1.5rem" }}>
-      <SearchBar setIsFiltersModalOpen={setIsFiltersModalOpen} />
-
-      <Box
-        display="grid"
-        mt="2rem"
-        gridTemplateColumns={{
-          xs: "1fr",
-          sm: "1fr 1fr",
-          md: "repeat(5, 1fr)",
-        }}
-        gap="1.5rem"
-      >
-        {visibleItems.map((book) => (
-          <BookInfoCard key={book.id} book={book} />
-        ))}
+    <Box sx={{ p: isSelectMode ? 0 : 3, pt: isSelectMode ? 0 : 3 }}>
+      <Box sx={{ px: isSelectMode ? 3 : 0, pt: isSelectMode ? 2 : 0 }}>
+        <SearchBooks isSelectMode={isSelectMode} onBookSelect={onBookSelect} />
       </Box>
-
-      <Box ref={loaderRef} />
-
-      <SearchFiltersModal
-        open={isFiltersModalOpen}
-        onClose={() => setIsFiltersModalOpen(false)}
-      />
-
-      <Fab
-        color="primary"
-        sx={{ position: "fixed", bottom: "1.5rem", right: "1.5rem" }}
-        onClick={() => navigate("/post")}
-      >
-        <MdAdd size="1.8rem" />
-      </Fab>
     </Box>
   );
 };

@@ -4,17 +4,17 @@ export const useAvatarImage = (initialAvatar: File | null) => {
   const [file, setFile] = useState<File | null>(null);
 
   const previewUrl = useMemo(() => {
-    if (!file)
-      return initialAvatar ? URL.createObjectURL(initialAvatar) : undefined;
+    const source = file ?? initialAvatar;
+    return source ? URL.createObjectURL(source) : undefined;
   }, [file, initialAvatar]);
 
   useEffect(() => {
     return () => {
-      if (file && previewUrl) {
+      if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [file, previewUrl]);
+  }, [previewUrl]);
 
   return {
     file,

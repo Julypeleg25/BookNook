@@ -1,157 +1,174 @@
 import { Request, Response, NextFunction } from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import User, { JwtDecodedUser } from "../models/User";
-import { IUser } from "../models/User";
-import dotenv from "dotenv";
-dotenv.config();
+import {
+  generateTokens,
+  setAuthCookies,
+  clearAuthCookies,
+  verifyRefreshToken,
+} from "@services/authService";
+import { OAuth2Client } from "google-auth-library";
+import { generateUsernameFromEmail, sanitizeUser } from "@utils/userUtils";
+import {
+  createUser,
+  getUserByUsername,
+  getUserByEmail,
+  updateUserTokens,
+  getUserById,
+} from "@services/userService";
+import { comparePassword } from "@utils/hashPassword";
+import { ValidationError, UnauthorizedError } from "@utils/errors";
+import { logger } from "@utils/logger";
+import { isImageFile, deleteFile } from "@utils/fileUtils";
+import { ENV } from "@config/config";
+import { COOKIE } from "@config/constants";
+import { HttpStatusCode } from "axios";
+import { AuthResponseDto } from "@shared/dtos/auth.dto";
 
-function generateTokens(user: IUser) {
-  const accessToken = jwt.sign(
-    { userId: user._id, email: user.email },
-    process.env.JWT_ACCESS_SECRET!,
-    { expiresIn: "15m" }
-  );
-  const refreshToken = jwt.sign(
-    { userId: user._id },
-    process.env.JWT_REFRESH_SECRET!,
-    { expiresIn: "7d" }
-  );
-  return { accessToken, refreshToken };
-}
-
-function setAuthCookies(
+export const register = async (
+  req: Request,
   res: Response,
-  accessToken: string,
-  refreshToken: string
-) {
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
-  });
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-}
-
-async function saveTokensToUser(
-  id: string,
-  accessToken: string,
-  refreshToken: string
-) {
-  await User.findByIdAndUpdate(id, { accessToken, refreshToken });
-}
-
-export const googleAuthCallback = async (req: Request, res: Response) => {
-  if (req.user) {
-    const user = req.user as IUser;
-    const { accessToken, refreshToken } = generateTokens(user);
-    await saveTokensToUser(user._id.toString(), accessToken, refreshToken);
-    setAuthCookies(res, accessToken, refreshToken);
-    res.redirect(
-      (process.env.FRONTEND_URL || "http://localhost:5173") + "/dashboard"
-    );
-  } else {
-    res.redirect(`${process.env.FRONTEND_URL}/login`);
-  }
-};
-
-export const register = async (req: Request, res: Response) => {
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { name, email, username, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({
-      name,
-      email,
+    if (req.file && !isImageFile(req.file.originalname)) {
+      await deleteFile(req.file.path);
+      throw new ValidationError("Avatar must be an image file");
+    }
+
+    const { email, username, password } = req.body;
+    const avatarPath = req.file ? `/uploads/${req.file.filename}` : undefined;
+
+    const user = await createUser({
       username,
+      email,
       provider: "local",
-      password: hashedPassword,
+      password,
+      avatar: avatarPath,
     });
-    await user.save();
     const { accessToken, refreshToken } = generateTokens(user);
-    await saveTokensToUser(String(user._id), accessToken, refreshToken);
-    setAuthCookies(res, accessToken, refreshToken);
-    res.status(201).json({
-      message: "User registered successfully",
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        username: user.username,
-      },
-    });
-  } catch (e) {
-    res.status(400).json({ error: e });
+    await updateUserTokens(String(user._id), accessToken, refreshToken);
+    setAuthCookies(res, refreshToken);
+
+    const response: AuthResponseDto = {
+      user: sanitizeUser(user),
+      accessToken,
+    };
+    res.status(HttpStatusCode.Created).json(response);
+  } catch (error) {
+    if (req.file) await deleteFile(req.file.path);
+    next(error);
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (
-      !user ||
-      !user.password ||
-      !(await bcrypt.compare(password, user.password))
-    ) {
-      return res.status(401).json({ error: "Invalid credentials" });
+
+    const user = await getUserByUsername(username);
+    if (!user?.password || !(await comparePassword(password, user.password))) {
+      res.status(HttpStatusCode.Unauthorized).json({ message: "Invalid credentials" });
+      return;
     }
+
     const { accessToken, refreshToken } = generateTokens(user);
-    user.accessToken = accessToken;
-    user.refreshToken = refreshToken;
-    await user.save();
-    setAuthCookies(res, accessToken, refreshToken);
-    res.json({
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        username: user.username,
-        refreshToken: user.refreshToken,
-        accessToken: user.accessToken,
-      },
-    });
-  } catch {
-    res.status(500).json({ error: "Login failed" });
+    await updateUserTokens(user._id.toString(), accessToken, refreshToken);
+
+    setAuthCookies(res, refreshToken);
+
+    const response: AuthResponseDto = {
+      accessToken,
+      user: sanitizeUser(user),
+    };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
 };
 
-export const refresh = async (req: Request, res: Response) => {
+export const refresh = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { refreshToken } = req.cookies;
-    if (!refreshToken) {
-      return res.status(401).json({ error: "No refresh token" });
+    const oldRefreshToken = req.cookies[COOKIE.REFRESH] as string | undefined;
+    if (!oldRefreshToken) {
+      throw new UnauthorizedError("No refresh token");
     }
 
-    const decoded = jwt.verify(
-      refreshToken,
-      process.env.JWT_REFRESH_SECRET!
-    ) as JwtDecodedUser;
+    const decoded = verifyRefreshToken(oldRefreshToken);
+    const user = await getUserById(decoded._id);
 
-    const user = await User.findById(decoded.userId);
-    if (!user || user.refreshToken !== refreshToken) {
-      return res.status(401).json({ error: "Invalid refresh token" });
+    if (user.refreshToken !== oldRefreshToken) {
+      throw new UnauthorizedError("Invalid refresh token");
     }
 
-    const { accessToken } = generateTokens(user);
-    user.accessToken = accessToken;
-    await user.save();
+    const { accessToken, refreshToken } = generateTokens(user);
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000,
+    setAuthCookies(res, refreshToken);
+    await updateUserTokens(decoded._id, accessToken, refreshToken);
+
+    res.json({ accessToken });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
+
+export const googleSignIn = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { credential } = req.body;
+    if (!credential || typeof credential !== "string") {
+      res.status(HttpStatusCode.BadRequest).json({ message: "Google credential is required" });
+      return;
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: ENV.GOOGLE_CLIENT_ID,
     });
 
-    res.json({ success: true });
-  } catch {
-    res.status(401).json({ error: "Invalid refresh token" });
+    const payload = ticket.getPayload();
+    if (!payload?.email) {
+      res.status(HttpStatusCode.Unauthorized).json({ message: "Invalid Google token" });
+      return;
+    }
+
+    const { email, picture } = payload;
+
+    let user = await getUserByEmail(email);
+
+    if (!user) {
+      user = await createUser({
+        email,
+        username: generateUsernameFromEmail(email),
+        avatar: picture,
+        provider: "google",
+        providerId: payload.sub,
+      });
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user);
+    await updateUserTokens(user._id.toString(), accessToken, refreshToken);
+
+    setAuthCookies(res, refreshToken);
+
+    const response: AuthResponseDto = {
+      accessToken,
+      user: sanitizeUser(user),
+    };
+    res.json(response);
+  } catch (error) {
+    logger.error("Google authentication error:", error);
+    next(error);
   }
 };
 
@@ -159,24 +176,15 @@ export const logout = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    req.logout((err) => {
-      if (err) return next(err);
-    });
-
-    if (req.authenticatedUser) {
-      await User.findByIdAndUpdate((req.authenticatedUser._id), {
-        refreshToken: null,
-        accessToken: null,
-      });
+    if (req.authenticatedUser?.id) {
+      await updateUserTokens(req.authenticatedUser.id, null, null);
     }
 
-    res.clearCookie("accessToken", { path: "/" });
-    res.clearCookie("refreshToken", { path: "/" });
-
-    return res.status(200).json({ success: true });
-  } catch (err) {
-    next(err);
+    clearAuthCookies(res);
+    res.status(HttpStatusCode.Ok).json({ success: true });
+  } catch (error) {
+    next(error);
   }
 };

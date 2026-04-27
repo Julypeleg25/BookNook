@@ -20,7 +20,7 @@ const BookInfoActions = ({ bookId }: BookInfoActionsProps) => {
         </IconButton>
       </Tooltip>
       <Tooltip title="write a review">
-        <IconButton size="small" onClick={() => navigate('/post')}>
+        <IconButton size="small" onClick={() => navigate(`/post/create/${bookId}`)}>
           <TbPencilPlus size={"1.3rem"} />
         </IconButton>
       </Tooltip>

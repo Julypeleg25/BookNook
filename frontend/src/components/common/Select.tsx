@@ -21,21 +21,27 @@ interface SelectProps {
   multiple?: boolean;
   startIcon?: ReactNode;
   sx?: SxProps;
+  fullWidth?: boolean; // Added this
 }
 
 const Select = (props: SelectProps) => {
   return (
-    <FormControl style={props.style}>
-      <InputLabel style={{ gap: "3rem" }}>{props.label}</InputLabel>
+    <FormControl style={props.style} fullWidth={props.fullWidth} sx={props.sx}>
+      {props.label && <InputLabel>{props.label}</InputLabel>}
       <MuiSelect
-        inputProps={{ style: { gap: "1rem" } }}
+        // FIX: Add the onChange handler here
+        onChange={(event) => {
+          const value = event.target.value;
+          // Ensure we always return an array to the parent
+          props.onChange(typeof value === 'string' ? value.split(',') : (value as (string | number)[]));
+        }}
         startAdornment={props.startIcon}
-        variant="standard"
-        disableUnderline
+        variant="outlined"
+        fullWidth
+        // disableUnderline // Remove this if you want to see the select line
         multiple={props.multiple}
         value={props.selectedValues}
         label={props.label}
-        sx={props.sx}
       >
         {props.menuItems.map((item) => (
           <MenuItem key={item.value} value={item.value}>
