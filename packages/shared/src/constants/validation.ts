@@ -1,0 +1,7 @@
+export const REVIEW_TEXT_MIN_LENGTH = 5;
+export const REVIEW_TEXT_MAX_LENGTH = 1500;
+
+export const COMMENT_TEXT_MIN_LENGTH = 1;
+export const COMMENT_TEXT_MAX_LENGTH = 500;
+
+export const SEARCH_QUERY_MAX_LENGTH = 120;

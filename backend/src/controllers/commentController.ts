@@ -3,6 +3,11 @@ import { Types } from "mongoose";
 import { addComment, deleteComment } from "@services/commentService";
 import { ValidationError } from "@utils/errors";
 import { logger } from "@utils/logger";
+import {
+  COMMENT_TEXT_MAX_LENGTH,
+  COMMENT_TEXT_MIN_LENGTH,
+} from "@shared/constants/validation";
+import { validateTextInput } from "@utils/textValidation";
 
 export const addCommentHandler = async (
   req: Request,
@@ -11,15 +16,18 @@ export const addCommentHandler = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { comment } = req.body;
+    const normalizedComment = validateTextInput(req.body.comment, {
+      fieldLabel: "Comment",
+      minLength: COMMENT_TEXT_MIN_LENGTH,
+      maxLength: COMMENT_TEXT_MAX_LENGTH,
+    });
 
     if (!id) throw new ValidationError("Review ID is required");
-    if (!comment) throw new ValidationError("Comment is required");
 
     const comments = await addComment(
       id as string,
       new Types.ObjectId(req.authenticatedUser!.id),
-      comment
+      normalizedComment
     );
     res.json(comments);
   } catch (error) {

@@ -1,4 +1,10 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import {
+  COMMENT_TEXT_MAX_LENGTH,
+  COMMENT_TEXT_MIN_LENGTH,
+  REVIEW_TEXT_MAX_LENGTH,
+  REVIEW_TEXT_MIN_LENGTH,
+} from "@shared/constants/validation";
 
 export interface ReviewComment {
   _id?: Types.ObjectId;
@@ -27,7 +33,12 @@ export interface IUserReview extends Document {
 const ReviewCommentSchema = new Schema<ReviewComment>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    comment: { type: String, required: true, minLength: 1, maxLength: 200 },
+    comment: {
+      type: String,
+      required: true,
+      minLength: COMMENT_TEXT_MIN_LENGTH,
+      maxLength: COMMENT_TEXT_MAX_LENGTH,
+    },
     createdAt: { type: Date, default: Date.now },
   },
   { _id: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
@@ -45,7 +56,12 @@ const UserReviewSchema = new Schema<IUserReview>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     book: { type: Schema.Types.ObjectId, ref: "Book", required: true },
-    review: { type: String, required: true, minLength: 5, maxlength: 1500 },
+    review: {
+      type: String,
+      required: true,
+      minLength: REVIEW_TEXT_MIN_LENGTH,
+      maxlength: REVIEW_TEXT_MAX_LENGTH,
+    },
     rating: {
       type: Number,
       required: true,

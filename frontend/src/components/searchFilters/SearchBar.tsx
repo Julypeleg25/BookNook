@@ -2,6 +2,7 @@ import { TextField, IconButton, Button, Box, InputAdornment } from "@mui/materia
 import { HiOutlineAdjustmentsVertical } from "react-icons/hi2";
 import { MdClear } from "react-icons/md";
 import { useState, useEffect } from "react";
+import { SEARCH_QUERY_MAX_LENGTH } from "@shared/constants/validation";
 
 interface SearchBarProps {
   onSearch: (searchTerm: string) => void;
@@ -47,6 +48,11 @@ const SearchBar = ({ onSearch, onClear, searchTerm, setSearchTerm, setIsFiltersM
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         onKeyPress={handleKeyPress}
+        slotProps={{
+          htmlInput: {
+            maxLength: SEARCH_QUERY_MAX_LENGTH,
+          },
+        }}
         InputProps={{
           endAdornment: searchTerm ? (
             <InputAdornment position="end">
