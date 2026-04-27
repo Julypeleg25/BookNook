@@ -40,6 +40,7 @@ const SearchPosts = () => {
         filters.username,
         filters.rating,
         filters.genre,
+        filters.minComments,
       ),
   });
 
@@ -47,7 +48,8 @@ const SearchPosts = () => {
     filters.likesAmount > 0 ||
     filters.rating > 0 ||
     filters.genre.trim().length > 0 ||
-    filters.username.trim().length > 0;
+    filters.username.trim().length > 0 ||
+    filters.minComments > 0;
 
   const bookPosts: BookPost[] = useMemo(
     () => reviews.map(mapReviewToBookPost),
@@ -93,11 +95,7 @@ const SearchPosts = () => {
       {!isLoading && bookPosts.length === 0 && (
         <Box sx={{ textAlign: "center", mt: 8 }}>
           <Typography variant="h6" color="text.secondary">
-            {urlQuery.trim() !== "" ||
-              filters.likesAmount > 0 ||
-              filters.rating > 0 ||
-              filters.genre.trim() !== "" ||
-              filters.username.trim() !== ""
+            {urlQuery.trim() !== "" || hasActiveFilters
               ? "No posts found"
               : "No posts yet"}
           </Typography>

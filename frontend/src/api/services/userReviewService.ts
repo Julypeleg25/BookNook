@@ -46,11 +46,12 @@ export const userReviewService = {
         searchQuery?: string,
         username?: string,
         rating?: number,
-        genre?: string
+        genre?: string,
+        minComments?: number
     ): Promise<UserReview[]> {
         const res = await axiosClient.get<UserReview[]>(
             endpoints.userReviews.getAll,
-            { params: { minLikes, search: searchQuery, username, rating, genre } }
+            { params: { minLikes, search: searchQuery, username, rating, genre, minComments } }
         );
         return res.data;
     },

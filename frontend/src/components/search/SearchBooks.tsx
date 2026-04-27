@@ -37,7 +37,8 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
     const hasActiveFilters =
         filters.author.trim().length > 0 ||
         filters.genre.trim().length > 0 ||
-        filters.rating > 0
+        filters.rating > 0 ||
+        filters.minReviews > 0
 
     const hasValidQuery = urlQuery.trim().length > 0 || hasActiveFilters;
 
@@ -49,6 +50,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 subject: filters.genre || undefined,
                 title: urlQuery,
                 rating: filters.rating || undefined,
+                reviewCount: filters.minReviews || undefined,
                 page: pageParam as number,
                 limit: PAGE_SIZE
             });
@@ -125,6 +127,17 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                             <Typography sx={{ ml: 2 }}>Loading more...</Typography>
                         </Box>
                     )}
+                </Box>
+            )}
+
+            {!hasValidQuery && (
+                <Box sx={{ textAlign: 'center', mt: 8 }}>
+                    <Typography variant="h6" color="text.secondary">
+                        Search for a book
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Start typing to search for books, or apply some filters.
+                    </Typography>
                 </Box>
             )}
 
