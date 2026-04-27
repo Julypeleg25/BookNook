@@ -38,7 +38,6 @@ const CommentsSection = ({ postId, comments: initialComments }: CommentsSectionP
         try {
             const updatedCommentsRaw = await userReviewService.addComment(postId, newComment);
 
-            // Map raw comments back to PostComment interface if needed
             const updatedComments: PostComment[] = updatedCommentsRaw.map((c: any) => ({
                 id: c._id,
                 user: c.user,

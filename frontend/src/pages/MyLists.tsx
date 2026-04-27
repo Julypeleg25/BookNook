@@ -1,7 +1,6 @@
 import { axiosClient } from "@/api/axios/axiosClient";
 import { endpoints } from "@/api/endpoints";
 import useUserStore from "@/state/useUserStore";
-import { bookPosts } from "../exampleData";
 import BooksList from "@components/lists/BooksList";
 import { Stack } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
