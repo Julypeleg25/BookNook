@@ -11,7 +11,11 @@ import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import PostActionsMenu from "./post/PostActionsMenu";
 
-const FullBookPostCard = ({ post }: { post: BookPost }) => {
+interface FullBookPostCardProps {
+  post: BookPost;
+}
+
+const FullBookPostCard = ({ post }: FullBookPostCardProps) => {
   return (
     <Card elevation={2} sx={{ borderRadius: "1.2rem", padding: "1.2rem" }}>
       <CardContent sx={{ padding: 0 }}>

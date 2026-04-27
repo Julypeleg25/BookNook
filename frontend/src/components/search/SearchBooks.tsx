@@ -8,6 +8,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { booksService } from "@/api/services/bookService";
 import type { Book } from "@/models/Book";
 import { useSearchParamsState } from "@/hooks/useSearchParamsState";
+import { queryKeys } from "@/api/queryKeys";
 
 const PAGE_SIZE = 20;
 
@@ -24,7 +25,8 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
         setLocalSearchQuery,
         handleSearch,
         handleApplyFilters,
-        handleClear,
+        handleClearSearch,
+        handleClearFilters,
         setGenre
     } = useSearchParamsState();
 
@@ -39,7 +41,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
     const hasValidQuery = urlQuery.trim().length > 0 || hasActiveFilters;
 
     const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-        queryKey: ["booksSearch", urlQuery, filters],
+        queryKey: queryKeys.booksSearch(urlQuery, filters),
         queryFn: async ({ pageParam = 1 }) => {
             return await booksService.search({
                 author: filters.author || undefined,
@@ -85,7 +87,8 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 searchTerm={localSearchQuery}
                 setSearchTerm={setLocalSearchQuery}
                 onSearch={handleSearch}
-                onClear={handleClear}
+                onClearSearch={handleClearSearch}
+                onClearFilters={handleClearFilters}
                 onToggleGenre={setGenre}
                 selectedGenre={filters.genre}
                 setIsFiltersModalOpen={setIsFiltersModalOpen}

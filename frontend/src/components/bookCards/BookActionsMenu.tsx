@@ -16,6 +16,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { useSnackbar } from "notistack";
 import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
+import { getBookId } from "@/utils/bookUtils";
+import {
+    invalidateBookListCache,
+    removeBookFromListCache,
+    setBookListCache,
+} from "@/api/queryCache";
 
 interface BookActionsMenuProps {
     book: Book;
@@ -32,10 +38,10 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
     const { navigateProtected } = useProtectedNavigation();
 
     const { mutate: removeFromList, isPending } = useMutation({
-        mutationFn: () => ListsService.removeBookFromList(book.id, listType!),
-        onSuccess: () => {
-            const fullListType = listType === "wish" ? "wishlist" : "readlist";
-            queryClient.invalidateQueries({ queryKey: [fullListType, "lists", user.username] });
+        mutationFn: () => ListsService.removeBookFromList(getBookId(book), listType!),
+        onSuccess: (updatedBooks) => {
+            setBookListCache(queryClient, user.username, listType!, updatedBooks);
+            invalidateBookListCache(queryClient, user.username, listType!);
             enqueueSnackbar("Book removed from list", { variant: "success" });
             handleClose();
         },
@@ -56,6 +62,7 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
     const handleRemove = (event: React.MouseEvent) => {
         event.stopPropagation();
         if (listType) {
+            removeBookFromListCache(queryClient, user.username, listType, book);
             removeFromList();
         }
     };

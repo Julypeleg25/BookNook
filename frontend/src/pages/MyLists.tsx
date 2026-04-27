@@ -1,33 +1,24 @@
-import { axiosClient } from "@/api/axios/axiosClient";
-import { endpoints } from "@/api/endpoints";
 import useUserStore from "@/state/useUserStore";
 import BooksList from "@components/lists/BooksList";
 import { Stack } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { BsBookmark } from "react-icons/bs";
 import { LuBookCheck } from "react-icons/lu";
-import { Book } from "@/models/Book";
+import { ListsService } from "@/api/services/ListsService";
+import { queryKeys } from "@/api/queryKeys";
 
 const MyLists = () => {
   const {
     user: { username },
   } = useUserStore();
   const { data: wishlistBooks = [], isLoading: isWishlistLoading } = useQuery({
-    queryKey: ["wishlist", "lists", username],
-    queryFn: async () => {
-      const res = await axiosClient.get<Book[]>(endpoints.lists.wishlist);
-
-      return res.data;
-    },
+    queryKey: queryKeys.wishlist(username),
+    queryFn: ListsService.getWishlistBooks,
   });
 
   const { data: readlistBooks = [], isLoading: isReadlistLoading } = useQuery({
-    queryKey: ["readlist", "lists", username],
-    queryFn: async () => {
-      const res = await axiosClient.get<Book[]>(endpoints.lists.readlist);
-
-      return res.data;
-    },
+    queryKey: queryKeys.readlist(username),
+    queryFn: ListsService.getReadlistBooks,
   });
   return (
     <Stack margin="2rem">
