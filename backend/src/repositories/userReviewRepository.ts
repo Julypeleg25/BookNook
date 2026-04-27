@@ -191,6 +191,22 @@ export class UserReviewRepository {
     }
   }
 
+  async removeLike(
+    reviewId: Types.ObjectId | string,
+    userId: Types.ObjectId
+  ): Promise<IUserReview | null> {
+    try {
+      return await UserReviewModel.findByIdAndUpdate(
+        reviewId,
+        { $pull: { likes: userId } },
+        { new: true }
+      );
+    } catch (error) {
+      logger.error(`Error removing like from review ${reviewId}:`, error);
+      throw error;
+    }
+  }
+
   async aggregateRatingsByBook(
     bookId: Types.ObjectId | string
   ): Promise<AggregatedRating> {

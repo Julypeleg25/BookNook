@@ -52,7 +52,7 @@ export const normalizeBookDetail = (volume: GoogleBooksVolume): BookDetail => {
   };
 };
 
-const localBookToSummary = (book: IBook): BookSummary => {
+export const normalizeLocalBookSummary = (book: IBook): BookSummary => {
   return {
     id: book.externalId,
     title: book.title,
@@ -137,7 +137,7 @@ export const localSearchBooks = async (
     subject,
   });
 
-  const bookSummaries = items.map(localBookToSummary);
+  const bookSummaries = items.map(normalizeLocalBookSummary);
 
   return {
     page: pageNumber,

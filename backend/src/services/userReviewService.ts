@@ -1,4 +1,5 @@
-import { Types } from "mongoose";
+import { Types, FlattenMaps } from "mongoose";
+import { BookDetail } from "@models/ApiBook";
 import { IUserReview } from "@models/UserReview";
 import { userReviewRepository, PopulatedUserReview } from "@repositories/userReviewRepository";
 import * as bookService from "./bookService";
@@ -11,11 +12,106 @@ import * as vectorSyncService from "@services/ai/vectorSyncService";
 import User from "@models/User";
 import { logger } from "@utils/logger";
 import { userRepository } from "@repositories/userRepository";
-import { FlattenMaps } from "mongoose";
 
-type ReviewDocumentLike = (IUserReview | PopulatedUserReview) & {
+export type EnrichedUserReview = Omit<PopulatedUserReview, "book"> & {
+  book: BookDetail;
+};
+
+type ReviewDocumentLike = PopulatedUserReview & {
   _id: Types.ObjectId;
-  toObject?: () => FlattenMaps<IUserReview | PopulatedUserReview>;
+  toObject?: () => FlattenMaps<PopulatedUserReview>;
+};
+
+const buildUnavailableBook = (bookId: string | null): BookDetail => ({
+  id: bookId ?? "unknown",
+  title: "Book Unavailable",
+  authors: ["Unknown"],
+  thumbnail: "",
+  description: "Could not load book data.",
+  categories: [],
+  pageCount: 0,
+  previewLink: "",
+  genres: [],
+});
+
+const toReviewObject = (
+  review: PopulatedUserReview
+): FlattenMaps<PopulatedUserReview> | ReviewDocumentLike => {
+  const reviewDoc = review as ReviewDocumentLike;
+  return typeof reviewDoc.toObject === "function" ? reviewDoc.toObject() : reviewDoc;
+};
+
+const extractObjectIdString = (value: unknown): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value instanceof Types.ObjectId) {
+    return value.toString();
+  }
+
+  if (typeof value === "object") {
+    const typedValue = value as {
+      _id?: unknown;
+      id?: unknown;
+      toString?: () => string;
+    };
+
+    if (typedValue._id) {
+      return extractObjectIdString(typedValue._id);
+    }
+
+    if (typedValue.id) {
+      return extractObjectIdString(typedValue.id);
+    }
+
+    if (typeof typedValue.toString === "function") {
+      const stringified = typedValue.toString();
+      if (stringified && stringified !== "[object Object]") {
+        return stringified;
+      }
+    }
+  }
+
+  try {
+    const stringified = String(value);
+    return stringified && stringified !== "[object Object]" ? stringified : null;
+  } catch {
+    return null;
+  }
+};
+
+const requireObjectIdString = (value: unknown, fieldName: string): string => {
+  const id = extractObjectIdString(value);
+  if (!id) {
+    throw new Error(`Could not determine ${fieldName} ID`);
+  }
+
+  return id;
+};
+
+const getNormalizedBookByLocalId = async (
+  localBookId: string,
+  cache?: Map<string, Promise<BookDetail>>
+): Promise<BookDetail> => {
+  const cachedBook = cache?.get(localBookId);
+  if (cachedBook) {
+    return cachedBook;
+  }
+
+  const loadBookPromise = userReviewServiceDeps
+    .getGoogleBookByLocalId(localBookId)
+    .then(bookService.normalizeBookDetail);
+
+  if (cache) {
+    cache.set(localBookId, loadBookPromise);
+  }
+
+  return loadBookPromise;
 };
 
 export const userReviewServiceDeps = {
@@ -49,7 +145,6 @@ export const createReview = async (
   });
 
   await userReviewServiceDeps.recomputeBookRating(bookId.toString());
-
   await userReviewServiceDeps.syncReviewToVector(newReview);
 
   const user = await userReviewServiceDeps.findUserById(userId);
@@ -74,26 +169,28 @@ export const getAllReviews = async (
     if (matchingUsers.length === 0) {
       return [];
     }
-    userIdFilter = matchingUsers.map((u: IUser) => u._id as Types.ObjectId);
+    userIdFilter = matchingUsers.map((user: IUser) => user._id as Types.ObjectId);
   }
 
   let genreBookIds: Types.ObjectId[] | undefined;
   if (genre) {
     const { items: booksInGenre } = await bookRepository.localSearchBooks({
       subject: genre,
-      limit: 1000
+      limit: 1000,
     });
-    if (booksInGenre.length === 0) return [];
-    genreBookIds = booksInGenre.map((b: IBook) => b._id as Types.ObjectId);
+    if (booksInGenre.length === 0) {
+      return [];
+    }
+    genreBookIds = booksInGenre.map((book: IBook) => book._id as Types.ObjectId);
   }
 
   let searchBookIds: Types.ObjectId[] | undefined;
   if (searchQuery) {
     const { items: matchingBooks } = await bookRepository.localSearchBooks({
-      title: searchQuery
+      title: searchQuery,
     });
     if (matchingBooks.length > 0) {
-      searchBookIds = matchingBooks.map((b: IBook) => b._id as Types.ObjectId);
+      searchBookIds = matchingBooks.map((book: IBook) => book._id as Types.ObjectId);
     }
   }
 
@@ -130,58 +227,34 @@ export const getReviewById = async (
   return review;
 };
 
-const extractBookId = (bookField: unknown): string | null => {
-  if (!bookField) return null;
-  if (typeof bookField === 'string') return bookField;
+export const getEnrichedReviews = async (
+  reviews: PopulatedUserReview[]
+): Promise<EnrichedUserReview[]> => {
+  const bookCache = new Map<string, Promise<BookDetail>>();
 
-  const bookObj = bookField as { _id?: string | Types.ObjectId; toString?: () => string };
-
-  if (bookObj._id) {
-    if (typeof bookObj._id === 'string') return bookObj._id;
-    if (bookObj._id instanceof Types.ObjectId) return bookObj._id.toString();
-  }
-
-  if (bookField instanceof Types.ObjectId) return bookField.toString();
-
-  try {
-    const s = String(bookField);
-    return (s && s !== "[object Object]") ? s : null;
-  } catch {
-    return null;
-  }
-};
-
-export const getEnrichedReviews = async (reviews: (IUserReview | PopulatedUserReview)[]): Promise<PopulatedUserReview[]> => {
-  const { normalizeBookDetail } = await import("./bookService");
-
-  return Promise.all(
+  return await Promise.all(
     reviews.map(async (review) => {
       const reviewDoc = review as ReviewDocumentLike;
-      const reviewObj = typeof reviewDoc.toObject === 'function' ? reviewDoc.toObject() : reviewDoc;
-      const bookId = extractBookId(reviewObj.book);
+      const reviewObject = toReviewObject(review);
+      const bookId = extractObjectIdString(reviewObject.book);
 
       try {
-        if (!bookId) {
-          throw new Error(`Could not determine book ID for review ${String(reviewDoc._id)}`);
-        }
-        const fullBook = await userReviewServiceDeps.getGoogleBookByLocalId(bookId);
-        const normalizedBook = normalizeBookDetail(fullBook);
-        return { ...reviewObj, book: normalizedBook };
+        const resolvedBookId = requireObjectIdString(
+          reviewObject.book,
+          `book for review ${String(reviewDoc._id)}`
+        );
+        const normalizedBook = await getNormalizedBookByLocalId(
+          resolvedBookId,
+          bookCache
+        );
+
+        return { ...reviewObject, book: normalizedBook } as unknown as EnrichedUserReview;
       } catch (error) {
         logger.warn(`Error enriching review ${String(reviewDoc._id)}:`, error);
         return {
-          ...reviewObj,
-          book: {
-            id: bookId || "unknown",
-            title: "Book Unavailable",
-            authors: ["Unknown"],
-            thumbnail: "",
-            description: "Could not load book data.",
-            categories: [],
-            pageCount: 0,
-            previewLink: ""
-          }
-        };
+          ...reviewObject,
+          book: buildUnavailableBook(bookId),
+        } as unknown as EnrichedUserReview;
       }
     })
   );
@@ -189,42 +262,32 @@ export const getEnrichedReviews = async (reviews: (IUserReview | PopulatedUserRe
 
 export const getPopulatedReviewById = async (
   reviewId: string
-): Promise<PopulatedUserReview> => {
+): Promise<EnrichedUserReview> => {
   const review = await userReviewRepository.findByIdWithUser(reviewId);
   if (!review) {
     throw new NotFoundError("Review not found");
   }
 
-  const bookId = extractBookId(review.book);
+  const reviewObject = toReviewObject(review);
+  const bookId = extractObjectIdString(reviewObject.book);
 
   try {
-    if (!bookId) {
-      throw new Error(`Could not determine book ID for review ${reviewId}`);
-    }
-
-    const fullBook = await userReviewServiceDeps.getGoogleBookByLocalId(bookId);
-    const { normalizeBookDetail } = await import("./bookService");
-    const normalizedBook = normalizeBookDetail(fullBook);
+    const resolvedBookId = requireObjectIdString(
+      reviewObject.book,
+      `book for review ${reviewId}`
+    );
+    const normalizedBook = await getNormalizedBookByLocalId(resolvedBookId);
 
     return {
-      ...review.toObject(),
-      book: normalizedBook
-    };
+      ...reviewObject,
+      book: normalizedBook,
+    } as unknown as EnrichedUserReview;
   } catch (error) {
     logger.warn(`Error enriching review ${reviewId}:`, error);
     return {
-      ...review.toObject(),
-      book: {
-        id: bookId || "unknown",
-        title: "Book Unavailable",
-        authors: ["Unknown"],
-        thumbnail: "",
-        description: "Could not load book data.",
-        categories: [],
-        pageCount: 0,
-        previewLink: ""
-      }
-    };
+      ...reviewObject,
+      book: buildUnavailableBook(bookId),
+    } as unknown as EnrichedUserReview;
   }
 };
 
@@ -243,11 +306,16 @@ export const updateReview = async (
     throw new NotFoundError("Review not found");
   }
 
-  await userReviewServiceDeps.recomputeBookRating((updatedReview.book as Types.ObjectId).toString());
+  const bookId = requireObjectIdString(updatedReview.book, "book");
+  const userId = requireObjectIdString(updatedReview.user, "user");
+
+  if (updateData.rating !== undefined) {
+    await userReviewServiceDeps.recomputeBookRating(bookId);
+  }
 
   await userReviewServiceDeps.syncReviewToVector(updatedReview);
 
-  const user = await userReviewServiceDeps.findUserById((updatedReview.user as Types.ObjectId).toString());
+  const user = await userReviewServiceDeps.findUserById(userId);
   if (user) {
     await userReviewServiceDeps.syncUserProfileToVector(user);
   }
@@ -261,12 +329,14 @@ export const deleteReview = async (reviewId: string): Promise<void> => {
     throw new NotFoundError("Review not found");
   }
 
-  await userReviewRepository.delete(reviewId);
-  await userReviewServiceDeps.recomputeBookRating((review.book as Types.ObjectId).toString());
+  const bookId = requireObjectIdString(review.book, "book");
+  const userId = requireObjectIdString(review.user, "user");
 
+  await userReviewRepository.delete(reviewId);
+  await userReviewServiceDeps.recomputeBookRating(bookId);
   await userReviewServiceDeps.deleteReviewFromVector(reviewId);
 
-  const user = await userReviewServiceDeps.findUserById((review.user as Types.ObjectId).toString());
+  const user = await userReviewServiceDeps.findUserById(userId);
   if (user) {
     await userReviewServiceDeps.syncUserProfileToVector(user);
   }
@@ -280,5 +350,6 @@ export const isReviewAuthor = async (
   if (!review) {
     return false;
   }
-  return (review.user as Types.ObjectId).toString() === userId;
+
+  return requireObjectIdString(review.user, "user") === userId;
 };
