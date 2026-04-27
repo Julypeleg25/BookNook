@@ -67,10 +67,18 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
       <Box
         component={RouterLink}
         to={`/posts/${post.id}`}
-        sx={{ textDecoration: "none", position: "relative", display: "block" }}
+        sx={{
+          textDecoration: "none",
+          position: "relative",
+          display: "block",
+          width: "100%",
+          aspectRatio: "4 / 3",
+          backgroundColor: "grey.100",
+          overflow: "hidden",
+        }}
       >
         {isImageLoading && (
-          <Skeleton variant="rectangular" height="16rem" width="100%" />
+          <Skeleton variant="rectangular" width="100%" height="100%" />
         )}
         {imgSrc && (
           <CardMedia
@@ -80,10 +88,9 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             onLoad={handleImageLoad}
             sx={{
               width: "100%",
-              aspectRatio: "4 / 3",
-              maxHeight: "18rem",
+              height: "100%",
               objectFit: "cover",
-              display: isImageLoading ? "none" : "block"
+              display: isImageLoading ? "none" : "block",
             }}
           />
         )}

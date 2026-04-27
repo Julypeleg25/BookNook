@@ -1,15 +1,10 @@
-import Select from "@/components/common/Select";
 import { Box, Chip } from "@mui/material";
-import { TbArrowsSort } from "react-icons/tb";
-import type { CommentSortOrder } from "@/utils/commentUtils";
 
 interface CommentsHeaderProps {
   length: number;
-  sortOrder: CommentSortOrder;
-  onSortChange: (value: CommentSortOrder) => void;
 }
 
-const CommentsHeader = ({ length, sortOrder, onSortChange }: CommentsHeaderProps) => {
+const CommentsHeader = ({ length }: CommentsHeaderProps) => {
   return (
     <Box
       sx={{
@@ -17,8 +12,12 @@ const CommentsHeader = ({ length, sortOrder, onSortChange }: CommentsHeaderProps
         alignItems: "center",
         justifyContent: "space-between",
         minHeight: "4rem",
-        px: { xs: "1rem", sm: "3rem" },
+        px: { xs: "1rem", sm: "1.5rem" },
+        py: 1,
         gap: "1rem",
+        borderBottom: "1px solid",
+        borderColor: "divider",
+        bgcolor: "background.paper",
       }}
     >
       <Box
@@ -32,23 +31,6 @@ const CommentsHeader = ({ length, sortOrder, onSortChange }: CommentsHeaderProps
         <Box sx={{ fontWeight: "bold", fontSize: "1.3rem" }}>Comments</Box>
         <Chip label={length} size={"small"} />
       </Box>
-      <Select
-        sx={{
-          width: "13rem",
-          flexShrink: 0,
-          "& .MuiInputBase-input": {
-            padding: "0.6rem",
-          },
-        }}
-        label=""
-        startIcon={<TbArrowsSort size={"2rem"} />}
-        onChange={(values) => onSortChange(values[0] as CommentSortOrder)}
-        selectedValues={[sortOrder]}
-        menuItems={[
-          { label: "Most recent", value: "mostRecent" },
-          { label: "Least recent", value: "leastRecent" },
-        ]}
-      />
     </Box>
   );
 };

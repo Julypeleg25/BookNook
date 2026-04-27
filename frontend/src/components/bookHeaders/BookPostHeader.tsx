@@ -4,67 +4,20 @@ import { FiHeart } from "react-icons/fi";
 import { formatDate } from "@utils/dateUtils";
 import type { BookPost } from "@models/Book";
 import BookHeader from "./BookHeaderButtons";
-import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import useUserStore from "@/state/useUserStore";
-import { userReviewService } from "@/api/services/userReviewService";
-import { useSnackbar } from "notistack";
-import { invalidateReviewCaches } from "@/api/queryCache";
 import { RATING_STEP } from "@shared/constants/validation";
+import { useReviewLikeToggle } from "@/hooks/useReviewLikeToggle";
 
 interface BookPostHeaderProps {
   bookPost: BookPost;
 }
 
 const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
-  const { user, isAuthenticated } = useUserStore();
-  const [likes, setLikes] = useState<string[]>(bookPost.likes);
-  const [isUpdatingLike, setIsUpdatingLike] = useState(false);
-  const { enqueueSnackbar } = useSnackbar();
-
-  const isLiked = user?.id ? likes.includes(user.id) : false;
-  const isAuthor = user?.id && bookPost.user ? user.id === bookPost.user.id : false;
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    setLikes(bookPost.likes);
-  }, [bookPost.likes]);
-
-  const handleLikeClick = async () => {
-    if (isUpdatingLike) return;
-
-    if (!isAuthenticated) {
-      enqueueSnackbar("Please login to like posts", { variant: "info" });
-      return;
-    }
-
-    if (isAuthor) {
-      enqueueSnackbar("You cannot like your own post", { variant: "warning" });
-      return;
-    }
-
-    const previousLikes = [...likes];
-    const newLikes = isLiked
-      ? likes.filter(id => id !== user.id)
-      : [...likes, user.id];
-
-    setLikes(newLikes);
-
-    try {
-      setIsUpdatingLike(true);
-      if (isLiked) {
-        await userReviewService.unlikeReview(bookPost.id);
-      } else {
-        await userReviewService.likeReview(bookPost.id);
-      }
-      invalidateReviewCaches(queryClient, { reviewId: bookPost.id });
-    } catch {
-      setLikes(previousLikes);
-      enqueueSnackbar("Error updating like", { variant: "error" });
-    } finally {
-      setIsUpdatingLike(false);
-    }
-  };
+  const { likes, isLiked, isAuthor, isUpdatingLike, toggleLike } =
+    useReviewLikeToggle({
+      reviewId: bookPost.id,
+      reviewUserId: bookPost.user?.id,
+      initialLikes: bookPost.likes,
+    });
 
   return (
     <div
@@ -101,11 +54,11 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
             <Tooltip title={isAuthor ? "You cannot like your own post" : isLiked ? "Unlike" : "Like"}>
               <span>
                 <IconButton
-                  onClick={handleLikeClick}
+                  onClick={toggleLike}
                   disabled={Boolean(isAuthor) || isUpdatingLike}
-                  sx={{ color: isLiked ? 'red' : 'inherit' }}
+                  sx={{ color: isLiked ? "error.main" : "inherit" }}
                 >
-                  {isLiked ? <FaHeart /> : <FiHeart />}
+                  {isLiked ? <FaHeart size={18} /> : <FiHeart size={18} />}
                 </IconButton>
               </span>
             </Tooltip>

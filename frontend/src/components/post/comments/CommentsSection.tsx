@@ -1,5 +1,5 @@
-import { Avatar, Box, Divider } from "@mui/material";
-import { forwardRef, useRef, useImperativeHandle, useMemo, useState } from "react";
+import { Avatar, Box, CircularProgress, Divider, IconButton, Tooltip } from "@mui/material";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 import { timeAgo } from "@utils/dateUtils";
 import type { BookPost } from "@models/Book";
 import NewComment, { type NewCommentRef } from "./NewComment";
@@ -8,8 +8,12 @@ import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import useUserStore from "@/state/useUserStore";
-import { sortComments, type CommentSortOrder } from "@/utils/commentUtils";
-import { invalidateReviewCaches } from "@/api/queryCache";
+import {
+  invalidateReviewCaches,
+  syncReviewCommentsInCaches,
+} from "@/api/queryCache";
+import { FiTrash2 } from "react-icons/fi";
+import { enqueueSnackbar } from "notistack";
 
 interface CommentsSectionProps {
   bookPost: BookPost;
@@ -22,7 +26,6 @@ export interface CommentsSectionRef {
 const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
   ({ bookPost }, ref) => {
     const newCommentRef = useRef<NewCommentRef>(null);
-    const [sortOrder, setSortOrder] = useState<CommentSortOrder>("mostRecent");
     const { user } = useUserStore();
 
     useImperativeHandle(ref, () => ({
@@ -33,19 +36,30 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
     const { mutate: addComment } = useMutation({
       mutationFn: (comment: string) =>
         userReviewService.addComment(bookPost.id, comment),
-      onSuccess: () => {
+      onSuccess: (comments) => {
+        syncReviewCommentsInCaches(queryClient, bookPost.id, comments);
         invalidateReviewCaches(queryClient, { reviewId: bookPost.id });
+      },
+      onError: () => {
+        enqueueSnackbar("Error adding comment", { variant: "error" });
+      },
+    });
+    const { mutate: deleteComment, isPending: isDeletingComment } = useMutation({
+      mutationFn: (commentId: string) =>
+        userReviewService.deleteComment(bookPost.id, commentId),
+      onSuccess: (comments) => {
+        syncReviewCommentsInCaches(queryClient, bookPost.id, comments);
+        invalidateReviewCaches(queryClient, { reviewId: bookPost.id });
+        enqueueSnackbar("Comment deleted", { variant: "success" });
+      },
+      onError: () => {
+        enqueueSnackbar("Error deleting comment", { variant: "error" });
       },
     });
 
     const handleAddComment = (comment: string) => {
       addComment(comment);
     };
-
-    const sortedComments = useMemo(
-      () => sortComments(bookPost.comments, sortOrder),
-      [bookPost.comments, sortOrder],
-    );
 
     return (
       <Box
@@ -59,33 +73,54 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
           scrollbarGutter: "stable",
           marginTop: "2rem",
           bgcolor: "background.paper",
+          position: "relative",
         }}
       >
-        <Box
-          justifySelf="center"
-          width="100%"
-        >
+        <Box justifySelf="center" width="100%">
           <NewComment ref={newCommentRef} avatarUrl={user?.avatar} onSubmit={handleAddComment} />
           <Divider
             style={{ width: "93%", justifySelf: "center", opacity: 0.3 }}
           />
-          <CommentsHeader
-            length={bookPost.comments.length}
-            sortOrder={sortOrder}
-            onSortChange={setSortOrder}
-          />
-          {sortedComments.map((comment) => (
+          <CommentsHeader length={bookPost.comments.length} />
+          {bookPost.comments.map((comment) => {
+            const canDelete =
+              Boolean(user.id) &&
+              (comment.user.id === user.id || bookPost.user.id === user.id);
+
+            return (
             <Box key={comment.id} style={{ padding: "1rem" }}>
               <Box
                 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
               >
                 <Avatar src={getAvatarSrcUrl(comment.user.avatar)} />
-                <div style={{ fontWeight: "bold", fontSize: "1.15rem" }}>
-                  {comment.user.username}
-                </div>
-                <div style={{ opacity: 0.7 }}>
-                  {timeAgo(comment.createdDate)}
-                </div>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <div style={{ fontWeight: "bold", fontSize: "1.15rem" }}>
+                      {comment.user.username}
+                    </div>
+                    <div style={{ opacity: 0.7 }}>
+                      {timeAgo(comment.createdDate)}
+                    </div>
+                  </Box>
+                </Box>
+                {canDelete ? (
+                  <Tooltip title="Delete comment">
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => deleteComment(comment.id)}
+                        disabled={isDeletingComment}
+                        sx={{ flexShrink: 0 }}
+                      >
+                        {isDeletingComment ? (
+                          <CircularProgress size={16} />
+                        ) : (
+                          <FiTrash2 size={16} />
+                        )}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                ) : null}
               </Box>
               <Box
                 sx={{
@@ -98,7 +133,7 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
                 {comment.content}
               </Box>
             </Box>
-          ))}
+          )})}
         </Box>
       </Box>
     );

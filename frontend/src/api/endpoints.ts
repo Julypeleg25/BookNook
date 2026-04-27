@@ -35,6 +35,8 @@ export const endpoints = {
     like: (reviewId: string) => `/userReviews/${reviewId}/like`,
     unlike: (reviewId: string) => `/userReviews/${reviewId}/unlike`,
     comments: (reviewId: string) => `/userReviews/${reviewId}/comments`,
+    deleteComment: (reviewId: string, commentId: string) =>
+      `/userReviews/${reviewId}/comments/${commentId}`,
     delete: (reviewId: string) => `/userReviews/${reviewId}`,
   },
   rag: {

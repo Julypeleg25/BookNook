@@ -89,6 +89,8 @@ const BookHeader = ({ book, isBookPost }: BookHeaderProps) => {
         sx={{
           borderRadius: "2rem",
           px: 3,
+          minWidth: { xs: "100%", sm: "11.5rem" },
+          height: "2.75rem",
           borderColor: wishlist.isAdded ? "primary.main" : "divider",
           bgcolor: wishlist.isAdded ? "action.selected" : "transparent",
         }}
@@ -104,6 +106,8 @@ const BookHeader = ({ book, isBookPost }: BookHeaderProps) => {
         sx={{
           borderRadius: "2rem",
           px: 3,
+          minWidth: { xs: "100%", sm: "11.5rem" },
+          height: "2.75rem",
           borderColor: readlist.isAdded ? "primary.main" : "divider",
           bgcolor: readlist.isAdded ? "action.selected" : "transparent",
         }}

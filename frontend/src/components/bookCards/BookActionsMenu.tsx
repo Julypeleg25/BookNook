@@ -73,6 +73,11 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
             }
             enqueueSnackbar("Failed to remove book from list", { variant: "error" });
         },
+        onSettled: () => {
+            if (listType) {
+                invalidateBookListCache(queryClient, user.username, listType);
+            }
+        },
     });
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
