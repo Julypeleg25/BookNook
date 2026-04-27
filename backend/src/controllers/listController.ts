@@ -33,7 +33,7 @@ export const addBookToList = async (
     }
 
     const updatedList = await addBookToUserList(userId, bookId as string, listType);
-    res.json({ updatedList });
+    res.json(updatedList);
   } catch (error) {
     logger.error("Error adding book to list:", error);
     next(error);
@@ -55,7 +55,7 @@ export const removeBookFromList = async (
     }
 
     const updatedList = await removeBookFromUserList(userId, bookId as string, listType);
-    res.json({ updatedList });
+    res.json(updatedList);
   } catch (error) {
     logger.error("Error removing book from list:", error);
     next(error);
