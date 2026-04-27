@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Chip } from "@mui/material";
 import SearchBar from "@/components/searchFilters/SearchBar";
 import GenreChips from "./GenreChips";
 
@@ -38,20 +38,16 @@ const SearchHeader = ({
       <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
         <GenreChips selectedGenre={selectedGenre} onToggleGenre={onToggleGenre} />
         {hasActiveFilters && (
-          <Box
-            component="span"
-            onClick={onClearFilters}
+          <Chip
+            label="Filters active"
+            onDelete={onClearFilters}
+            color="primary"
+            variant="outlined"
             sx={{
               ml: 2,
-              cursor: 'pointer',
-              color: 'primary.main',
-              fontSize: '0.85rem',
-              fontWeight: 500,
-              '&:hover': { textDecoration: 'underline' }
+              fontWeight: 600,
             }}
-          >
-            Clear filters
-          </Box>
+          />
         )}
       </Box>
     </Box>

@@ -75,6 +75,7 @@ const NewPost = () => {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isDirty },
     reset,
   } = useForm<PostFormValues>({
@@ -83,7 +84,8 @@ const NewPost = () => {
       image: "",
       rating: 0,
     },
-    mode: "onSubmit",
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   useEffect(() => {
@@ -141,18 +143,31 @@ const NewPost = () => {
   const isSaving = createReviewMutation.isPending || updateReviewMutation.isPending;
 
   const onSubmit = (data: PostFormValues) => {
-    if (isSaving || !isDirty) return;
+    if (isSaving) return;
+
+    const normalizedRating = Number(data.rating);
+    if (
+      Number.isNaN(normalizedRating) ||
+      normalizedRating < RATING_STEP ||
+      normalizedRating > RATING_MAX ||
+      !Number.isInteger(normalizedRating / RATING_STEP)
+    ) {
+      return;
+    }
 
     if (reviewId) {
       updateReviewMutation.mutate({
         id: reviewId,
-        review: data
+        review: {
+          ...data,
+          rating: normalizedRating,
+        },
       });
     } else {
       if (!bookId) return;
       createReviewMutation.mutate({
         bookId,
-        rating: data.rating,
+        rating: normalizedRating,
         review: data.review,
         picture: data.image instanceof File ? data.image : undefined,
       });
@@ -321,7 +336,8 @@ const NewPost = () => {
           min: { value: RATING_STEP, message: `Rating is required (${RATING_STEP}-${RATING_MAX})` },
           max: { value: RATING_MAX, message: `Rating must be between ${RATING_MIN} and ${RATING_MAX}` },
           validate: (value) =>
-            Number.isInteger(value / RATING_STEP) ||
+            Number.isFinite(Number(value)) &&
+            Number.isInteger(Number(value) / RATING_STEP) ||
             `Rating must use ${RATING_STEP} increments`,
         }}
         render={({ field }) => (
@@ -329,8 +345,14 @@ const NewPost = () => {
             <Typography mb={"1rem"}>Rating ({RATING_STEP}-{RATING_MAX}, half-star increments)</Typography>
             <Rating
               precision={RATING_STEP}
-              value={field.value}
-              onChange={(_, value) => field.onChange(value || 0)}
+              value={Number(field.value) || 0}
+              onChange={(_, value) => {
+                setValue("rating", Number(value ?? 0), {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                });
+              }}
               max={RATING_MAX}
             />
             {errors.rating && (

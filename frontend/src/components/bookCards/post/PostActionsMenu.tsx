@@ -8,12 +8,13 @@ import {
 } from "@mui/material";
 import { FiEdit, FiMoreVertical, FiBookOpen } from "react-icons/fi";
 import { MdDelete } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import type { BookPost } from "@models/Book";
 import { usePostActions } from "@/hooks/usePostActions";
 import DeleteModal from "../../common/DeleteModal";
 import useUserStore from "@/state/useUserStore";
 import { BsEye } from "react-icons/bs";
+import { getBookId } from "@/utils/bookUtils";
 
 interface PostActionsMenuProps {
   post: BookPost;
@@ -22,6 +23,7 @@ interface PostActionsMenuProps {
 
 const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
   const { user } = useUserStore();
+  const location = useLocation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { isDeleteModalOpen, setIsDeleteModalOpen, handleDeleteConfirm } =
     usePostActions();
@@ -54,9 +56,10 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
         sx={{
           color: "text.secondary",
           "&:hover": { color: "primary.main" },
+          p: 0.75,
         }}
       >
-        <FiMoreVertical />
+        <FiMoreVertical size={18} />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -70,34 +73,39 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
         <MenuItem
           component={Link}
           to={`/posts/${post.id}`}
+          state={{ from: location }}
           onClick={handleClose}
         >
           <ListItemIcon>
-            <BsEye fontSize="small" />
+            <BsEye size={18} />
           </ListItemIcon>
           <ListItemText>View Post</ListItemText>
         </MenuItem>
         <MenuItem
           component={Link}
           to={`/post/edit/${post.id}`}
+          state={{ from: location }}
           onClick={handleClose}
         >
           <ListItemIcon>
-            <FiEdit fontSize="small" />
+            <FiEdit size={18} />
           </ListItemIcon>
           <ListItemText>Edit</ListItemText>
         </MenuItem>
         <MenuItem onClick={onDeleteClick} sx={{ color: "error.main" }}>
           <ListItemIcon>
-            <MdDelete fontSize="small" color="inherit" />
+            <MdDelete size={20} color="inherit" />
           </ListItemIcon>
           <ListItemText>Delete</ListItemText>
         </MenuItem>
 
-        <MenuItem component={Link}
-          to={`/books/${post.book.id}`} >
+        <MenuItem
+          component={Link}
+          to={`/books/${getBookId(post.book)}`}
+          state={{ from: location }}
+        >
           <ListItemIcon>
-            <FiBookOpen fontSize="small" color="inherit" />
+            <FiBookOpen size={18} color="inherit" />
           </ListItemIcon>
           <ListItemText>View Book Details</ListItemText>
         </MenuItem>

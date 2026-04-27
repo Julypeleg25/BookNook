@@ -57,6 +57,7 @@ const SearchPosts = () => {
   const { visibleItems, loaderRef } = useInfiniteLoader<BookPost>({
     items: bookPosts,
     batchSize: 20,
+    resetKey: JSON.stringify([urlQuery, filters]),
   });
 
   return (

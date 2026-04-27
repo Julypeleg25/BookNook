@@ -1,6 +1,7 @@
 import {
   FormControl,
   InputLabel,
+  type MenuProps as MuiMenuProps,
   MenuItem,
   Select as MuiSelect,
   type SxProps,
@@ -22,6 +23,7 @@ interface SelectProps {
   startIcon?: ReactNode;
   sx?: SxProps;
   fullWidth?: boolean;
+  menuProps?: Partial<MuiMenuProps>;
 }
 
 const Select = (props: SelectProps) => {
@@ -49,6 +51,7 @@ const Select = (props: SelectProps) => {
         multiple={props.multiple}
         value={value}
         label={props.label}
+        MenuProps={props.menuProps}
       >
         {props.menuItems.map((item) => (
           <MenuItem key={item.value} value={item.value}>

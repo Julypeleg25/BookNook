@@ -1,4 +1,4 @@
-import { TextField, IconButton, Button, Box, InputAdornment } from "@mui/material";
+import { TextField, IconButton, Button, Box, InputAdornment, Badge, Tooltip } from "@mui/material";
 import { HiOutlineAdjustmentsVertical } from "react-icons/hi2";
 import { MdClear } from "react-icons/md";
 import { useState, useEffect } from "react";
@@ -63,12 +63,21 @@ const SearchBar = ({ onSearch, onClearSearch, searchTerm, setSearchTerm, setIsFi
           ) : null
         }}
       />
-      <IconButton 
-        onClick={() => setIsFiltersModalOpen(true)}
-        color={hasActiveFilters ? "primary" : "default"}
-      >
-        <HiOutlineAdjustmentsVertical size={"2rem"} />
-      </IconButton>
+      <Tooltip title={hasActiveFilters ? "Filters applied" : "Open filters"}>
+        <IconButton
+          onClick={() => setIsFiltersModalOpen(true)}
+          color={hasActiveFilters ? "primary" : "default"}
+          sx={{
+            border: "1px solid",
+            borderColor: hasActiveFilters ? "primary.main" : "divider",
+            bgcolor: hasActiveFilters ? "action.selected" : "transparent",
+          }}
+        >
+          <Badge color="primary" variant="dot" invisible={!hasActiveFilters}>
+            <HiOutlineAdjustmentsVertical size={"2rem"} />
+          </Badge>
+        </IconButton>
+      </Tooltip>
       <Button variant="contained" onClick={handleSearch}>
         Search
       </Button>

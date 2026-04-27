@@ -81,7 +81,7 @@ export const userReviewService = {
 
     async updateReview(reviewId: string, data: Partial<CreateReviewData>): Promise<UserReview> {
         const formData = new FormData();
-        if (data.rating) formData.append("rating", data.rating.toString());
+        if (data.rating !== undefined) formData.append("rating", data.rating.toString());
         if (data.review) formData.append("review", data.review);
         if (data.picture) {
             formData.append("picture", data.picture);
@@ -103,6 +103,13 @@ export const userReviewService = {
         const res = await axiosClient.post<ReviewComment[]>(
             endpoints.userReviews.comments(reviewId),
             { comment }
+        );
+        return res.data;
+    },
+
+    async deleteComment(reviewId: string, commentId: string): Promise<ReviewComment[]> {
+        const res = await axiosClient.delete<ReviewComment[]>(
+            endpoints.userReviews.deleteComment(reviewId, commentId)
         );
         return res.data;
     },

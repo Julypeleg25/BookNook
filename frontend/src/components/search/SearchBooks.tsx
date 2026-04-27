@@ -32,6 +32,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
 
     const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
     const observerTarget = useRef<HTMLDivElement>(null);
+    const queryResetKey = JSON.stringify([urlQuery, filters]);
 
     const hasActiveFilters =
         filters.author.trim().length > 0 ||
@@ -76,7 +77,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
 
         observer.observe(element);
         return () => observer.disconnect();
-    }, [handleObserver]);
+    }, [handleObserver, queryResetKey]);
 
     const allBooks = data?.pages.flatMap((page) => page.items) ?? [];
     const showEmptyState = hasValidQuery && !isLoading && allBooks.length === 0;

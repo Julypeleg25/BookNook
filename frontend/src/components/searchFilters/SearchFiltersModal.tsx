@@ -112,8 +112,8 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters, mode }: Se
                     <Rating
                       {...field}
                       precision={RATING_STEP}
-                      value={Number(field.value)}
-                      onChange={(_, val) => field.onChange(val)}
+                      value={Number(field.value) || 0}
+                      onChange={(_, val) => field.onChange(Number(val ?? 0))}
                     />
                   )}
                 />
