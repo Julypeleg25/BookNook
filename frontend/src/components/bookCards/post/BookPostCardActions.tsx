@@ -10,8 +10,8 @@ import { useState } from "react";
 import { FaRegComment, FaHeart } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import { userReviewService } from "@/api/services/userReviewService";
-import { useSnackbar } from "notistack";
-import { usePostActions } from "@/hooks/usePostActions";
+import { enqueueSnackbar } from "notistack";
+import useUserStore from "@/state/useUserStore";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -19,12 +19,30 @@ interface BookPostCardProps {
 }
 
 const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
-  const { 
-    likes, 
-    isLiked, 
-    isAuthor, 
-    handleLikeToggle 
-  } = usePostActions(post);
+  const { user } = useUserStore();
+  const [likes, setLikes] = useState<string[]>(post.likes || []);
+  const isLiked = user ? likes.includes(user.id || (user as any)._id) : false;
+  const isAuthor = user?.username === post.user.username;
+
+  const handleLikeToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) {
+      enqueueSnackbar("Please login to like posts", { variant: "info" });
+      return;
+    }
+
+    try {
+      if (isLiked) {
+        await userReviewService.unlikeReview(post.id);
+        setLikes((prev) => prev.filter((id) => id !== (user.id || (user as any)._id)));
+      } else {
+        await userReviewService.likeReview(post.id);
+        setLikes((prev) => [...prev, user.id || (user as any)._id]);
+      }
+    } catch (error: any) {
+      enqueueSnackbar(error.message || "Failed to update like", { variant: "error" });
+    }
+  };
 
   return (
     <CardActions
@@ -41,7 +59,7 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
             size="small"
             onClick={handleLikeToggle}
             disabled={isAuthor}
-            sx={{ color: isLiked ? 'red' : 'inherit' }}
+            sx={{ color: isLiked ? "red" : "inherit" }}
           >
             {isLiked ? <FaHeart /> : <FiHeart />}
           </IconButton>

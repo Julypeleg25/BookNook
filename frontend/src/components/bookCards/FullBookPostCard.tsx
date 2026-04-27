@@ -12,13 +12,9 @@ import { Link as RouterLink } from "react-router-dom";
 import type { BookPost } from "@models/Book";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
-import { useState } from "react";
-import DeleteModal from "../common/DeleteModal";
-import FullPostActions from "./FullPostActions";
+import PostActionsMenu from "./post/PostActionsMenu";
 
 const FullBookPostCard = ({ post }: { post: BookPost }) => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
   return (
     <Card elevation={2} sx={{ borderRadius: "1.2rem", padding: "1.2rem" }}>
       <CardContent sx={{ padding: 0 }}>
@@ -41,19 +37,6 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
               justifyContent="space-between"
               alignItems="flex-start"
             >
-              <Tooltip title="view book's details" arrow>
-                <MuiLink
-                  component={RouterLink}
-                  to={`/books/${post.book.id}`}
-                  underline="none"
-                  color="inherit"
-                  sx={{
-                    transition: "color 0.2s ease",
-                    "&:hover": {
-                      color: "primary.main",
-                    },
-                  }}
-                >
                   <Typography
                     sx={{
                       fontSize: "1.4rem",
@@ -63,12 +46,7 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
                   >
                     {post.book.title}
                   </Typography>
-                </MuiLink>
-              </Tooltip>
-              <FullPostActions
-                postId={post.id}
-                setIsDeleteModalOpen={setIsDeleteModalOpen}
-              />
+              <PostActionsMenu post={post} />
             </Stack>
             <Rating value={post.rating} readOnly size="small" />
             <Typography color="text.secondary">
@@ -86,11 +64,6 @@ const FullBookPostCard = ({ post }: { post: BookPost }) => {
           </Stack>
         </Stack>
       </CardContent>
-      <DeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={() => setIsDeleteModalOpen(false)}
-      />
     </Card>
   );
 };

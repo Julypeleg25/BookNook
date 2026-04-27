@@ -1,77 +1,36 @@
 import { useState } from "react";
-import { useSnackbar } from "notistack";
-import useUserStore from "@/state/useUserStore";
-import { userReviewService } from "@/api/services/userReviewService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BookPost } from "@/models/Book";
+import { userReviewService } from "@/api/services/userReviewService";
+import { enqueueSnackbar } from "notistack";
+import type { BookPost } from "@models/Book";
 
-export const usePostActions = (post: BookPost) => {
-  const { user, isAuthenticated } = useUserStore();
-  const [likes, setLikes] = useState<string[]>(post.likes);
-  const { enqueueSnackbar } = useSnackbar();
+export const usePostActions = () => {
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const isLiked = user?.id ? likes.includes(user.id) : false;
-  
-  // Safely compare user IDs
-  const isAuthor = user?.id && post.user 
-    ? user.id === (post.user as any).id || user.id === (post.user as any)._id 
-    : false;
-
-  const handleLikeToggle = async (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-
-    if (!isAuthenticated) {
-      enqueueSnackbar("Please login to like posts", { variant: "info" });
-      return;
-    }
-
-    if (isAuthor) {
-      enqueueSnackbar("You cannot like your own post", { variant: "warning" });
-      return;
-    }
-
-    const previousLikes = [...likes];
-    const newLikes = isLiked
-      ? likes.filter(id => id !== user.id)
-      : [...likes, user.id];
-
-    setLikes(newLikes); // Optimistic update
-
-    try {
-      if (isLiked) {
-        await userReviewService.unlikeReview(post.id);
-      } else {
-        await userReviewService.likeReview(post.id);
-      }
-      // Optional: Invalidate queries if we want server-side sync
-      // queryClient.invalidateQueries({ queryKey: ["allReviews"] });
-    } catch (error) {
-      setLikes(previousLikes); // Rollback
-      enqueueSnackbar("Error updating like", { variant: "error" });
-    }
-  };
-
-  const { mutate: addComment, isPending: isAddingComment } = useMutation({
-    mutationFn: (comment: string) =>
-      userReviewService.addComment(post.id, comment),
+  const deleteReviewMutation = useMutation({
+    mutationFn: (postId: string) => userReviewService.deleteReview(postId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["review", post.id] });
+      enqueueSnackbar("Review deleted successfully!", { variant: "success" });
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
       queryClient.invalidateQueries({ queryKey: ["allReviews"] });
-      enqueueSnackbar("Comment added!", { variant: "success" });
     },
-    onError: () => {
-      enqueueSnackbar("Failed to add comment", { variant: "error" });
-    }
+    onError: (error: any) => {
+      enqueueSnackbar(error.message || "Failed to delete review", {
+        variant: "error",
+      });
+    },
   });
 
+  const handleDeleteConfirm = (postId: string) => {
+    deleteReviewMutation.mutate(postId);
+    setIsDeleteModalOpen(false);
+  };
+
   return {
-    likes,
-    isLiked,
-    isAuthor,
-    handleLikeToggle,
-    addComment,
-    isAddingComment,
-    isAuthenticated
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    handleDeleteConfirm,
+    isDeleting: deleteReviewMutation.isPending,
   };
 };
