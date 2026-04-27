@@ -34,22 +34,19 @@ export const useUserStore = create<UserStore>((set, get) => ({
     localStorage.removeItem("refreshToken");
   },
   fetchUser: async () => {
-    const { accessToken } = get();
-    if (!accessToken) return;
-    try {
-      const response = await fetch("http://localhost:3000/me", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        set({ user: data });
-      } else if (response.status === 401) {
-        await get().refreshToken();
-      }
-    } catch (error) {
-      console.error("Failed to fetch user:", error);
-    }
-  },
+  const res = await fetch("http://localhost:3000/me", {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    set({ user: null });
+    return;
+  }
+
+  const user = await res.json();
+  set({ user });
+},
+
   refreshToken: async () => {
     try {
       const response = await fetch("http://localhost:3000/refresh", {

@@ -1,5 +1,6 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useUserStore } from "../stores/userStore";
 
 interface ProtectedRouteProps {
@@ -8,21 +9,17 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, fetchUser } = useUserStore();
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      await fetchUser();
-      setLoading(false);
-    };
-    checkAuth();
-  }, [fetchUser]);
+  const { isLoading, isError } = useQuery({
+    queryKey: ["user"],
+    queryFn: fetchUser,
+  });
 
-  if (loading) {
-    return <div>Loading...</div>; // Or a proper loading component
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
-  if (!user) {
+  if (isError || !user) {
     return <Navigate to="/login" replace />;
   }
 
