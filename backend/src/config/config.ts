@@ -30,4 +30,6 @@ export const ENV = {
   GOOGLE_BOOKS_API:
     process.env.GOOGLE_BOOKS_API ??
     "https://www.googleapis.com/books/v1/volumes",
+  PGVECTOR_URL: requireEnv("PGVECTOR_URL"),
+  GEMINI_API_KEY: requireEnv("GEMINI_API_KEY"),
 } as const;

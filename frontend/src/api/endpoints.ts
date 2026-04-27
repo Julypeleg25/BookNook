@@ -37,4 +37,7 @@ export const endpoints = {
     comments: (reviewId: string) => `/userReviews/${reviewId}/comments`,
     delete: (reviewId: string) => `/userReviews/${reviewId}`,
   },
+  rag: {
+    query: "/api/rag/query",
+  },
 } as const;

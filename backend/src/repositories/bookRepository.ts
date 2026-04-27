@@ -2,6 +2,8 @@ import { BookModel, IBook } from "@models/Book";
 import { Types, QueryFilter } from "mongoose";
 import { logger } from "@utils/logger";
 import { getBookByGoogleIdFromGoogle, normalizeBookDetail } from "@services/bookService";
+import { syncBookToVector } from "@services/ai/vectorSyncService";
+
 
 interface LocalSearchParams {
   title?: string;
@@ -45,36 +47,39 @@ export class BookRepository {
     try {
       let localBook = await this.findByExternalId(externalId);
 
-      // Normalize Google Book data
       const googleBook = await getBookByGoogleIdFromGoogle(externalId);
       const normalizedToBookModel = normalizeBookDetail(googleBook);
 
       if (localBook) {
-        // Update basic info
         localBook.title = normalizedToBookModel.title;
         localBook.authors = normalizedToBookModel.authors ?? [];
         localBook.thumbnail = normalizedToBookModel.thumbnail;
         localBook.publishedDate = normalizedToBookModel.publishedDate;
         localBook.categories = normalizedToBookModel.categories;
+        localBook.description = normalizedToBookModel.description;
 
-        // If local rating is missing valid value, backfill from Google
         if (!localBook.avgRating && normalizedToBookModel.avgRating) {
           localBook.avgRating = normalizedToBookModel.avgRating;
           localBook.ratingCount = normalizedToBookModel.ratingCount || 0;
         }
 
-        return await localBook.save();
+        const savedBook = await localBook.save();
+        await syncBookToVector(savedBook);
+        return savedBook;
       } else {
-        return await BookModel.create({
+        const newBook = await BookModel.create({
           externalId,
           title: normalizedToBookModel.title,
           authors: normalizedToBookModel.authors ?? [],
           thumbnail: normalizedToBookModel.thumbnail,
           publishedDate: normalizedToBookModel.publishedDate,
           categories: normalizedToBookModel.categories,
+          description: normalizedToBookModel.description,
           avgRating: normalizedToBookModel.avgRating || 0,
           ratingCount: normalizedToBookModel.ratingCount || 0,
         });
+        await syncBookToVector(newBook);
+        return newBook;
       }
     } catch (error) {
       logger.error(`Error getting or creating book ${externalId}:`, error);

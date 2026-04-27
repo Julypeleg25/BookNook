@@ -71,6 +71,9 @@ const AppBar = () => {
             <Typography component={NavLink} to="/myPosts" sx={navItemSx}>
               My Posts
             </Typography>
+            <Typography component={NavLink} to="/ai-assistant" sx={navItemSx}>
+              AI Assistant
+            </Typography>
           </Box>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>

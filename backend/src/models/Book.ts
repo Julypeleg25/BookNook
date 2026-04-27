@@ -7,6 +7,7 @@ export interface IBook extends Document {
   authors: string[];
   thumbnail?: string;
   publishedDate?: string;
+  description?: string;
 
   avgRating: number;
   ratingCount: number;
@@ -25,6 +26,7 @@ const BookSchema = new Schema(
     categories: { type: [String], default: [] },
     thumbnail: String,
     publishedDate: String,
+    description: String,
 
     avgRating: { type: Number, default: 0, index: true },
     ratingCount: { type: Number, default: 0, index: true },

@@ -37,29 +37,29 @@ const BookPost = () => {
 
   const bookPost: BookPost | null = review
     ? {
-        id: review._id,
-        book: review.book as any,
+      id: review._id,
+      book: review.book as any,
+      user: {
+        id: review.user._id,
+        username: review.user.username,
+        avatar: review.user.avatar,
+      },
+      createdDate: review.createdAt,
+      description: review.review,
+      rating: review.rating,
+      imageUrl: review.picturePath || review.imageUrl,
+      likes: review.likes || [],
+      comments: (review.comments || []).map((c: any) => ({
+        id: c._id,
         user: {
-          id: review.user._id,
-          username: review.user.username,
-          avatar: review.user.avatar,
+          id: c.user?._id || c.user,
+          username: c.user?.username || "Unknown",
+          avatar: c.user?.avatar,
         },
-        createdDate: review.createdAt,
-        description: review.review,
-        rating: review.rating,
-        imageUrl: review.picturePath || review.imageUrl,
-        likes: review.likes || [],
-        comments: (review.comments || []).map((c: any) => ({
-          id: c._id,
-          user: {
-            id: c.user?._id || c.user,
-            username: c.user?.username || "Unknown",
-            avatar: c.user?.avatar,
-          },
-          createdDate: c.createdAt,
-          content: c.comment,
-        })),
-      }
+        createdDate: c.createdAt,
+        content: c.comment,
+      })),
+    }
     : null;
 
   useEffect(() => {
@@ -112,8 +112,6 @@ const BookPost = () => {
           {bookPost.description}
         </Typography>
         {(() => {
-          // Resolve image: absolute URLs pass through; /uploads/* get the API base prepended;
-          // fall back to the book's thumbnail when no image was uploaded.
           const rawUrl = bookPost.imageUrl;
           const resolvedUrl = rawUrl
             ? rawUrl.startsWith("http")

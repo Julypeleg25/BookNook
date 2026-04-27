@@ -1,6 +1,8 @@
 import User, { IUser } from "@models/User";
 import { Types } from "mongoose";
 import { logger } from "@utils/logger";
+import { syncUserProfileToVector } from "@services/ai/vectorSyncService";
+
 
 interface MongoError extends Error {
   code?: number;
@@ -56,7 +58,9 @@ export class UserRepository {
   async create(userData: Partial<IUser>): Promise<IUser> {
     try {
       const user = new User(userData);
-      return await user.save();
+      const savedUser = await user.save();
+      await syncUserProfileToVector(savedUser);
+      return savedUser;
     } catch (error: unknown) {
       logger.error("Error creating user:", error);
 
@@ -74,11 +78,15 @@ export class UserRepository {
     updateData: Partial<IUser>
   ): Promise<IUser | null> {
     try {
-      return await User.findByIdAndUpdate(
+      const updatedUser = await User.findByIdAndUpdate(
         userId,
         { $set: updateData },
         { new: true, runValidators: true }
       );
+      if (updatedUser) {
+        await syncUserProfileToVector(updatedUser);
+      }
+      return updatedUser;
     } catch (error: unknown) {
       logger.error(`Error updating user ${userId}:`, error);
 
@@ -116,6 +124,9 @@ export class UserRepository {
         { $addToSet: { [field]: bookId } },
         { new: true }
       );
+      if (updatedUser) {
+        await syncUserProfileToVector(updatedUser);
+      }
       return updatedUser?.[field] ?? [];
     } catch (error) {
       logger.error(
@@ -152,6 +163,9 @@ export class UserRepository {
         { $pull: { [field]: bookId } },
         { new: true }
       );
+      if (updatedUser) {
+        await syncUserProfileToVector(updatedUser);
+      }
       return updatedUser?.[field] ?? [];
     } catch (error) {
       logger.error(

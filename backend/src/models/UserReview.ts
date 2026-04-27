@@ -5,8 +5,8 @@ export interface ReviewComment {
   user: Types.ObjectId;
   comment: string;
   createdAt: Date;
-  createdDate?: Date; // Virtual
-  content?: string; // Virtual
+  createdDate?: Date;
+  content?: string;
 }
 
 export interface IUserReview extends Document {
@@ -19,9 +19,9 @@ export interface IUserReview extends Document {
   createdAt: Date;
   updatedAt: Date;
   likes: Types.ObjectId[];
-  imageUrl?: string; // Virtual
-  description?: string; // Virtual
-  createdDate?: Date; // Virtual
+  imageUrl?: string;
+  description?: string;
+  createdDate?: Date;
 }
 
 const ReviewCommentSchema = new Schema<ReviewComment>(

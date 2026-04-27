@@ -5,13 +5,10 @@ import { ISearchFiltersForm } from "@/components/searchFilters/models/SearchFilt
 export const useSearchParamsState = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // URL State
   const urlQuery = searchParams.get("q") || "";
 
-  // Local State for Input (initialized from URL)
   const [localSearchQuery, setLocalSearchQuery] = useState(urlQuery);
 
-  // Sync local state if URL changes externally (e.g. back button)
   useEffect(() => {
     setLocalSearchQuery(urlQuery);
   }, [urlQuery]);
@@ -59,7 +56,6 @@ export const useSearchParamsState = () => {
   };
 
   const setGenre = (genre: string) => {
-    // Toggle logic: if same genre, clear it
     const newGenre = filters.genre === genre ? "" : genre;
     handleApplyFilters({ ...filters, genre: newGenre });
   };

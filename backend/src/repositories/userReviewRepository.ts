@@ -66,8 +66,8 @@ export class UserReviewRepository {
   }
 
   async findAll(
-    minLikes?: number, 
-    searchQuery?: string, 
+    minLikes?: number,
+    searchQuery?: string,
     userId?: Types.ObjectId | Types.ObjectId[] | string,
     bookIds?: Types.ObjectId[],
     rating?: number,
@@ -93,12 +93,10 @@ export class UserReviewRepository {
         query.rating = { $gte: rating };
       }
 
-      // 1. Handle Genre filtering (strict AND)
       if (genreBookIds) {
         query.book = { $in: genreBookIds };
       }
 
-      // 2. Handle Search Query (OR: review text OR book title)
       if (searchQuery) {
         const searchConditions = [
           { review: { $regex: searchQuery, $options: "i" } }
@@ -109,7 +107,6 @@ export class UserReviewRepository {
         }
 
         if (query.book) {
-          // If already filtered by genreBookIds, we need to AND it with the search OR
           query.$and = [
             { book: query.book },
             { $or: searchConditions }
