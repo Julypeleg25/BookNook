@@ -6,13 +6,14 @@ import {
   Stack,
 } from "@mui/material";
 import type { BookPost } from "@models/Book";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { FaRegComment, FaHeart } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import { userReviewService } from "@/api/services/userReviewService";
 import { enqueueSnackbar } from "notistack";
 import useUserStore from "@/state/useUserStore";
+import { invalidateReviewCaches } from "@/api/queryCache";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -22,9 +23,14 @@ interface BookPostCardProps {
 const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
   const { user } = useUserStore();
   const [likes, setLikes] = useState<string[]>(post.likes || []);
+  const [isUpdatingLike, setIsUpdatingLike] = useState(false);
   const queryClient = useQueryClient();
   const isLiked = user ? likes.includes(user.id) : false;
   const isAuthor = user?.id && post.user ? user.id === post.user.id : false;
+
+  useEffect(() => {
+    setLikes(post.likes || []);
+  }, [post.likes]);
 
   const handleLikeToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -33,8 +39,11 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
       return;
     }
 
-    const previousLikes = likes;
+    if (isUpdatingLike) return;
+
+    const previousLikes = [...likes];
     try {
+      setIsUpdatingLike(true);
       if (isLiked) {
         await userReviewService.unlikeReview(post.id);
         setLikes((prev) => prev.filter((id) => id !== user.id));
@@ -42,10 +51,12 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
         await userReviewService.likeReview(post.id);
         setLikes((prev) => [...prev, user.id]);
       }
-      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
+      invalidateReviewCaches(queryClient, { reviewId: post.id });
     } catch {
       setLikes(previousLikes);
       enqueueSnackbar("Error updating like", { variant: "error" });
+    } finally {
+      setIsUpdatingLike(false);
     }
   };
 
@@ -63,7 +74,7 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
           <IconButton
             size="small"
             onClick={handleLikeToggle}
-            disabled={isAuthor}
+            disabled={Boolean(isAuthor) || isUpdatingLike}
             sx={{ color: isLiked ? "red" : "inherit" }}
           >
             {isLiked ? <FaHeart /> : <FiHeart />}

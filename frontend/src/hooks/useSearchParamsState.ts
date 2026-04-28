@@ -2,6 +2,17 @@ import { useSearchParams } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
 import { ISearchFiltersForm } from "@/components/searchFilters/models/SearchFiltersOptions";
 
+const filterParamKeys = [
+  "language",
+  "genre",
+  "author",
+  "yearPublishedFrom",
+  "yearPublishedTo",
+  "rating",
+  "likesAmount",
+  "username",
+] as const;
+
 export const useSearchParamsState = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -49,9 +60,15 @@ export const useSearchParamsState = () => {
     });
   };
 
-  const handleClear = () => {
+  const handleClearSearch = () => {
     setLocalSearchQuery("");
-    setSearchParams({});
+    updateSearchParams({ q: "" });
+  };
+
+  const handleClearFilters = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    filterParamKeys.forEach((key) => nextParams.delete(key));
+    setSearchParams(nextParams);
   };
 
   const setGenre = (genre: string) => {
@@ -67,7 +84,8 @@ export const useSearchParamsState = () => {
     updateSearchParams,
     handleSearch,
     handleApplyFilters,
-    handleClear,
+    handleClearSearch,
+    handleClearFilters,
     setGenre,
   };
 };

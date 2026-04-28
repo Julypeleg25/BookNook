@@ -1,7 +1,12 @@
-import { Controller, type Control, type FieldValues } from "react-hook-form";
+import { Controller, type Control } from "react-hook-form";
 import { TextField } from "@mui/material";
+import type { ProfileFormValues } from "@/models/ProfileForm";
 
-const UsernameField = ({ control }: { control: Control<FieldValues> }) => {
+interface UsernameFieldProps {
+  control: Control<ProfileFormValues>;
+}
+
+const UsernameField = ({ control }: UsernameFieldProps) => {
   return (
     <Controller
       name="username"

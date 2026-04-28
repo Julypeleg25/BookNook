@@ -1,7 +1,11 @@
 import { Controller, type Control, type FieldValues } from "react-hook-form";
 import { TextField } from "@mui/material";
 
-const NameField = ({ control }: { control: Control<FieldValues> }) => {
+interface NameFieldProps {
+  control: Control<FieldValues>;
+}
+
+const NameField = ({ control }: NameFieldProps) => {
   return (
     <Controller
       name="name"

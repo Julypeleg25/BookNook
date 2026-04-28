@@ -5,13 +5,24 @@ import { AuthService } from "@/api/services/authService";
 import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
 import { tokenService } from "@/api/services/tokenService";
 import { DEFAULT_AUTH_REDIRECT, normalizeRedirectTarget } from "@/utils/redirects";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  clearAuthScopedQueries,
+  invalidateAuthReviewState,
+} from "@/api/queryCache";
+
+interface AuthLocationState {
+  from?: string;
+}
 
 export const useAuth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setUser, resetUser } = useUserStore();
+  const queryClient = useQueryClient();
+  const locationState = location.state as AuthLocationState | null;
   const redirectTarget = normalizeRedirectTarget(
-    (location.state as { from?: unknown } | null)?.from,
+    locationState?.from,
     DEFAULT_AUTH_REDIRECT
   );
 
@@ -20,6 +31,7 @@ export const useAuth = () => {
 
     tokenService.setAccess(data.accessToken);
     setUser(data.user);
+    invalidateAuthReviewState(queryClient);
     navigate(redirectTarget, { replace: true });
   };
 
@@ -28,6 +40,7 @@ export const useAuth = () => {
 
     tokenService.setAccess(data.accessToken);
     setUser(data.user);
+    invalidateAuthReviewState(queryClient);
     navigate(redirectTarget, { replace: true });
   };
 
@@ -37,6 +50,7 @@ export const useAuth = () => {
     } finally {
       tokenService.clear();
       resetUser();
+      clearAuthScopedQueries(queryClient);
       navigate("/login");
     }
   };
@@ -52,11 +66,13 @@ export const useAuth = () => {
     try {
       const user = await AuthService.getCurrentUser();
       setUser(user);
+      invalidateAuthReviewState(queryClient);
     } catch {
       tokenService.clear();
       resetUser();
+      clearAuthScopedQueries(queryClient);
     }
-  }, [resetUser, setUser]);
+  }, [queryClient, resetUser, setUser]);
 
   return { login, register, logout, syncUser };
 };

@@ -2,6 +2,10 @@ import { UpdateUserRequestDTO, UserDto } from "@shared/dtos/user.dto";
 import { axiosClient } from "../axios/axiosClient";
 import { endpoints } from "../endpoints";
 
+export type UpdateCurrentUserPayload = Omit<UpdateUserRequestDTO, "avatar"> & {
+  avatar?: string | File;
+};
+
 interface UpdateUserResponse {
   message: string;
   user: UserDto;
@@ -15,13 +19,13 @@ export const userService = {
     return res.data;
   },
 
-  async updateCurrentUser(data: UpdateUserRequestDTO): Promise<UpdateUserResponse> {
+  async updateCurrentUser(data: UpdateCurrentUserPayload): Promise<UpdateUserResponse> {
     const formData = new FormData();
 
     Object.entries(data).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
         if (isFile(value)) {
-          formData.append(key, value as unknown as Blob);
+          formData.append(key, value);
         } else {
           formData.append(key, String(value));
         }

@@ -6,6 +6,11 @@ interface BookInfoSectionProps {
   book: Book;
 }
 
+interface InfoRowProps {
+  label: string;
+  value: string | number;
+}
+
 const BookInfoSection = ({ book }: BookInfoSectionProps) => {
   return (
     <Paper
@@ -71,13 +76,7 @@ const BookInfoSection = ({ book }: BookInfoSectionProps) => {
   );
 };
 
-const InfoRow = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) => (
+const InfoRow = ({ label, value }: InfoRowProps) => (
   <Box>
     <Typography variant="caption" color="text.secondary" display="block">
       {label}

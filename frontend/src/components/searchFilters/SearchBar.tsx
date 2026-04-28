@@ -6,14 +6,14 @@ import { SEARCH_QUERY_MAX_LENGTH } from "@shared/constants/validation";
 
 interface SearchBarProps {
   onSearch: (searchTerm: string) => void;
-  onClear: () => void;
+  onClearSearch: () => void;
   searchTerm: string;
   setSearchTerm: (val: string) => void;
   setIsFiltersModalOpen: (open: boolean) => void;
   hasActiveFilters?: boolean;
 }
 
-const SearchBar = ({ onSearch, onClear, searchTerm, setSearchTerm, setIsFiltersModalOpen, hasActiveFilters }: SearchBarProps) => {
+const SearchBar = ({ onSearch, onClearSearch, searchTerm, setSearchTerm, setIsFiltersModalOpen, hasActiveFilters }: SearchBarProps) => {
   const [placeholder, setPlaceholder] = useState("");
   const fullPlaceholder = "Search by book title...";
   
@@ -56,7 +56,7 @@ const SearchBar = ({ onSearch, onClear, searchTerm, setSearchTerm, setIsFiltersM
         InputProps={{
           endAdornment: searchTerm ? (
             <InputAdornment position="end">
-              <IconButton onClick={onClear} size="small" sx={{ mr: -1 }}>
+              <IconButton onClick={onClearSearch} size="small" sx={{ mr: -1 }}>
                 <MdClear />
               </IconButton>
             </InputAdornment>
@@ -71,14 +71,14 @@ const SearchBar = ({ onSearch, onClear, searchTerm, setSearchTerm, setIsFiltersM
       </IconButton>
       <Button
         variant="text"
-        onClick={onClear}
+        onClick={onClearSearch}
         sx={{
           textTransform: "none",
           color: "text.secondary",
           whiteSpace: "nowrap"
         }}
       >
-        Clear All
+        Clear Search
       </Button>
       <Button variant="contained" onClick={handleSearch}>
         Search

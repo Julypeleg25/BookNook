@@ -8,6 +8,8 @@ import { LuBookCheck } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/state/useUserStore";
 import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
+import { invalidateBookListCache, setBookListCache } from "@/api/queryCache";
+import type { BookListType } from "@/models/List";
 
 interface BookHeaderProps {
   id: string;
@@ -21,12 +23,11 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
   const { isAuthenticated, navigateProtected, redirectToLogin } = useProtectedNavigation();
 
   const { mutate: addBookToList } = useMutation({
-    mutationFn: (listType: "wish" | "read") =>
+    mutationFn: (listType: BookListType) =>
       ListsService.addBookToList(id, listType),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: [variables === "wish" ? "wishlist" : "readlist", "lists", user.username],
-      });
+      setBookListCache(queryClient, user.username, variables, data);
+      invalidateBookListCache(queryClient, user.username, variables);
       navigate("/lists");
     },
   });

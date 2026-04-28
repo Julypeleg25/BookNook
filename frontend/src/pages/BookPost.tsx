@@ -9,9 +9,11 @@ import BookInfoSection from "@components/post/BookInfoSection";
 import NotFound from "./NotFound";
 import { useQuery } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
-import type { Book, BookPost } from "@models/Book";
+import type { BookPost } from "@models/Book";
 import env from "@/config/env";
 import PostActionsMenu from "@components/bookCards/post/PostActionsMenu";
+import { mapReviewToBookPost } from "@/utils/reviewUtils";
+import { queryKeys } from "@/api/queryKeys";
 
 const BookPost = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,37 +25,15 @@ const BookPost = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["review", id],
+    queryKey: id ? queryKeys.review(id) : queryKeys.reviewPrefix,
     queryFn: () => userReviewService.getReviewById(id!),
     enabled: !!id,
   });
 
-  const bookPost: BookPost | null = useMemo(() => review
-    ? {
-      id: review._id,
-      book: review.book as Book,
-      user: {
-        id: review.user._id,
-        username: review.user.username,
-        avatar: review.user.avatar,
-      },
-      createdDate: review.createdAt,
-      description: review.review,
-      rating: review.rating,
-      imageUrl: review.picturePath || review.imageUrl,
-      likes: review.likes || [],
-      comments: (review.comments || []).map((c: import("@models/UserReview").ReviewComment) => ({
-        id: c._id,
-        user: {
-          id: c.user?.id || (c.user as unknown as string),
-          username: c.user?.username || "Unknown",
-          avatar: c.user?.avatar,
-        },
-        createdDate: c.createdAt,
-        content: c.comment,
-      })),
-    }
-    : null, [review]);
+  const bookPost: BookPost | null = useMemo(
+    () => (review ? mapReviewToBookPost(review) : null),
+    [review],
+  );
 
   useEffect(() => {
     if (hash === "#comments" && commentsRef.current) {
@@ -100,7 +80,10 @@ const BookPost = () => {
         alignItems="center"
         mt="2rem"
       >
-        <Typography variant="subtitle1" sx={{ whiteSpace: "pre-wrap" }}>
+        <Typography
+          variant="subtitle1"
+          sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+        >
           {bookPost.description}
         </Typography>
         {(() => {
@@ -111,10 +94,17 @@ const BookPost = () => {
               : `${env.API_BASE_URL}${rawUrl}`
             : (bookPost.book.thumbnail ?? null);
           return resolvedUrl ? (
-            <img
+            <Box
+              component="img"
               src={resolvedUrl}
-              style={{ borderRadius: "1rem", maxWidth: "100%" }}
               alt="Review visual"
+              sx={{
+                width: "100%",
+                maxHeight: { xs: "22rem", md: "34rem" },
+                objectFit: "contain",
+                borderRadius: "1rem",
+                backgroundColor: "grey.100",
+              }}
             />
           ) : null;
         })()}

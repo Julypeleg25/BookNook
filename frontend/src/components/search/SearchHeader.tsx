@@ -6,7 +6,8 @@ interface SearchHeaderProps {
   searchTerm: string;
   setSearchTerm: (val: string) => void;
   onSearch: (searchTerm: string) => void;
-  onClear: () => void;
+  onClearSearch: () => void;
+  onClearFilters: () => void;
   onToggleGenre: (genre: string) => void;
   selectedGenre: string;
   setIsFiltersModalOpen: (open: boolean) => void;
@@ -17,7 +18,8 @@ const SearchHeader = ({
   searchTerm,
   setSearchTerm,
   onSearch,
-  onClear,
+  onClearSearch,
+  onClearFilters,
   onToggleGenre,
   selectedGenre,
   setIsFiltersModalOpen,
@@ -29,7 +31,7 @@ const SearchHeader = ({
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         onSearch={onSearch}
-        onClear={onClear}
+        onClearSearch={onClearSearch}
         setIsFiltersModalOpen={setIsFiltersModalOpen}
         hasActiveFilters={hasActiveFilters}
       />
@@ -38,7 +40,7 @@ const SearchHeader = ({
         {hasActiveFilters && (
           <Box
             component="span"
-            onClick={onClear}
+            onClick={onClearFilters}
             sx={{
               ml: 2,
               cursor: 'pointer',

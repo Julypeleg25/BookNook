@@ -4,11 +4,12 @@ import { FiHeart } from "react-icons/fi";
 import { formatDate } from "@utils/dateUtils";
 import type { BookPost } from "@models/Book";
 import BookHeader from "./BookHeaderButtons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { userReviewService } from "@/api/services/userReviewService";
 import { useSnackbar } from "notistack";
+import { invalidateReviewCaches } from "@/api/queryCache";
 
 interface BookPostHeaderProps {
   bookPost: BookPost;
@@ -17,13 +18,20 @@ interface BookPostHeaderProps {
 const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
   const { user, isAuthenticated } = useUserStore();
   const [likes, setLikes] = useState<string[]>(bookPost.likes);
+  const [isUpdatingLike, setIsUpdatingLike] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
   const isLiked = user?.id ? likes.includes(user.id) : false;
   const isAuthor = user?.id && bookPost.user ? user.id === bookPost.user.id : false;
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    setLikes(bookPost.likes);
+  }, [bookPost.likes]);
+
   const handleLikeClick = async () => {
+    if (isUpdatingLike) return;
+
     if (!isAuthenticated) {
       enqueueSnackbar("Please login to like posts", { variant: "info" });
       return;
@@ -42,15 +50,18 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
     setLikes(newLikes);
 
     try {
+      setIsUpdatingLike(true);
       if (isLiked) {
         await userReviewService.unlikeReview(bookPost.id);
       } else {
         await userReviewService.likeReview(bookPost.id);
       }
-      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
+      invalidateReviewCaches(queryClient, { reviewId: bookPost.id });
     } catch {
       setLikes(previousLikes);
       enqueueSnackbar("Error updating like", { variant: "error" });
+    } finally {
+      setIsUpdatingLike(false);
     }
   };
 
@@ -80,7 +91,7 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
               <span>
                 <IconButton
                   onClick={handleLikeClick}
-                  disabled={isAuthor}
+                  disabled={Boolean(isAuthor) || isUpdatingLike}
                   sx={{ color: isLiked ? 'red' : 'inherit' }}
                 >
                   {isLiked ? <FaHeart /> : <FiHeart />}

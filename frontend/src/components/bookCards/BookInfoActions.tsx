@@ -8,6 +8,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ListsService } from "@/api/services/ListsService";
 import useUserStore from "@/state/useUserStore";
 import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
+import { invalidateBookListCache, setBookListCache } from "@/api/queryCache";
+import type { BookListType } from "@/models/List";
 
 interface BookInfoActionsProps {
   bookId: string;
@@ -20,12 +22,11 @@ const BookInfoActions = ({ bookId }: BookInfoActionsProps) => {
   const { isAuthenticated, navigateProtected, redirectToLogin } = useProtectedNavigation();
 
   const { mutate: addBookToList } = useMutation({
-    mutationFn: (listType: "wish" | "read") =>
+    mutationFn: (listType: BookListType) =>
       ListsService.addBookToList(bookId, listType),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: [variables === "wish" ? "wishlist" : "readlist", "lists", user.username],
-      });
+      setBookListCache(queryClient, user.username, variables, data);
+      invalidateBookListCache(queryClient, user.username, variables);
       navigate("/lists");
     },
   });

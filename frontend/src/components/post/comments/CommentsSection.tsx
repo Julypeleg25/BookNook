@@ -8,6 +8,8 @@ import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import useUserStore from "@/state/useUserStore";
+import { sortComments, type CommentSortOrder } from "@/utils/commentUtils";
+import { invalidateReviewCaches } from "@/api/queryCache";
 
 interface CommentsSectionProps {
   bookPost: BookPost;
@@ -20,7 +22,7 @@ export interface CommentsSectionRef {
 const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
   ({ bookPost }, ref) => {
     const newCommentRef = useRef<NewCommentRef>(null);
-    const [sortOrder, setSortOrder] = useState<string>("mostRecent");
+    const [sortOrder, setSortOrder] = useState<CommentSortOrder>("mostRecent");
     const { user } = useUserStore();
 
     useImperativeHandle(ref, () => ({
@@ -32,8 +34,7 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
       mutationFn: (comment: string) =>
         userReviewService.addComment(bookPost.id, comment),
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["review", bookPost.id] });
-        queryClient.invalidateQueries({ queryKey: ["allReviews"] });
+        invalidateReviewCaches(queryClient, { reviewId: bookPost.id });
       },
     });
 
@@ -41,11 +42,7 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
       addComment(comment);
     };
 
-    const sortedComments = [...bookPost.comments].sort((a, b) => {
-      const dateA = new Date(a.createdDate).getTime();
-      const dateB = new Date(b.createdDate).getTime();
-      return sortOrder === "mostRecent" ? dateB - dateA : dateA - dateB;
-    });
+    const sortedComments = sortComments(bookPost.comments, sortOrder);
 
     return (
       <Box
@@ -83,7 +80,16 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
                   {timeAgo(comment.createdDate)}
                 </div>
               </Box>
-              <div style={{ marginLeft: "3rem" }}>{comment.content}</div>
+              <Box
+                sx={{
+                  ml: "3rem",
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {comment.content}
+              </Box>
             </Box>
           ))}
         </Box>

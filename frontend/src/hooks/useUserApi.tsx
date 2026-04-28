@@ -2,20 +2,23 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "@api/apiError";
 import { HttpStatusCode } from "axios";
 import useUserStore from "@/state/useUserStore";
-import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
-import { userService } from "@/api/services/userService";
+import { userService, type UpdateCurrentUserPayload } from "@/api/services/userService";
 import { buildRedirectTarget } from "@/utils/redirects";
+import { useQueryClient } from "@tanstack/react-query";
+import { syncUpdatedUserInReviewCaches } from "@/api/queryCache";
 
 export const useUserApi = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setUser } = useUserStore();
+  const queryClient = useQueryClient();
 
-  const updateUser = async (payload: UpdateUserRequestDTO) => {
+  const updateUser = async (payload: UpdateCurrentUserPayload) => {
     try {
       const res = await userService.updateCurrentUser(payload);
 
       setUser(res.user);
+      syncUpdatedUserInReviewCaches(queryClient, res.user);
     } catch (error) {
       handleAuthError(error);
     }

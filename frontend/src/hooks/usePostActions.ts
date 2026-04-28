@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
+import { invalidateReviewCaches } from "@/api/queryCache";
+import { getErrorMessage } from "@/api/apiError";
 
 export const usePostActions = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -13,12 +15,11 @@ export const usePostActions = () => {
     mutationFn: (postId: string) => userReviewService.deleteReview(postId),
     onSuccess: () => {
       enqueueSnackbar("Review deleted successfully!", { variant: "success" });
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["allReviews"] });
+      invalidateReviewCaches(queryClient);
       navigate("/posts");
     },
     onError: (error: unknown) => {
-      enqueueSnackbar((error as Error).message || "Failed to delete review", {
+      enqueueSnackbar(getErrorMessage(error, "Failed to delete review"), {
         variant: "error",
       });
     },

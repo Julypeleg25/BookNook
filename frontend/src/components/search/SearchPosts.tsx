@@ -6,10 +6,11 @@ import SearchHeader from "./SearchHeader";
 import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
 import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
 import { userReviewService } from "@/api/services/userReviewService";
-import type { Book, BookPost } from "@models/Book";
-import { UserReview, ReviewComment } from "@/models/UserReview";
+import type { BookPost } from "@models/Book";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParamsState } from "@/hooks/useSearchParamsState";
+import { queryKeys } from "@/api/queryKeys";
+import { mapReviewToBookPost } from "@/utils/reviewUtils";
 
 const SearchPosts = () => {
   const {
@@ -19,7 +20,8 @@ const SearchPosts = () => {
     setLocalSearchQuery,
     handleSearch,
     handleApplyFilters,
-    handleClear,
+    handleClearSearch,
+    handleClearFilters,
     setGenre,
   } = useSearchParamsState();
 
@@ -30,7 +32,7 @@ const SearchPosts = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["allReviews", urlQuery, filters],
+    queryKey: queryKeys.allReviewsSearch(urlQuery, filters),
     queryFn: () =>
       userReviewService.getAllReviews(
         filters.likesAmount,
@@ -48,31 +50,7 @@ const SearchPosts = () => {
     filters.username.trim().length > 0;
 
   const bookPosts: BookPost[] = useMemo(
-    () =>
-      reviews.map((r: UserReview) => ({
-        id: r._id,
-        book: r.book as Book,
-        user: {
-          id: r.user._id,
-          username: r.user.username,
-          avatar: r.user.avatar,
-        },
-        createdDate: r.createdAt,
-        description: r.review,
-        rating: r.rating,
-        imageUrl: r.picturePath,
-        likes: r.likes,
-        comments: r.comments.map((c: ReviewComment) => ({
-          id: c._id,
-          user: {
-            id: c.user.id,
-            username: c.user.username,
-            avatar: c.user.avatar,
-          },
-          createdDate: c.createdAt,
-          content: c.comment,
-        })),
-      })),
+    () => reviews.map(mapReviewToBookPost),
     [reviews],
   );
 
@@ -87,7 +65,8 @@ const SearchPosts = () => {
         searchTerm={localSearchQuery}
         setSearchTerm={setLocalSearchQuery}
         onSearch={handleSearch}
-        onClear={handleClear}
+        onClearSearch={handleClearSearch}
+        onClearFilters={handleClearFilters}
         onToggleGenre={setGenre}
         selectedGenre={filters.genre}
         setIsFiltersModalOpen={setIsFiltersModalOpen}
@@ -115,7 +94,9 @@ const SearchPosts = () => {
           <Typography variant="h6" color="text.secondary">
             {urlQuery.trim() !== "" ||
               filters.likesAmount > 0 ||
-              filters.rating > 0
+              filters.rating > 0 ||
+              filters.genre.trim() !== "" ||
+              filters.username.trim() !== ""
               ? "No posts found"
               : "No posts yet"}
           </Typography>
