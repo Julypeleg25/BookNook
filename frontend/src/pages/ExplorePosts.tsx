@@ -3,8 +3,17 @@ import SearchPosts from "@components/search/SearchPosts";
 
 const ExplorePosts = () => {
   return (
-    <Box sx={{ p: "1rem", mt: "1.5rem" }}>
-      <SearchPosts />
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 4.5rem)",
+        bgcolor: "background.default",
+        px: { xs: 2, md: 4 },
+        py: { xs: 2.5, md: 4 },
+      }}
+    >
+      <Box sx={{ maxWidth: "76rem", mx: "auto" }}>
+        <SearchPosts />
+      </Box>
     </Box>
   );
 };

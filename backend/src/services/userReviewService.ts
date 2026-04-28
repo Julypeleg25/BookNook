@@ -1,4 +1,4 @@
-import { Types, FlattenMaps } from "mongoose";
+import { Types } from "mongoose";
 import { BookDetail } from "@models/ApiBook";
 import { IUserReview } from "@models/UserReview";
 import { userReviewRepository, PopulatedUserReview } from "@repositories/userReviewRepository";
@@ -61,14 +61,12 @@ export const createReview = async (
   const book = await userReviewServiceDeps.getOrCreateLocalBook(externalBookId);
   const bookId = book._id as Types.ObjectId;
 
-  const finalPicturePath = picturePath || book.thumbnail;
-
   const newReview = await userReviewRepository.create({
     user: userId,
     book: bookId,
     rating,
     review: reviewText,
-    picturePath: finalPicturePath,
+    picturePath,
   });
 
   await userReviewServiceDeps.recomputeBookRating(bookId.toString());

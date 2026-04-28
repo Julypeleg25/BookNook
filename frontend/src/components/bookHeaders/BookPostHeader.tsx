@@ -1,4 +1,4 @@
-import { IconButton, Rating, Tooltip, Typography, Stack } from "@mui/material";
+import { Box, IconButton, Rating, Tooltip, Typography, Stack } from "@mui/material";
 import { FaCalendar, FaUser, FaHeart } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import { formatDate } from "@utils/dateUtils";
@@ -20,27 +20,24 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
     });
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        width: "100%"
-      }}
-    >
-      <div style={{ display: "grid", gap: "1rem" }}>
-        <div style={{ gap: "0.5rem", display: "flex", alignItems: "center" }}>
-
-          <Typography variant="h4">{bookPost.book.title}</Typography>
-          <Typography variant="h5" color="text.secondary">
+    <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", md: "center" }} gap={2} width="100%">
+      <Stack spacing={2} minWidth={0} flex={1}>
+        <Typography
+          variant="h4"
+          sx={{ display: "flex", alignItems: "baseline", gap: 1, minWidth: 0, fontWeight: 800 }}
+        >
+          <Box component="span" sx={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {bookPost.book.title}
+          </Box>
+          <Box component="span" sx={{ color: "text.secondary", fontSize: "1.5rem", flexShrink: 0 }}>
             {bookPost.book.publishedDate ? `(${new Date(bookPost.book.publishedDate).getFullYear()})` : ""}
-          </Typography>
-        </div>
+          </Box>
+        </Typography>
 
-        <Stack direction="row" spacing={3} alignItems="center">
-          <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+          <Stack direction="row" spacing={0.75} alignItems="center">
             <Rating
-              size="large"
+              size="medium"
               value={bookPost.rating}
               precision={RATING_STEP}
               readOnly
@@ -66,19 +63,19 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
           </Stack>
         </Stack>
 
-        <Typography variant="h5" style={{ display: "flex", gap: "2rem" }}>
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <Typography variant="h5" component="div" sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+          <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
             <FaCalendar style={{ fontSize: '1.2rem' }} />
             {formatDate(bookPost.createdDate)}
-          </div>
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          </Box>
+          <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
             <FaUser style={{ fontSize: '1.2rem' }} />
             {bookPost.user.username}
-          </div>
+          </Box>
         </Typography>
-      </div>
+      </Stack>
       <BookHeader book={bookPost.book} isBookPost={true} />
-    </div>
+    </Stack>
   );
 };
 

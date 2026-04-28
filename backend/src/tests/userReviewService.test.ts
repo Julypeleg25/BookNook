@@ -33,7 +33,13 @@ describe("UserReviewService", () => {
       .spyOn(userReviewService.userReviewServiceDeps, "findUserById")
       .mockResolvedValue({ _id: userId } as any);
 
-    const result = await userReviewService.createReview(userId, "id", 5, "text");
+    const result = await userReviewService.createReview(
+      userId,
+      "id",
+      5,
+      "text",
+      "/uploads/post-image.jpg",
+    );
 
     expect(result).toEqual(review);
     expect(getOrCreateSpy).toHaveBeenCalledWith("id");
@@ -42,7 +48,7 @@ describe("UserReviewService", () => {
       book: bookId,
       rating: 5,
       review: "text",
-      picturePath: "cover.jpg",
+      picturePath: "/uploads/post-image.jpg",
     });
     expect(recomputeSpy).toHaveBeenCalledWith(bookId.toString());
     expect(syncReviewSpy).toHaveBeenCalledWith(

@@ -49,7 +49,7 @@ export const useInfiniteLoader = <T,>({
 
     observer.observe(loaderRef.current);
     return () => observer.disconnect();
-  }, [items.length, batchSize, rootMargin]);
+  }, [items.length, batchSize, rootMargin, resetKey]);
 
   return {
     visibleItems,

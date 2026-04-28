@@ -1,25 +1,32 @@
 import { z } from "zod";
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  REQUIRED_TEXT_MIN_LENGTH,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+} from "../constants/validation";
 
 export const RegisterSchema = z.object({
   username: z
     .string()
     .trim()
-    .toLowerCase()
-    .min(3, "Username must be at least 3 characters")
-    .max(14, "Username must be at most 14 characters"),
+    .min(USERNAME_MIN_LENGTH, `Username must be at least ${USERNAME_MIN_LENGTH} characters`)
+    .max(USERNAME_MAX_LENGTH, `Username must be at most ${USERNAME_MAX_LENGTH} characters`)
+    .regex(/^[\p{L}\p{N}_]+$/u, "Use only letters, numbers, and underscores"),
   email: z.email("Invalid email address").trim().toLowerCase(),
   avatar: z.any().optional(),
   password: z
     .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(20, "Password must be at most 20 characters")
+    .min(PASSWORD_MIN_LENGTH, `Password must be at least ${PASSWORD_MIN_LENGTH} characters`)
+    .max(PASSWORD_MAX_LENGTH, `Password must be at most ${PASSWORD_MAX_LENGTH} characters`)
     .regex(
-      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
-      "Password must contain at least one English letter and one number"
+      /^(?=.*\p{L})(?=.*\d)[\s\S]+$/u,
+      "Password can include special characters, and must contain at least one letter and one number"
     ),
 });
 
 export const LoginSchema = z.object({
-  username: z.string().trim().toLowerCase().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  username: z.string().trim().min(REQUIRED_TEXT_MIN_LENGTH, "Username is required"),
+  password: z.string().min(REQUIRED_TEXT_MIN_LENGTH, "Password is required"),
 });

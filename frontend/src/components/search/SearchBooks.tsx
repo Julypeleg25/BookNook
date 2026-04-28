@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 import BookCardSkeleton from "../bookCards/BookCardSkeleton";
-import { useRef, useCallback, useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import SearchHeader from "./SearchHeader";
 import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
 import BookInfoCard from "@components/bookCards/BookInfoCard";
@@ -88,7 +88,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
             />
 
             {isLoading && !isFetchingNextPage && (
-                <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={3} mt={4}>
+                <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={2.5} mt={3} justifyItems="center">
                     {[...Array(8)].map((_, i) => (
                         <BookCardSkeleton key={i} />
                     ))}
@@ -97,7 +97,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
 
             {!isLoading && allBooks.length > 0 && (
                 <Box>
-                    <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={3} mt={4}>
+                    <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={2.5} mt={3} justifyItems="center">
                         {allBooks.map((bookSummary) => (
                             <BookInfoCard
                                 key={bookSummary.id}

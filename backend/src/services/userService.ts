@@ -43,22 +43,28 @@ export const getUserByProviderId = async (
 };
 
 export const createUser = async (userData: CreateUserData): Promise<IUser> => {
-  const existingEmail = await userRepository.findByEmail(userData.email);
+  const normalizedUserData = {
+    ...userData,
+    username: userData.username.trim().toLowerCase(),
+    email: userData.email.trim().toLowerCase(),
+  };
+
+  const existingEmail = await userRepository.findByEmail(normalizedUserData.email);
   if (existingEmail) {
     throw new ConflictError("Email already exists");
   }
 
-  const existingUsername = await userRepository.findByUsername(userData.username);
+  const existingUsername = await userRepository.findByUsername(normalizedUserData.username);
   if (existingUsername) {
     throw new ConflictError("Username already exists");
   }
 
-  const hashedPassword = userData.password
-    ? await hashPassword(userData.password)
+  const hashedPassword = normalizedUserData.password
+    ? await hashPassword(normalizedUserData.password)
     : undefined;
 
   return await userRepository.create({
-    ...userData,
+    ...normalizedUserData,
     password: hashedPassword,
   });
 };
@@ -68,6 +74,8 @@ export const updateUser = async (
   updateData: UpdateUserRequestDTO
 ): Promise<IUser> => {
   if (updateData.username) {
+    updateData.username = updateData.username.trim().toLowerCase();
+
     const existingUser = await userRepository.findByUsername(updateData.username);
     if (existingUser && String(existingUser._id) !== String(userId)) {
       throw new ConflictError("Username already exists");

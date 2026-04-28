@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Paper } from "@mui/material";
 import SearchBar from "@/components/searchFilters/SearchBar";
 import GenreChips from "./GenreChips";
 
@@ -26,7 +26,16 @@ const SearchHeader = ({
   hasActiveFilters,
 }: SearchHeaderProps) => {
   return (
-    <Box>
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 2, md: 2.5 },
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 3,
+        bgcolor: "background.paper",
+      }}
+    >
       <SearchBar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -39,7 +48,7 @@ const SearchHeader = ({
       <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
         <GenreChips selectedGenre={selectedGenre} onToggleGenre={onToggleGenre} />
       </Box>
-    </Box>
+    </Paper>
   );
 };
 

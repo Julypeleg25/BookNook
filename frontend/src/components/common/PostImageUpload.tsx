@@ -1,85 +1,114 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import {
+  Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
+  Stack,
+  Typography,
 } from "@mui/material";
+import { FiImage, FiUploadCloud } from "react-icons/fi";
 
 interface PostImageUploadProps {
   value: File | string | null;
   onChange: (file: File) => void;
+  error?: boolean;
+  helperText?: string;
 }
 
-const PostImageUpload = ({ value, onChange }: PostImageUploadProps) => {
+const PostImageUpload = ({
+  value,
+  onChange,
+  error = false,
+  helperText,
+}: PostImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [cameraOpen, setCameraOpen] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const preview =
-    value instanceof File ? URL.createObjectURL(value) : value || "";
+  const preview = useMemo(
+    () => (value instanceof File ? URL.createObjectURL(value) : value || ""),
+    [value],
+  );
 
   useEffect(() => {
-    if (!cameraOpen) return;
-
-    navigator.mediaDevices.getUserMedia({ video: true }).then((mediaStream) => {
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    });
-
     return () => {
-      stream?.getTracks().forEach((t) => t.stop());
+      if (preview && value instanceof File) {
+        URL.revokeObjectURL(preview);
+      }
     };
-  }, [cameraOpen, stream]);
+  }, [preview, value]);
 
-  const takePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.drawImage(video, 0, 0);
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-
-      const file = new File([blob], "post-image.jpg", { type: "image/jpeg" });
+  const handleFile = (file?: File) => {
+    if (file?.type.startsWith("image/")) {
       onChange(file);
-      setCameraOpen(false);
-    }, "image/jpeg");
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) onChange(file);
+    handleFile(file);
+    e.target.value = "";
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFile(e.dataTransfer.files?.[0]);
   };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {preview && (
-        <Box
-          sx={{
-            width: "100%",
-            maxWidth: "32rem",
-            aspectRatio: "16 / 10",
-            bgcolor: "grey.100",
-            borderRadius: 2,
-            overflow: "hidden",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        justifyContent="space-between"
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        gap={1.5}
+      >
+        <Stack spacing={0.5}>
+          <Typography variant="subtitle1" fontWeight={800}>
+            Post Image
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Use a clear photo or graphic that represents your review.
+          </Typography>
+        </Stack>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
+          <Button
+            variant="outlined"
+            onClick={() => fileInputRef.current?.click()}
+            startIcon={<FiUploadCloud size={16} />}
+            sx={{ width: { xs: "100%", sm: "fit-content" } }}
+          >
+            Upload Image
+          </Button>
+        </Stack>
+      </Stack>
+
+      <Box
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
+        onClick={() => !preview && fileInputRef.current?.click()}
+        sx={{
+          width: "100%",
+          maxWidth: "32rem",
+          aspectRatio: { xs: "16 / 10", sm: "16 / 9" },
+          bgcolor: preview ? "grey.50" : "rgba(91, 111, 106, 0.04)",
+          borderRadius: "12px",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          border: "2px dashed",
+          borderColor: error ? "error.main" : isDragging ? "primary.main" : "divider",
+          cursor: preview ? "default" : "pointer",
+          transition: "border-color 0.2s ease, background-color 0.2s ease",
+        }}
+      >
+        {preview ? (
           <Box
             component="img"
             src={preview}
@@ -87,20 +116,38 @@ const PostImageUpload = ({ value, onChange }: PostImageUploadProps) => {
             sx={{
               width: "100%",
               height: "100%",
-              objectFit: "contain",
+              objectFit: "cover",
               display: "block",
             }}
           />
-        </Box>
-      )}
+        ) : (
+          <Stack spacing={1.25} alignItems="center" sx={{ px: 3, textAlign: "center" }}>
+            <Box
+              sx={{
+                width: 52,
+                height: 52,
+                borderRadius: "50%",
+                display: "grid",
+                placeItems: "center",
+                bgcolor: "rgba(91, 111, 106, 0.12)",
+                color: "primary.main",
+              }}
+            >
+              <FiImage size={24} />
+            </Box>
+            <Typography fontWeight={800}>Drop an image here</Typography>
+            <Typography variant="body2" color="text.secondary">
+              or browse from your device
+            </Typography>
+          </Stack>
+        )}
+      </Box>
 
-        <Button
-          variant="outlined"
-          onClick={() => fileInputRef.current?.click()}
-          sx={{ width: "100%", maxWidth: "32rem" }}
-        >
-          Upload Image
-        </Button>
+      {helperText ? (
+        <Alert severity={error ? "error" : "info"} sx={{ py: 0 }}>
+          {helperText}
+        </Alert>
+      ) : null}
 
       <input
         ref={fileInputRef}
@@ -110,28 +157,6 @@ const PostImageUpload = ({ value, onChange }: PostImageUploadProps) => {
         onChange={handleFileSelect}
       />
 
-      <Dialog
-        open={cameraOpen}
-        onClose={() => setCameraOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogContent>
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            style={{ width: "100%", borderRadius: 8 }}
-          />
-          <canvas ref={canvasRef} hidden />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCameraOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={takePhoto}>
-            Capture
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import type { Book } from "@models/Book";
 import { useState, useMemo, type ReactNode } from "react";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa6";
@@ -38,12 +38,14 @@ const BooksList = ({ booksList, title, loading, listType }: BooksListProps) => {
   };
 
   return (
-    <Box
+    <Paper
+      elevation={0}
       sx={{
-        p: "1rem",
-        mt: "2rem",
+        p: { xs: 2, md: 2.5 },
         backgroundColor: "background.paper",
-        borderRadius: "1rem",
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 3,
       }}
     >
       {title && (
@@ -51,7 +53,9 @@ const BooksList = ({ booksList, title, loading, listType }: BooksListProps) => {
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          mb="1rem"
+          mb={2}
+          gap={2}
+          flexWrap="wrap"
         >
           {title}
 
@@ -81,6 +85,7 @@ const BooksList = ({ booksList, title, loading, listType }: BooksListProps) => {
             md: "repeat(4, 1fr)",
           }}
           gap="1.5rem"
+          justifyItems="center"
         >
           {loading
             ? [...Array(BATCH_SIZE)].map((_, i) => <BookCardSkeleton key={i} />)
@@ -91,7 +96,7 @@ const BooksList = ({ booksList, title, loading, listType }: BooksListProps) => {
       )}
 
       {isExpanded && canExpand && <Box ref={loaderRef} />}
-    </Box>
+    </Paper>
   );
 };
 

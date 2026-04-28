@@ -1,11 +1,10 @@
-import { Box, Typography, Stack, Rating, Button } from "@mui/material";
+import { Box, Typography, Stack, Button } from "@mui/material";
 import type { Book } from "@models/Book";
 import { formatDate } from "@utils/dateUtils";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import BookActionsMenu from "./BookActionsMenu";
 import React from "react";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
-import { RATING_STEP } from "@shared/constants/validation";
 import { getBookId } from "@/utils/bookUtils";
 
 interface BookInfoCardProps {
@@ -25,11 +24,15 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType, hideMenu }: BookIn
     navigate(`/post/create/${bookId}`, { state: { book } });
   };
 
-  const handleSelect = () => {
-    onSelect?.(book);
-  };
-
   const isSelectMode = !!onSelect;
+  const handleWriteReview = () => {
+    if (onSelect) {
+      onSelect(book);
+      return;
+    }
+
+    handleCreateReview();
+  };
 
   return (
     <Stack alignItems="center" spacing="0.6rem" position="relative">
@@ -127,37 +130,14 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType, hideMenu }: BookIn
           width: "100%",
         }}
       >
-        {book.ratingCount && book.ratingCount > 0 ? (
-          <Stack alignItems="center">
-            <Rating
-              value={book.avgRating ?? 0}
-              precision={RATING_STEP}
-              readOnly
-              size="small"
-            />
-            <Typography variant="caption" color="text.secondary">
-              ({book.avgRating?.toFixed(1)})
-            </Typography>
-          </Stack>
-        ) : null}
-        {isOnlyInfo && onSelect && (
+        {isOnlyInfo && (
           <Button
             variant="contained"
             size="small"
-            onClick={handleSelect}
+            onClick={handleWriteReview}
             sx={{ width: "15rem" }}
           >
             Write Review
-          </Button>
-        )}
-        {isOnlyInfo && !onSelect && (
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={handleCreateReview}
-            sx={{ width: "15rem" }}
-          >
-            Create Review
           </Button>
         )}
       </div>

@@ -25,22 +25,17 @@ const Router = () => {
         <Route path="/register" element={<SignUp />} />
       </Route>
 
-      {/* Public browse routes */}
-      <Route element={<AppLayout />}>
-        <Route path="/posts">
-          <Route index element={<ExplorePosts />} />
-          <Route path=":id" element={<BookPost />} />
-        </Route>
-
-        <Route path="/books">
-          <Route index element={<ExploreBooks />} />
-          <Route path=":id" element={<BookInfo />} />
-        </Route>
-      </Route>
-
-      {/* Protected routes */}
+      {/* Protected app routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
+          <Route path="/posts">
+            <Route index element={<ExplorePosts />} />
+            <Route path=":id" element={<BookPost />} />
+          </Route>
+          <Route path="/books">
+            <Route index element={<ExploreBooks />} />
+            <Route path=":id" element={<BookInfo />} />
+          </Route>
           <Route path="/books/select" element={<SelectBookForPost />} />
           <Route path="/post">
             <Route index element={<NewPost />} />

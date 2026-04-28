@@ -1,9 +1,11 @@
+import { RAG_QUERY_MAX_LENGTH } from "@shared/constants/validation";
+
 export const validateRagQuery = (query: string): { isValid: boolean, error?: string } => {
     if (!query || typeof query !== "string") {
         return { isValid: false, error: "Query is required and must be a string." };
     }
 
-    if (query.length > 500) {
+    if (query.length > RAG_QUERY_MAX_LENGTH) {
         return { isValid: false, error: "Query exceeds maximum allowed length." };
     }
 

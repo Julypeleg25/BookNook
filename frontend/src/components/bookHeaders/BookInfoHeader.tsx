@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import type { Book } from "@models/Book";
 import BookHeader from "./BookHeaderButtons";
 
@@ -10,29 +10,28 @@ const BookInfoHeader = ({ book }: BookInfoHeaderProps) => {
   const year = book.publishedDate ? new Date(book.publishedDate).getFullYear() : "Unknown";
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
+    <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} gap={2}>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 800,
             display: "flex",
-            gap: "0.5rem",
-            alignItems: "center",
+            alignItems: "baseline",
+            gap: 1,
+            minWidth: 0,
           }}
         >
-          <Typography variant="h4" style={{ gap: "0.5rem", display: "flex", alignItems: "center" }}>
-            <div>{book.title}</div>
-            <div style={{ color: "gray", fontSize: "1.5rem" }}>({year})</div>
-          </Typography>
-        </div>
-        <BookHeader book={book} />
-      </div>
-    </div>
+          <Box component="span" sx={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {book.title}
+          </Box>
+          <Box component="span" sx={{ color: "text.secondary", fontSize: "1.5rem", flexShrink: 0 }}>
+            ({year})
+          </Box>
+        </Typography>
+      </Box>
+      <BookHeader book={book} />
+    </Stack>
   );
 };
 

@@ -4,15 +4,21 @@ import type { ProfileFormValues } from "@/models/ProfileForm";
 
 interface AvatarFieldProps {
   control: Control<ProfileFormValues>;
+  disabled?: boolean;
 }
 
-const AvatarField = ({ control }: AvatarFieldProps) => {
+const AvatarField = ({ control, disabled = false }: AvatarFieldProps) => {
   return (
     <Controller
       name="avatar"
       control={control}
       render={({ field }) => (
-        <ImageUpload value={field.value} onChange={field.onChange} />
+        <ImageUpload
+          value={field.value}
+          onChange={field.onChange}
+          onRemove={() => field.onChange(null)}
+          disabled={disabled}
+        />
       )}
     />
   );

@@ -75,13 +75,14 @@ const SearchPosts = () => {
       />
       <Box
         display="grid"
-        marginTop={"3rem"}
+        marginTop={3}
         gridTemplateColumns={{
           xs: "1fr",
-          sm: "1fr 1fr",
-          md: "1fr 1fr 1fr 1fr",
+          sm: "repeat(2, minmax(0, 1fr))",
+          lg: "repeat(4, minmax(0, 1fr))",
         }}
-        gap={"2rem"}
+        gap={2.5}
+        justifyItems="center"
       >
         {isLoading
           ? [...Array(8)].map((_, i) => <PostCardSkeleton key={i} />)

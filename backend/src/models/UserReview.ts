@@ -9,6 +9,11 @@ import {
   REVIEW_TEXT_MIN_LENGTH,
 } from "@shared/constants/validation";
 
+const isRatingStepValid = (rating: number): boolean => {
+  const steps = rating / RATING_STEP;
+  return Math.abs(steps - Math.round(steps)) < 1e-8;
+};
+
 export interface ReviewComment {
   _id?: Types.ObjectId;
   user: Types.ObjectId;
@@ -71,7 +76,7 @@ const UserReviewSchema = new Schema<IUserReview>(
       min: RATING_MIN,
       max: RATING_MAX,
       validate: {
-        validator: (v: number) => Number.isInteger(v / RATING_STEP),
+        validator: isRatingStepValid,
         message: (props) =>
           `${props.value} is not a valid rating (increments of ${RATING_STEP})!`,
       },

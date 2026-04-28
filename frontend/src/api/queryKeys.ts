@@ -3,7 +3,7 @@ import type { ISearchFiltersForm } from "@/components/searchFilters/models/Searc
 
 export const queryKeys = {
   allReviews: ["allReviews"] as const,
-  allReviewsByUsername: (username: string) => ["allReviews", username] as const,
+  allReviewsByUserId: (userId: string) => ["allReviews", "user", userId] as const,
   allReviewsSearch: (searchQuery: string, filters: ISearchFiltersForm) =>
     ["allReviews", searchQuery, filters] as const,
   reviewPrefix: ["review"] as const,
