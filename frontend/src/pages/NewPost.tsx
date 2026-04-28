@@ -263,17 +263,6 @@ const NewPost = () => {
               Pair your review with a real image, a clear rating, and enough context for other readers to decide.
             </Typography>
           </Stack>
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-            <Chip
-              label={hasImage ? "Image ready" : "Image required"}
-              color={hasImage ? "success" : "warning"}
-              variant={hasImage ? "filled" : "outlined"}
-            />
-            <Chip
-              label={`${reviewLength}/${REVIEW_TEXT_MAX_LENGTH}`}
-              variant="outlined"
-            />
-          </Stack>
         </Stack>
 
         {book && (
@@ -289,27 +278,47 @@ const NewPost = () => {
           >
             <Stack
               direction={{ xs: "column", sm: "row" }}
-              spacing={2.5}
-              alignItems={{ xs: "flex-start", sm: "stretch" }}
+              spacing={{ xs: 2, md: 3 }}
+              alignItems={{ xs: "stretch", sm: "stretch" }}
             >
               <Box
-                component="img"
-                src={getAvatarSrcUrl(book.thumbnail)}
-                onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
-                  (e.target as HTMLImageElement).src = "https://via.placeholder.com/150x200?text=No+Cover";
-                }}
-                alt={book.title}
                 sx={{
-                  width: { xs: "100%", sm: "8rem" },
-                  maxWidth: { xs: "14rem", sm: "8rem" },
-                  aspectRatio: "2 / 3",
-                  objectFit: "cover",
+                  width: { xs: "100%", sm: "12rem", md: "14rem" },
+                  maxWidth: { xs: "18rem", sm: "12rem", md: "14rem" },
+                  minHeight: { sm: "18rem" },
                   borderRadius: 2,
                   flexShrink: 0,
-                  boxShadow: "0 10px 26px rgba(31, 41, 51, 0.14)",
+                  overflow: "hidden",
+                  bgcolor: "grey.100",
+                  boxShadow: "0 16px 36px rgba(31, 41, 51, 0.16)",
+                  alignSelf: { xs: "center", sm: "stretch" },
+                  position: "relative",
+                  "&::after": {
+                    content: '""',
+                    position: "absolute",
+                    inset: 0,
+                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.35)",
+                    pointerEvents: "none",
+                  },
                 }}
-              />
-              <Stack spacing={1.25} minWidth={0} justifyContent="center">
+              >
+                <Box
+                  component="img"
+                  src={getAvatarSrcUrl(book.thumbnail)}
+                  onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
+                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x450?text=No+Cover";
+                  }}
+                  alt={book.title}
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    minHeight: { xs: "20rem", sm: "100%" },
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+              </Box>
+              <Stack spacing={1.4} minWidth={0} justifyContent="center" flex={1}>
                 <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 0, fontWeight: 800 }}>
                   Book Reference
                 </Typography>
@@ -401,21 +410,7 @@ const NewPost = () => {
                   Choose the visual and rating first, then write the review below.
                 </Typography>
               </Box>
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                <Chip
-                  size="small"
-                  label={hasImage ? "Image ready" : "Image missing"}
-                  color={hasImage ? "success" : "warning"}
-                  variant={hasImage ? "filled" : "outlined"}
-                />
-                <Chip
-                  size="small"
-                  label={isValidRating(rating) ? `${Number(rating).toFixed(1)} stars` : "Rating missing"}
-                  color={isValidRating(rating) ? "success" : "warning"}
-                  variant={isValidRating(rating) ? "filled" : "outlined"}
-                />
-              </Stack>
-            </Stack>
+           </Stack>
 
             <Divider />
 
@@ -446,92 +441,103 @@ const NewPost = () => {
                 )}
               />
 
-              <Stack
-                spacing={2.5}
-                sx={{
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: 2,
-                  p: { xs: 2, md: 2.5 },
-                  bgcolor: "rgba(91, 111, 106, 0.035)",
-                }}
-              >
-                <Controller
-                  name="rating"
-                  control={control}
-                  rules={{
-                    validate: (value) => {
-                      const numericRating = Number(value);
-                      if (!Number.isFinite(numericRating) || numericRating < RATING_STEP) {
-                        return `Rating is required (${RATING_STEP}-${RATING_MAX})`;
-                      }
-                      if (numericRating > RATING_MAX) {
-                        return `Rating must be between ${RATING_MIN} and ${RATING_MAX}`;
-                      }
-                      return isValidRating(numericRating) || `Rating must use ${RATING_STEP} increments`;
-                    },
+              <Stack spacing={2}>
+                <Box
+                  sx={{
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 2,
+                    p: { xs: 2, md: 2.5 },
+                    bgcolor: "rgba(91, 111, 106, 0.035)",
                   }}
-                  render={({ field }) => (
-                    <Box>
-                      <Typography mb={1} fontWeight={800}>
-                        Rating
-                      </Typography>
-                      <Rating
-                        precision={RATING_STEP}
-                        value={Number(field.value) || 0}
-                        onChange={(_, value) => {
-                          const nextRating = Number(value ?? 0);
-                          field.onChange(nextRating);
-                          setValue("rating", nextRating, {
-                            shouldDirty: true,
-                            shouldTouch: true,
-                            shouldValidate: true,
-                          });
-                          if (isValidRating(nextRating)) {
-                            clearErrors("rating");
-                          }
-                        }}
-                        max={RATING_MAX}
-                        sx={{
-                          "& .MuiRating-icon": {
-                            fontSize: { xs: "2rem", sm: "2.2rem" },
-                          },
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        {Number(field.value) > 0
-                          ? `${Number(field.value).toFixed(1)} / ${RATING_MAX}`
-                          : "Choose a rating"}
-                      </Typography>
-                      {errors.rating && (
-                        <Typography color="error" variant="caption">
-                          {errors.rating.message}
+                >
+                  <Controller
+                    name="rating"
+                    control={control}
+                    rules={{
+                      validate: (value) => {
+                        const numericRating = Number(value);
+                        if (!Number.isFinite(numericRating) || numericRating < RATING_STEP) {
+                          return `Rating is required (${RATING_STEP}-${RATING_MAX})`;
+                        }
+                        if (numericRating > RATING_MAX) {
+                          return `Rating must be between ${RATING_MIN} and ${RATING_MAX}`;
+                        }
+                        return isValidRating(numericRating) || `Rating must use ${RATING_STEP} increments`;
+                      },
+                    }}
+                    render={({ field }) => (
+                      <Box>
+                        <Typography mb={1} fontWeight={800}>
+                          Rating
                         </Typography>
-                      )}
+                        <Rating
+                          precision={RATING_STEP}
+                          value={Number(field.value) || 0}
+                          onChange={(_, value) => {
+                            const nextRating = Number(value ?? 0);
+                            field.onChange(nextRating);
+                            setValue("rating", nextRating, {
+                              shouldDirty: true,
+                              shouldTouch: true,
+                              shouldValidate: true,
+                            });
+                            if (isValidRating(nextRating)) {
+                              clearErrors("rating");
+                            }
+                          }}
+                          max={RATING_MAX}
+                          sx={{
+                            "& .MuiRating-icon": {
+                              fontSize: { xs: "2rem", sm: "2.2rem" },
+                            },
+                          }}
+                        />
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                          {Number(field.value) > 0
+                            ? `${Number(field.value).toFixed(1)} / ${RATING_MAX}`
+                            : "Choose a rating"}
+                        </Typography>
+                        {errors.rating && (
+                          <Typography color="error" variant="caption">
+                            {errors.rating.message}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 2,
+                    p: { xs: 2, md: 2.5 },
+                    bgcolor: "background.paper",
+                  }}
+                >
+                  <Stack spacing={2}>
+                    <Box>
+                      <Typography fontWeight={800}>Publish</Typography>
                     </Box>
-                  )}
-                />
 
-                <Alert severity={hasImage ? "success" : isSubmitted ? "error" : "info"}>
-                  {hasImage
-                    ? "Image attached. Your post will use this visual."
-                    : "Upload an image before publishing. Book covers are not used as a fallback."}
-                </Alert>
-
-                <Stack spacing={1.25}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={!canSubmit}
-                    fullWidth
-                    size="large"
-                  >
-                    {isSaving ? "Saving..." : (reviewId ? "Update Post" : "Publish Post")}
-                  </Button>
-                  <Button variant="outlined" onClick={onCancel} disabled={isSaving} fullWidth>
-                    Cancel
-                  </Button>
-                </Stack>
+                    <Stack spacing={1.25}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        disabled={!canSubmit}
+                        fullWidth
+                        size="large"
+                      >
+                        {isSaving ? "Saving..." : (reviewId ? "Update Post" : "Publish Post")}
+                      </Button>
+                      <Button variant="outlined" onClick={onCancel} disabled={isSaving} fullWidth>
+                        Cancel
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </Box>
               </Stack>
             </Box>
           </Stack>

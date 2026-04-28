@@ -6,12 +6,10 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  IconButton,
   Stack,
-  Tooltip,
   Typography,
 } from "@mui/material";
-import { FiCamera, FiImage, FiRefreshCw, FiUploadCloud } from "react-icons/fi";
+import { FiCamera, FiImage, FiRefreshCw } from "react-icons/fi";
 
 interface PostImageUploadProps {
   value: File | string | null;
@@ -125,28 +123,8 @@ const PostImageUpload = ({
             Post Image
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Required. Use a clear photo or graphic that represents your review.
+            Use a clear photo or graphic that represents your review.
           </Typography>
-        </Stack>
-        <Stack direction="row" spacing={1}>
-          <Tooltip title="Upload image">
-            <IconButton
-              onClick={() => fileInputRef.current?.click()}
-              color="primary"
-              aria-label="Upload image"
-            >
-              <FiUploadCloud size={20} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Take photo">
-            <IconButton
-              onClick={() => setCameraOpen(true)}
-              color="primary"
-              aria-label="Take photo"
-            >
-              <FiCamera size={20} />
-            </IconButton>
-          </Tooltip>
         </Stack>
       </Stack>
 
