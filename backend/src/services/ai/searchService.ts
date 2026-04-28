@@ -4,7 +4,6 @@ import {
     SearchResult
 } from "./vectorRepository";
 import { generateEmbedding } from "./embeddingService";
-import { userRepository } from "@repositories/userRepository";
 
 export interface SearchOptions {
     mode: "general" | "personalized";
@@ -20,11 +19,6 @@ export const performSearch = async (
     const { mode, userId, minRating, topK = 8 } = opts;
 
     let userProfileText = "";
-    let excludeExternalIds: string[] = [];
-
-    if (userId) {
-        excludeExternalIds = await userRepository.getList(userId, "read");
-    }
 
     if (mode === "personalized") {
         if (userId) {
@@ -50,8 +44,7 @@ export const performSearch = async (
     const searchResults = await similaritySearch(queryEmbedding, {
         topK,
         minRating,
-        typeFilter: null,
-        excludeExternalIds
+        typeFilter: null
     });
 
     const validChunks = searchResults.filter(r => r.type === "book" || r.type === "review");
