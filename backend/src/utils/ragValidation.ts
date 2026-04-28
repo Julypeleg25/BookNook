@@ -1,28 +1,23 @@
-import { RAG_QUERY_MAX_LENGTH } from "@shared/constants/validation";
+import { z } from "zod";
 
-export const validateRagQuery = (query: string): { isValid: boolean, error?: string } => {
-    if (!query || typeof query !== "string") {
-        return { isValid: false, error: "Query is required and must be a string." };
-    }
+export const MAX_RAG_QUERY_LENGTH = 500;
+const SEARCHABLE_TEXT_REGEX = /[\p{L}\p{N}]/u;
+const SUPPORTED_QUERY_REGEX = /^[\p{L}\p{N}\s'"?!.,:;()[\]\-_/]+$/u;
 
-    if (query.length > RAG_QUERY_MAX_LENGTH) {
-        return { isValid: false, error: "Query exceeds maximum allowed length." };
-    }
+export const RagQueryRequestSchema = z
+  .object({
+    query: z
+      .string({ error: "Question is required." })
+      .trim()
+      .min(1, "Question is required.")
+      .max(MAX_RAG_QUERY_LENGTH, `Question must be ${MAX_RAG_QUERY_LENGTH} characters or fewer.`)
+      .refine((value) => SEARCHABLE_TEXT_REGEX.test(value), "Question must contain searchable text.")
+      .refine((value) => SUPPORTED_QUERY_REGEX.test(value), "Question contains unsupported characters."),
+  })
+  .strict();
 
-    const strippedQuery = query.replace(/[0-9\s!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?£€]/g, "");
+export type RagQueryRequest = z.infer<typeof RagQueryRequestSchema>;
 
-    if (strippedQuery.length === 0) {
-        return { isValid: false, error: "Query must contain searchable text." };
-    }
-
-    const forbiddenExtendedRegex = /[À-ž]/;
-
-
-    const englishAndHebrewRegex = /^[a-zA-Z\u0590-\u05FF]+$/;
-
-    if (forbiddenExtendedRegex.test(strippedQuery) || !englishAndHebrewRegex.test(strippedQuery)) {
-        return { isValid: false, error: "Only Hebrew and English queries are supported." };
-    }
-
-    return { isValid: true };
+export const parseRagQueryRequest = (body: unknown): { query: string } => {
+  return RagQueryRequestSchema.parse(body);
 };

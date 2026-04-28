@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 import mongoose, { Types } from "mongoose";
 import { ENV } from "@config/config";
-import { BookModel } from "@models/Book";
-import User from "@models/User";
+import { BookModel, IBook } from "@models/Book";
+import User, { IUser } from "@models/User";
 import { UserReviewModel } from "@models/UserReview";
 import { buildBookChunk, buildProfileChunk, buildReviewChunk } from "@services/ai/chunkBuilder";
 import { generateEmbeddingsBatch } from "@services/ai/embeddingService";
@@ -78,6 +78,7 @@ async function indexBooks(): Promise<void> {
         rating: book.avgRating ?? null,
         metadata: {
           mongoId: bookId,
+          externalId: book.externalId,
           title: book.title,
           authors: book.authors ?? [],
           genres: book.categories ?? [],
@@ -91,23 +92,33 @@ async function indexBooks(): Promise<void> {
   await upsertChunksBatch(chunks, BATCH_SIZE);
 }
 
-async function indexUsers(tasteMap: Map<string, string[]>): Promise<void> {
+async function indexUsers(
+  tasteMap: Map<string, string[]>,
+  allBooks: IBook[]
+): Promise<void> {
   const users = await User.find({});
   logger.info(`[IndexData] Indexing ${users.length} users...`);
 
   const chunks: VectorChunk[] = [];
   for (let i = 0; i < users.length; i += BATCH_SIZE) {
     const batch = users.slice(i, i + BATCH_SIZE);
-    const texts = batch.map((user) =>
-      buildProfileChunk(
+    const texts = batch.map((user) => {
+      const resolveTitles = (ids: string[]) => {
+        return ids.map((id) => {
+          const b = allBooks.find((book) => book.externalId === id);
+          return b ? `${b.title} (by ${b.authors?.join(", ")})` : null;
+        }).filter((t): t is string => t !== null);
+      };
+
+      return buildProfileChunk(
         user.username,
-        user.readlist || [],
-        user.wishlist || [],
+        resolveTitles(user.readlist || []),
+        resolveTitles(user.wishlist || []),
         [],
         [],
         tasteMap.get((user._id as Types.ObjectId).toString()) || [],
-      ),
-    );
+      );
+    });
     const embeddings = await generateEmbeddingsBatch(texts);
 
     for (let j = 0; j < batch.length; j++) {
@@ -134,10 +145,12 @@ async function indexUsers(tasteMap: Map<string, string[]>): Promise<void> {
   await upsertChunksBatch(chunks, BATCH_SIZE);
 }
 
-async function indexReviews(tasteMap: Map<string, string[]>): Promise<void> {
+async function indexReviews(
+  tasteMap: Map<string, string[]>,
+  allBooks: IBook[],
+  allUsers: IUser[]
+): Promise<void> {
   const reviews = await UserReviewModel.find({});
-  const allBooks = await BookModel.find({}, { _id: 1, title: 1 });
-  const allUsers = await User.find({}, { _id: 1, username: 1 });
 
   const bookTitlesMap = new Map(
     allBooks.map((book) => [(book._id as Types.ObjectId).toString(), book.title]),
@@ -181,6 +194,7 @@ async function indexReviews(tasteMap: Map<string, string[]>): Promise<void> {
         metadata: {
           mongoId: reviewId,
           bookId,
+          externalId: allBooks.find((book) => (book._id as Types.ObjectId).toString() === bookId)?.externalId,
           userId,
           username: userNamesMap.get(userId),
           rating: review.rating,
@@ -202,10 +216,12 @@ async function run(): Promise<void> {
     await ensureSchema();
 
     const tasteMap = await getTypicalTasteMap();
+    const allBooks = await BookModel.find({});
+    const allUsers = await User.find({});
 
     await indexBooks();
-    await indexUsers(tasteMap);
-    await indexReviews(tasteMap);
+    await indexUsers(tasteMap, allBooks);
+    await indexReviews(tasteMap, allBooks, allUsers);
 
     logger.info("[IndexData] Full re-index complete.");
   } catch (error) {
