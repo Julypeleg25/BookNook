@@ -19,6 +19,7 @@ export interface SearchOptions {
     typeFilter?: ChunkType | null;
     minRating?: number | null;
     userId?: string | null;
+    excludeExternalIds?: string[] | null;
 }
 
 export interface SearchResult {
@@ -212,12 +213,12 @@ export const similaritySearch = async (
     embedding: number[],
     opts: SearchOptions = {}
 ): Promise<SearchResult[]> => {
-    const { topK = 8, typeFilter = null, minRating = null, userId = null } = opts;
+    const { topK = 8, typeFilter = null, minRating = null, userId = null, excludeExternalIds = null } = opts;
 
     const client = await getPool().connect();
     try {
         let whereClause = `WHERE 1=1`;
-        const params: (string | number | null)[] = [JSON.stringify(embedding)];
+        const params: (string | number | string[] | null)[] = [JSON.stringify(embedding)];
         let pIdx = 2;
 
         if (typeFilter) {
@@ -231,6 +232,10 @@ export const similaritySearch = async (
         if (userId) {
             whereClause += ` AND metadata->>'userId' = $${pIdx++}`;
             params.push(userId);
+        }
+        if (excludeExternalIds && excludeExternalIds.length > 0) {
+            whereClause += ` AND (metadata->>'externalId' IS NULL OR NOT (metadata->>'externalId' = ANY($${pIdx++})))`;
+            params.push(excludeExternalIds);
         }
 
         const result = await client.query<{

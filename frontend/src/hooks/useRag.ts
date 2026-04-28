@@ -20,6 +20,7 @@ const createId = () =>
 
 export const useRag = () => {
   const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
   const [history, setHistory] = useState<RagConversationItem[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -27,6 +28,7 @@ export const useRag = () => {
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     setLoading(false);
+    loadingRef.current = false;
   }, []);
 
   const clearHistory = useCallback(() => {
@@ -36,14 +38,17 @@ export const useRag = () => {
 
   const fetchAiResponse = useCallback(async (query: string, mode: RAGMode = RAGMode.GENERAL) => {
     const normalizedQuery = query.trim();
-    if (!normalizedQuery || loading) return;
+    if (!normalizedQuery || loadingRef.current) return;
 
     const requestId = createId();
     const createdAt = new Date();
 
     abortControllerRef.current?.abort();
     abortControllerRef.current = new AbortController();
+    
+    loadingRef.current = true;
     setLoading(true);
+
     setHistory((previous) => [
       ...previous,
       {
@@ -77,9 +82,10 @@ export const useRag = () => {
       );
     } finally {
       setLoading(false);
+      loadingRef.current = false;
       abortControllerRef.current = null;
     }
-  }, [loading]);
+  }, []);
 
   useEffect(() => cancel, [cancel]);
 
