@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useSnackbar } from "notistack";
 import useUserStore from "@state/useUserStore";
@@ -29,29 +29,43 @@ const ProfileForm = ({ onCancel }: ProfileFormProps) => {
     formState: { errors },
   } = useForm<ProfileFormValues>({
     defaultValues: initialValues,
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   const watchedValues = watch();
-  const usernameChanged = watchedValues.username.trim() !== initialValues.username;
+  const trimmedUsername = watchedValues.username.trim();
+  const usernameChanged = trimmedUsername !== initialValues.username;
   const avatarChanged = watchedValues.avatar instanceof File;
   const hasChanges = usernameChanged || avatarChanged;
 
   const onSubmit = async (data: ProfileFormValues) => {
     if (loading || !hasChanges) return;
 
+    const username = data.username.trim();
+    if (!username) {
+      setError("username", { message: "Username is required" });
+      return;
+    }
+
     setLoading(true);
 
     try {
       await updateUser({
-        ...(usernameChanged ? { username: data.username.trim() } : {}),
+        ...(usernameChanged ? { username } : {}),
         ...(avatarChanged ? { avatar: data.avatar } : {}),
       });
       enqueueSnackbar("Profile updated successfully!", { variant: "success" });
-      reset(data);
+      reset({ ...data, username });
       onCancel();
     } catch (error: unknown) {
+      const message = getErrorMessage(error, "Invalid details, try again");
+      if (message.toLowerCase().includes("username")) {
+        setError("username", { message });
+        return;
+      }
       setError("root", {
-        message: getErrorMessage(error, "Invalid details, try again"),
+        message,
       });
     } finally {
       setLoading(false);
@@ -60,29 +74,41 @@ const ProfileForm = ({ onCancel }: ProfileFormProps) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <AvatarField control={control} />
-
-      <Box display="flex" gap={2} mt={3}>
-        <UsernameField control={control} />
-      </Box>
-
-      <Box display="flex" justifyContent="flex-end" gap={2} mt={4}>
-        <Button onClick={onCancel} color="error" disabled={loading}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={loading || !hasChanges}
-        >
-          {loading ? <CircularProgress size={20} /> : "Save changes"}
-        </Button>
+      <Stack spacing={3}>
         {errors.root && (
-          <Typography color="error" variant="body2" textAlign="center">
+          <Alert severity="error">
             {errors.root.message}
-          </Typography>
+          </Alert>
         )}
-      </Box>
+
+        <AvatarField control={control} disabled={loading} />
+
+        <UsernameField control={control} disabled={loading} />
+
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems={{ xs: "stretch", sm: "center" }}
+          gap={2}
+          flexDirection={{ xs: "column", sm: "row" }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            Changes are saved to your public profile.
+          </Typography>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
+            <Button onClick={onCancel} variant="outlined" disabled={loading}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={loading || !hasChanges || !!errors.username || !trimmedUsername}
+            >
+              {loading ? <CircularProgress size={20} color="inherit" /> : "Save changes"}
+            </Button>
+          </Stack>
+        </Box>
+      </Stack>
     </form>
   );
 };

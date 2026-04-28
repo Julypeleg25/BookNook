@@ -4,9 +4,10 @@ import { Avatar, Button, Box } from "@mui/material";
 interface ImageUploadProps {
   value: File | string | null;
   onChange: (file: File) => void;
+  disabled?: boolean;
 }
 
-const ImageUpload = ({ value, onChange }: ImageUploadProps) => {
+const ImageUpload = ({ value, onChange, disabled = false }: ImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getPreview = () => {
@@ -34,7 +35,11 @@ const ImageUpload = ({ value, onChange }: ImageUploadProps) => {
         ref={fileInputRef}
         onChange={handleFileChange}
       />
-      <Button variant="outlined" onClick={() => fileInputRef.current?.click()}>
+      <Button
+        variant="outlined"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={disabled}
+      >
         Change Profile Picture
       </Button>
     </Box>
