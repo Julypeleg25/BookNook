@@ -79,11 +79,14 @@ const RatingField = ({ value, error, onBlur, onChange }: RatingFieldProps) => {
     <Stack
       spacing={0.75}
       sx={{
+        alignSelf: "flex-start",
+        width: "fit-content",
+        maxWidth: "100%",
         border: "1px solid",
         borderColor: error ? "error.main" : "divider",
         borderRadius: 2,
-        px: 2,
-        py: 1.5,
+        px: 1.5,
+        py: 1,
         bgcolor: "rgba(91, 111, 106, 0.025)",
       }}
     >
@@ -97,7 +100,7 @@ const RatingField = ({ value, error, onBlur, onChange }: RatingFieldProps) => {
         sx={{
           alignSelf: "center",
           "& .MuiRating-icon": {
-            fontSize: { xs: "2rem", sm: "2.15rem" },
+            fontSize: { xs: "1.6rem", sm: "1.75rem" },
           },
           "& .MuiRating-iconFilled": {
             color: "primary.main",

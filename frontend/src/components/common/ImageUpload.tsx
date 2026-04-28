@@ -10,15 +10,16 @@ import {
   Typography,
   Alert,
 } from "@mui/material";
-import { FiCamera, FiUploadCloud } from "react-icons/fi";
+import { FiCamera, FiTrash2, FiUploadCloud } from "react-icons/fi";
 
 interface ImageUploadProps {
   value: File | string | null;
   onChange: (file: File) => void;
+  onRemove?: () => void;
   disabled?: boolean;
 }
 
-const ImageUpload = ({ value, onChange, disabled = false }: ImageUploadProps) => {
+const ImageUpload = ({ value, onChange, onRemove, disabled = false }: ImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -116,6 +117,17 @@ const ImageUpload = ({ value, onChange, disabled = false }: ImageUploadProps) =>
           >
             Take Photo
           </Button>
+          {onRemove && preview && (
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={onRemove}
+              disabled={disabled}
+              startIcon={<FiTrash2 size={16} />}
+            >
+              Remove
+            </Button>
+          )}
         </Stack>
       </Box>
 

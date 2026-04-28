@@ -34,10 +34,10 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
           </Box>
         </Typography>
 
-        <Stack direction="row" spacing={3} alignItems="center">
-          <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+          <Stack direction="row" spacing={0.75} alignItems="center">
             <Rating
-              size="large"
+              size="medium"
               value={bookPost.rating}
               precision={RATING_STEP}
               readOnly

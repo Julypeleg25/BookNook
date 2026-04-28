@@ -57,27 +57,12 @@ const Profile = () => {
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : 0;
 
-    const genreCounts = new Map<string, number>();
-    reviews.forEach((review) => {
-      if (typeof review.book !== "object") return;
-      const genres = review.book.categories ?? review.book.genres ?? [];
-      genres.forEach((genre) => genreCounts.set(genre, (genreCounts.get(genre) ?? 0) + 1));
-    });
-
-    const favoriteGenres = [...genreCounts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([genre]) => genre);
-
     return {
       averageRating,
-      favoriteGenres,
       totalComments,
       totalLikes,
     };
   }, [reviews]);
-
-  const isStatsLoading = isReviewsLoading || isReadlistLoading || isWishlistLoading;
 
   return (
     <Box
@@ -178,76 +163,66 @@ const Profile = () => {
                   <StatTile icon={<FiHeart />} label="Likes received" value={profileStats.totalLikes} loading={isReviewsLoading} />
                 </Box>
 
-                <Box
-                  display="grid"
-                  gridTemplateColumns={{ xs: "1fr", md: "minmax(0, 1fr) minmax(18rem, 0.75fr)" }}
-                  gap={2}
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: { xs: 2, md: 2.5 },
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 2,
+                    bgcolor: "rgba(91, 111, 106, 0.035)",
+                  }}
                 >
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                      bgcolor: "rgba(91, 111, 106, 0.035)",
-                    }}
-                  >
-                    <Stack spacing={1.5}>
-                      <Typography fontWeight={800}>Reading Taste</Typography>
-                      {isStatsLoading ? (
-                        <CircularProgress size={22} />
-                      ) : profileStats.favoriteGenres.length > 0 ? (
-                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                          {profileStats.favoriteGenres.map((genre) => (
-                            <Chip key={genre} label={genre} size="small" />
-                          ))}
-                        </Stack>
-                      ) : (
+                  <Stack spacing={2}>
+                    <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" gap={1}>
+                      <Box>
+                        <Typography fontWeight={800}>Review Activity</Typography>
                         <Typography variant="body2" color="text.secondary">
-                          Review a few books to build a taste profile.
+                          A quick pulse on how your posts are doing.
                         </Typography>
-                      )}
+                      </Box>
                     </Stack>
-                  </Paper>
 
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                      bgcolor: "rgba(91, 111, 106, 0.035)",
-                    }}
-                  >
-                    <Stack spacing={1.5}>
-                      <Typography fontWeight={800}>Review Activity</Typography>
-                      {isReviewsLoading ? (
-                        <CircularProgress size={22} />
-                      ) : reviews.length > 0 ? (
-                        <>
-                          <Stack direction="row" spacing={1} alignItems="center">
+                    {isReviewsLoading ? (
+                      <CircularProgress size={22} />
+                    ) : reviews.length > 0 ? (
+                      <Box
+                        display="grid"
+                        gridTemplateColumns={{ xs: "1fr", sm: "repeat(3, minmax(0, 1fr))" }}
+                        gap={1.25}
+                      >
+                        <ActivityMetric label="Average rating">
+                          <Stack direction="row" spacing={1} alignItems="center" minWidth={0}>
                             <Rating value={profileStats.averageRating} precision={RATING_STEP} readOnly size="small" />
-                            <Typography variant="body2" color="text.secondary">
-                              {profileStats.averageRating.toFixed(1)} avg
+                            <Typography variant="body2" color="text.secondary" fontWeight={700}>
+                              {profileStats.averageRating.toFixed(1)}
                             </Typography>
                           </Stack>
+                        </ActivityMetric>
+                        <ActivityMetric label="Comments">
                           <Stack direction="row" spacing={1} alignItems="center" color="text.secondary">
                             <FiMessageCircle />
-                            <Typography variant="body2">
-                              {profileStats.totalComments} comments on your posts
+                            <Typography variant="h6" color="text.primary" fontWeight={800}>
+                              {profileStats.totalComments}
                             </Typography>
                           </Stack>
-                        </>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">
-                          Your review stats will appear here after your first post.
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Paper>
-                </Box>
+                        </ActivityMetric>
+                        <ActivityMetric label="Likes received">
+                          <Stack direction="row" spacing={1} alignItems="center" color="text.secondary">
+                            <FiHeart />
+                            <Typography variant="h6" color="text.primary" fontWeight={800}>
+                              {profileStats.totalLikes}
+                            </Typography>
+                          </Stack>
+                        </ActivityMetric>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        Your review stats will appear here after your first post.
+                      </Typography>
+                    )}
+                  </Stack>
+                </Paper>
 
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
                   <Button startIcon={<FiPlus />} onClick={() => navigate("/books/select")}>
@@ -309,6 +284,31 @@ const StatTile = ({ icon, label, loading, value }: StatTileProps) => (
       <Typography variant="h5" fontWeight={800}>
         {loading ? <CircularProgress size={20} /> : value}
       </Typography>
+    </Stack>
+  </Box>
+);
+
+interface ActivityMetricProps {
+  children: React.ReactNode;
+  label: string;
+}
+
+const ActivityMetric = ({ children, label }: ActivityMetricProps) => (
+  <Box
+    sx={{
+      p: 1.5,
+      minHeight: "4.75rem",
+      border: "1px solid",
+      borderColor: "divider",
+      borderRadius: 2,
+      bgcolor: "background.paper",
+    }}
+  >
+    <Stack spacing={0.75}>
+      <Typography variant="caption" color="text.secondary" fontWeight={800}>
+        {label}
+      </Typography>
+      {children}
     </Stack>
   </Box>
 );

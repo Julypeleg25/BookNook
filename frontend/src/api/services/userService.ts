@@ -3,7 +3,7 @@ import { axiosClient } from "../axios/axiosClient";
 import { endpoints } from "../endpoints";
 
 export type UpdateCurrentUserPayload = Omit<UpdateUserRequestDTO, "avatar"> & {
-  avatar?: string | File;
+  avatar?: string | File | null;
 };
 
 interface UpdateUserResponse {
@@ -29,6 +29,8 @@ export const userService = {
         } else {
           formData.append(key, String(value));
         }
+      } else if (key === "avatar") {
+        formData.append(key, "");
       }
     });
 

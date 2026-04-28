@@ -7,23 +7,23 @@ import {
   Stack,
   InputAdornment,
   CircularProgress,
-  Avatar,
 } from "@mui/material";
 import loginIcon from "@assets/login-icon.png";
 import { Controller, useForm } from "react-hook-form";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/useAuth";
 import { RegisterSchema } from "@shared/schemas/auth.schema";
 import { ApiError } from "@/api/apiError";
+import ImageUpload from "@/components/common/ImageUpload";
 
 interface RegisterFormValues {
   username: string;
   password: string;
   email: string;
-  avatar?: File; // Changed from FileList to File for easier preview handling
+  avatar?: File | null;
 }
 
 const SignUp = () => {
@@ -31,7 +31,6 @@ const SignUp = () => {
   const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     handleSubmit,
@@ -39,7 +38,6 @@ const SignUp = () => {
     formState: { errors },
     reset,
     setError,
-    watch,
   } = useForm<RegisterFormValues>({
     defaultValues: {
       username: "",
@@ -50,19 +48,6 @@ const SignUp = () => {
     resolver: zodResolver(RegisterSchema),
     mode: "onSubmit",
   });
-
-  const avatarValue = watch("avatar");
-  const [preview, setPreview] = useState<string>("");
-
-  useEffect(() => {
-    if (!avatarValue) {
-      setPreview("");
-      return;
-    }
-    const objectUrl = URL.createObjectURL(avatarValue);
-    setPreview(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [avatarValue]);
 
   const onSubmit = async (data: RegisterFormValues) => {
     setLoading(true);
@@ -101,35 +86,13 @@ const SignUp = () => {
           </Typography>
 
           <Stack spacing="1.5rem">
-            <Box sx={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-              <Avatar src={preview} sx={{ width: "5rem", height: "5rem" }} />
-              <Controller
-                name="avatar"
-                control={control}
-                render={({ field: { onChange } }) => (
-                  <>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      ref={fileInputRef}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) onChange(file);
-                      }}
-                    />
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => fileInputRef.current?.click()}
-                      sx={{ textTransform: "none", borderRadius: "0.5rem" }}
-                    >
-                      Change Profile Picture
-                    </Button>
-                  </>
-                )}
-              />
-            </Box>
+            <Controller
+              name="avatar"
+              control={control}
+              render={({ field }) => (
+                <ImageUpload value={field.value ?? null} onChange={field.onChange} disabled={loading} />
+              )}
+            />
 
             <Box>
               <Typography variant="subtitle2" sx={{ mb: "0.5rem", fontWeight: 600 }}>
@@ -206,11 +169,10 @@ const SignUp = () => {
           )}
 
           <Button
-            style={{
+            sx={{
               width: "18rem",
               marginTop: "2rem",
-              justifySelf: "center",
-              display: "flex",
+              alignSelf: "center",
             }}
             disabled={loading}
             variant="outlined"
@@ -219,21 +181,36 @@ const SignUp = () => {
             {loading ? <CircularProgress size={24} color="inherit" /> : "Sign up"}
           </Button>
 
-          <Typography variant="body2" textAlign="center">
-            Already have an account?{" "}
-            <Box
-              component="span"
-              onClick={() => navigate("/login")}
-              sx={{ color: "primary.main", cursor: "pointer", fontWeight: 700, textDecoration: "underline" }}
-            >
-              Log in
-            </Box>
-          </Typography>
         </Stack>
       </Box>
 
-      <Box sx={{ flex: 1, display: { xs: "none", md: "flex" }, justifyContent: "center" }}>
-        <Box component="img" src={loginIcon} sx={{ width: "100%", maxWidth: "30rem" }} />
+      <Box
+        sx={{
+          flex: 1,
+          display: "grid",
+          justifyItems: "center",
+          alignSelf: "center",
+          gap: 2,
+        }}
+      >
+        <Box
+          component="img"
+          src={loginIcon}
+          sx={{ display: { xs: "none", md: "block" }, width: "100%", maxWidth: "30rem" }}
+        />
+        <Box sx={{ textAlign: "center" }}>
+          <Typography variant="body2">Already have an account?</Typography>
+          <Box
+            onClick={() => navigate("/login")}
+            sx={{
+              color: "blue",
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+          >
+            Log in
+          </Box>
+        </Box>
       </Box>
     </Box>
   );
