@@ -22,10 +22,17 @@ import {
     removeBookFromListCache,
     setBookListCache,
 } from "@/api/queryCache";
+import { queryKeys } from "@/api/queryKeys";
+import type { BookListType } from "@/models/List";
+
+interface RemoveBookContext {
+    previousBooks?: Book[];
+    hadPreviousBooks: boolean;
+}
 
 interface BookActionsMenuProps {
     book: Book;
-    listType?: "wish" | "read";
+    listType?: BookListType;
     edge?: "start" | "end" | false;
 }
 
@@ -37,16 +44,39 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const { navigateProtected } = useProtectedNavigation();
 
-    const { mutate: removeFromList, isPending } = useMutation({
+    const { mutate: removeFromList, isPending } = useMutation<
+        Book[],
+        Error,
+        void,
+        RemoveBookContext
+    >({
         mutationFn: () => ListsService.removeBookFromList(getBookId(book), listType!),
+        onMutate: async () => {
+            if (!listType) return { hadPreviousBooks: false };
+            const queryKey = queryKeys.listByType(user.username, listType);
+            await queryClient.cancelQueries({ queryKey });
+            const previousBooks = queryClient.getQueryData<Book[]>(queryKey);
+            const hadPreviousBooks = previousBooks !== undefined;
+            removeBookFromListCache(queryClient, user.username, listType, book);
+
+            return { previousBooks, hadPreviousBooks };
+        },
         onSuccess: (updatedBooks) => {
             setBookListCache(queryClient, user.username, listType!, updatedBooks);
             invalidateBookListCache(queryClient, user.username, listType!);
             enqueueSnackbar("Book removed from list", { variant: "success" });
             handleClose();
         },
-        onError: () => {
+        onError: (_error, _variables, context) => {
+            if (listType && context?.hadPreviousBooks) {
+                setBookListCache(queryClient, user.username, listType, context.previousBooks ?? []);
+            }
             enqueueSnackbar("Failed to remove book from list", { variant: "error" });
+        },
+        onSettled: () => {
+            if (listType) {
+                invalidateBookListCache(queryClient, user.username, listType);
+            }
         },
     });
 
@@ -62,20 +92,19 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
     const handleRemove = (event: React.MouseEvent) => {
         event.stopPropagation();
         if (listType) {
-            removeBookFromListCache(queryClient, user.username, listType, book);
             removeFromList();
         }
     };
 
     const handleViewDetails = (event: React.MouseEvent) => {
         event.stopPropagation();
-        navigate(`/books/${book.id}`);
+        navigate(`/books/${getBookId(book)}`);
         handleClose();
     };
 
     const handleWriteReview = (event: React.MouseEvent) => {
         event.stopPropagation();
-        const didNavigate = navigateProtected(`/post/create/${book.id}`, {
+        const didNavigate = navigateProtected(`/post/create/${getBookId(book)}`, {
             state: { book }
         });
         if (didNavigate) {

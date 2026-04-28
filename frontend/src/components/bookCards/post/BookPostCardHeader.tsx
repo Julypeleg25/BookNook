@@ -45,8 +45,13 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             sx={{
               fontSize: "1rem",
               fontWeight: 600,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
               transition: "text-decoration 0.2s ease",
             }}
+            title={post.book?.title || "Book Unavailable"}
           >
             {post.book?.title || "Book Unavailable"}
           </Typography>
@@ -62,10 +67,18 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
       <Box
         component={RouterLink}
         to={`/posts/${post.id}`}
-        sx={{ textDecoration: "none", position: "relative", display: "block" }}
+        sx={{
+          textDecoration: "none",
+          position: "relative",
+          display: "block",
+          width: "100%",
+          aspectRatio: "4 / 3",
+          backgroundColor: "grey.100",
+          overflow: "hidden",
+        }}
       >
         {isImageLoading && (
-          <Skeleton variant="rectangular" height="16rem" width="100%" />
+          <Skeleton variant="rectangular" width="100%" height="100%" />
         )}
         {imgSrc && (
           <CardMedia
@@ -74,9 +87,10 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             onError={handleImageError}
             onLoad={handleImageLoad}
             sx={{
-              height: "16rem",
+              width: "100%",
+              height: "100%",
               objectFit: "cover",
-              display: isImageLoading ? "none" : "block"
+              display: isImageLoading ? "none" : "block",
             }}
           />
         )}

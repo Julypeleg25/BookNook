@@ -32,27 +32,12 @@ const SearchHeader = ({
         setSearchTerm={setSearchTerm}
         onSearch={onSearch}
         onClearSearch={onClearSearch}
+        onClearFilters={onClearFilters}
         setIsFiltersModalOpen={setIsFiltersModalOpen}
         hasActiveFilters={hasActiveFilters}
       />
       <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
         <GenreChips selectedGenre={selectedGenre} onToggleGenre={onToggleGenre} />
-        {hasActiveFilters && (
-          <Box
-            component="span"
-            onClick={onClearFilters}
-            sx={{
-              ml: 2,
-              cursor: 'pointer',
-              color: 'primary.main',
-              fontSize: '0.85rem',
-              fontWeight: 500,
-              '&:hover': { textDecoration: 'underline' }
-            }}
-          >
-            Clear all filters
-          </Box>
-        )}
       </Box>
     </Box>
   );

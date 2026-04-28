@@ -1,35 +1,32 @@
-import { ListsService } from "@/api/services/ListsService";
 import { Button, Stack } from "@mui/material";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BiBookAdd } from "react-icons/bi";
 import { BsBook } from "react-icons/bs";
 import { LiaBookmark } from "react-icons/lia";
 import { LuBookCheck } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
-import useUserStore from "@/state/useUserStore";
 import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
-import { invalidateBookListCache, setBookListCache } from "@/api/queryCache";
-import type { BookListType } from "@/models/List";
+import type { Book } from "@/models/Book";
+import { useBookListToggle } from "@/hooks/useBookListToggle";
+import { getBookId } from "@/utils/bookUtils";
 
 interface BookHeaderProps {
-  id: string;
+  book: Book;
   isBookPost?: boolean;
 }
 
-const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
+const BookHeader = ({ book, isBookPost }: BookHeaderProps) => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { user } = useUserStore();
   const { isAuthenticated, navigateProtected, redirectToLogin } = useProtectedNavigation();
-
-  const { mutate: addBookToList } = useMutation({
-    mutationFn: (listType: BookListType) =>
-      ListsService.addBookToList(id, listType),
-    onSuccess: (data, variables) => {
-      setBookListCache(queryClient, user.username, variables, data);
-      invalidateBookListCache(queryClient, user.username, variables);
-      navigate("/lists");
-    },
+  const bookId = getBookId(book);
+  const wishlist = useBookListToggle({
+    book,
+    listType: "wish",
+    enabled: isAuthenticated,
+  });
+  const readlist = useBookListToggle({
+    book,
+    listType: "read",
+    enabled: isAuthenticated,
   });
 
   const handleAddToWishlist = () => {
@@ -37,7 +34,7 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
       redirectToLogin();
       return;
     }
-    addBookToList("wish");
+    wishlist.toggle();
   };
 
   const handleAddToReadlist = () => {
@@ -45,11 +42,11 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
       redirectToLogin();
       return;
     }
-    addBookToList("read");
+    readlist.toggle();
   };
 
   const handleProtectedReviewNavigation = () => {
-    navigateProtected(`/post/create/${id}`);
+    navigateProtected(`/post/create/${bookId}`, { state: { book } });
   };
 
   return (
@@ -66,7 +63,7 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
       {isBookPost ? (
         <Button
           variant="contained"
-          onClick={() => navigate(`/books/${id}`)}
+          onClick={() => navigate(`/books/${bookId}`)}
           startIcon={<BsBook />}
           sx={{ borderRadius: "2rem", px: 3 }}
         >
@@ -87,17 +84,35 @@ const BookHeader = ({ id, isBookPost }: BookHeaderProps) => {
         variant="outlined"
         onClick={handleAddToWishlist}
         startIcon={<LiaBookmark />}
-        sx={{ borderRadius: "2rem", px: 3 }}
+        disabled={wishlist.isLoading}
+        color={wishlist.isAdded ? "primary" : "inherit"}
+        sx={{
+          borderRadius: "2rem",
+          px: 3,
+          minWidth: { xs: "100%", sm: "11.5rem" },
+          height: "2.75rem",
+          borderColor: wishlist.isAdded ? "primary.main" : "divider",
+          bgcolor: wishlist.isAdded ? "action.selected" : "transparent",
+        }}
       >
-        Add to Wishlist
+        {wishlist.isAdded ? "In Wishlist" : "Add to Wishlist"}
       </Button>
       <Button
         variant="outlined"
         onClick={handleAddToReadlist}
         startIcon={<LuBookCheck />}
-        sx={{ borderRadius: "2rem", px: 3 }}
+        disabled={readlist.isLoading}
+        color={readlist.isAdded ? "primary" : "inherit"}
+        sx={{
+          borderRadius: "2rem",
+          px: 3,
+          minWidth: { xs: "100%", sm: "11.5rem" },
+          height: "2.75rem",
+          borderColor: readlist.isAdded ? "primary.main" : "divider",
+          bgcolor: readlist.isAdded ? "action.selected" : "transparent",
+        }}
       >
-        Add to Read List
+        {readlist.isAdded ? "In Read List" : "Add to Read List"}
       </Button>
     </Stack>
   );

@@ -1,10 +1,10 @@
 import {
+  Box,
   Card,
   CardContent,
   Chip,
-  Typography,
   Stack,
-  Box,
+  Typography,
 } from "@mui/material";
 import type { BookPost } from "@models/Book";
 import BookPostCardActions from "./BookPostCardActions";
@@ -19,6 +19,9 @@ const MAX_DESCRIPTION_LENGTH = 90;
 
 const BookPostCard = ({ post }: BookPostCardProps) => {
   const navigate = useNavigate();
+  const genres = (post.book?.genres?.length ?? 0) > 0
+    ? post.book?.genres ?? []
+    : post.book?.categories ?? [];
 
   const handleCommentsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -36,6 +39,8 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         maxWidth: "25rem",
         borderRadius: "1rem",
         boxShadow: 1,
+        display: "flex",
+        flexDirection: "column",
         transition: "box-shadow 0.2s ease, transform 0.2s ease",
         "&:hover": {
           boxShadow: 6,
@@ -43,13 +48,21 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         },
       }}
     >
-
       <BookPostCardHeader post={post} />
 
-      <CardContent>
-        <Typography color="text.secondary">
+      <CardContent sx={{ minHeight: "5.75rem" }}>
+        <Typography
+          color="text.secondary"
+          sx={{
+            minHeight: "3.25rem",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
           {post.description.slice(0, MAX_DESCRIPTION_LENGTH)}
-          {post.description.length > MAX_DESCRIPTION_LENGTH ? "…" : ""}
+          {post.description.length > MAX_DESCRIPTION_LENGTH ? "..." : ""}
         </Typography>
       </CardContent>
 
@@ -62,8 +75,21 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         sx={{ cursor: "pointer" }}
       >
         <Stack direction="row" spacing="0.4rem" flexWrap="wrap">
-          {(post.book?.genres ?? []).map((genre) => (
-            <Chip key={genre} label={genre} size="small" />
+          {genres.map((genre) => (
+            <Chip
+              key={genre}
+              label={genre}
+              size="small"
+              title={genre}
+              sx={{
+                maxWidth: "8rem",
+                "& .MuiChip-label": {
+                  display: "block",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                },
+              }}
+            />
           ))}
         </Stack>
       </Box>

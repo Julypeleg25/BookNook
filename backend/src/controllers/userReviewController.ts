@@ -13,6 +13,9 @@ import { HttpStatusCode } from "axios";
 import {
   REVIEW_TEXT_MAX_LENGTH,
   REVIEW_TEXT_MIN_LENGTH,
+  RATING_MAX,
+  RATING_MIN,
+  RATING_STEP,
   SEARCH_QUERY_MAX_LENGTH,
 } from "@shared/constants/validation";
 import {
@@ -23,6 +26,22 @@ import {
   getEnrichedReviews,
 } from "@services/userReviewService";
 import { validateOptionalTextInput, validateTextInput } from "@utils/textValidation";
+
+const parseRating = (rating: unknown): number => {
+  const parsedRating = Number(rating);
+  if (
+    Number.isNaN(parsedRating) ||
+    parsedRating < RATING_MIN ||
+    parsedRating > RATING_MAX ||
+    !Number.isInteger(parsedRating / RATING_STEP)
+  ) {
+    throw new ValidationError(
+      `Rating must be a number between ${RATING_MIN} and ${RATING_MAX} in ${RATING_STEP} increments`,
+    );
+  }
+
+  return parsedRating;
+};
 
 export const createReviewHandler = async (
   req: Request,
@@ -47,11 +66,7 @@ export const createReviewHandler = async (
       throw new ValidationError("Book ID is required");
     }
 
-    const parsedRating = Number(rating);
-    if (isNaN(parsedRating) || parsedRating < 0 || parsedRating > 5) {
-      if (req.file) await deleteFile(req.file.path);
-      throw new ValidationError("Rating must be a number between 0 and 5");
-    }
+    const parsedRating = parseRating(rating);
 
     const picturePath = req.file ? `/uploads/${req.file.filename}` : undefined;
 
@@ -196,11 +211,7 @@ export const updateReviewHandler = async (
       updateData.review = normalizedReview;
     }
     if (rating !== undefined) {
-      const parsedRating = Number(rating);
-      if (isNaN(parsedRating) || parsedRating < 0 || parsedRating > 5) {
-        if (req.file) await deleteFile(req.file.path);
-        throw new ValidationError("Rating must be a number between 0 and 5");
-      }
+      const parsedRating = parseRating(rating);
       updateData.rating = parsedRating;
     }
 

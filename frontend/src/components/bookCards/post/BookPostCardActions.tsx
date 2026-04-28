@@ -1,19 +1,16 @@
 import {
   CardActions,
+  CircularProgress,
   IconButton,
   Rating,
-  Typography,
   Stack,
+  Typography,
 } from "@mui/material";
 import type { BookPost } from "@models/Book";
-import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { FaRegComment, FaHeart } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
-import { userReviewService } from "@/api/services/userReviewService";
-import { enqueueSnackbar } from "notistack";
-import useUserStore from "@/state/useUserStore";
-import { invalidateReviewCaches } from "@/api/queryCache";
+import { RATING_STEP } from "@shared/constants/validation";
+import { useReviewLikeToggle } from "@/hooks/useReviewLikeToggle";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -21,44 +18,12 @@ interface BookPostCardProps {
 }
 
 const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
-  const { user } = useUserStore();
-  const [likes, setLikes] = useState<string[]>(post.likes || []);
-  const [isUpdatingLike, setIsUpdatingLike] = useState(false);
-  const queryClient = useQueryClient();
-  const isLiked = user ? likes.includes(user.id) : false;
-  const isAuthor = user?.id && post.user ? user.id === post.user.id : false;
-
-  useEffect(() => {
-    setLikes(post.likes || []);
-  }, [post.likes]);
-
-  const handleLikeToggle = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!user) {
-      enqueueSnackbar("Please login to like posts", { variant: "info" });
-      return;
-    }
-
-    if (isUpdatingLike) return;
-
-    const previousLikes = [...likes];
-    try {
-      setIsUpdatingLike(true);
-      if (isLiked) {
-        await userReviewService.unlikeReview(post.id);
-        setLikes((prev) => prev.filter((id) => id !== user.id));
-      } else {
-        await userReviewService.likeReview(post.id);
-        setLikes((prev) => [...prev, user.id]);
-      }
-      invalidateReviewCaches(queryClient, { reviewId: post.id });
-    } catch {
-      setLikes(previousLikes);
-      enqueueSnackbar("Error updating like", { variant: "error" });
-    } finally {
-      setIsUpdatingLike(false);
-    }
-  };
+  const { likes, isLiked, isAuthor, isUpdatingLike, toggleLike } =
+    useReviewLikeToggle({
+      reviewId: post.id,
+      reviewUserId: post.user?.id,
+      initialLikes: post.likes,
+    });
 
   return (
     <CardActions
@@ -73,24 +38,33 @@ const BookPostCardActions = ({ post, onCommentsClick }: BookPostCardProps) => {
         <Stack direction="row" spacing="0.3rem" alignItems="center">
           <IconButton
             size="small"
-            onClick={handleLikeToggle}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleLike();
+            }}
             disabled={Boolean(isAuthor) || isUpdatingLike}
-            sx={{ color: isLiked ? "red" : "inherit" }}
+            sx={{ color: isLiked ? "error.main" : "inherit" }}
           >
-            {isLiked ? <FaHeart /> : <FiHeart />}
+            {isUpdatingLike ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : isLiked ? (
+              <FaHeart size={18} />
+            ) : (
+              <FiHeart size={18} />
+            )}
           </IconButton>
           <Typography fontSize="1rem">{likes.length}</Typography>
         </Stack>
 
         <Stack direction="row" spacing="0.3rem" alignItems="center">
-          <IconButton size="small" onClick={onCommentsClick}>
-            <FaRegComment />
+          <IconButton size="small" onClick={onCommentsClick} sx={{ p: 0.75 }}>
+            <FaRegComment size={18} />
           </IconButton>
           <Typography fontSize="1rem">{post.comments.length}</Typography>
         </Stack>
       </Stack>
 
-      <Rating size="small" value={post.rating} precision={0.5} readOnly />
+      <Rating size="small" value={post.rating} precision={RATING_STEP} readOnly />
     </CardActions>
   );
 };

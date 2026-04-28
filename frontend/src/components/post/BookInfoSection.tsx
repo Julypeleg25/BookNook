@@ -35,7 +35,6 @@ const BookInfoSection = ({ book }: BookInfoSectionProps) => {
         <Box display="grid" gridTemplateColumns="1fr 1fr" gap="1.2rem">
           <InfoRow label="Author" value={book.authors?.join(", ") ?? "Unknown"} />
           <InfoRow label="Pages" value={book.pageCount ?? "N/A"} />
-          <InfoRow label="Categories" value={book.categories?.join(", ") ?? "N/A"} />
           <InfoRow label="Published" value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"} />
         </Box>
 
@@ -62,11 +61,14 @@ const BookInfoSection = ({ book }: BookInfoSectionProps) => {
         </Box>
       </Box>
 
-      {(book.genres?.length ?? 0) > 0 && (
+      {((book.genres?.length ?? 0) > 0 || (book.categories?.length ?? 0) > 0) && (
         <>
           <Divider sx={{ my: "1.5rem" }} />
-          <Box display="flex" gap={"1rem"} flexWrap="wrap">
-            {book.genres!.map((genre) => (
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+            Genres
+          </Typography>
+          <Box display="flex" gap={"0.75rem"} flexWrap="wrap">
+            {[...(book.genres ?? book.categories ?? [])].map((genre) => (
               <Chip key={genre} label={genre} />
             ))}
           </Box>

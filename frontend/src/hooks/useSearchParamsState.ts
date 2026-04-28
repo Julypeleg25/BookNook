@@ -3,14 +3,12 @@ import { useMemo, useState, useEffect } from "react";
 import { ISearchFiltersForm } from "@/components/searchFilters/models/SearchFiltersOptions";
 
 const filterParamKeys = [
-  "language",
   "genre",
   "author",
-  "yearPublishedFrom",
-  "yearPublishedTo",
   "rating",
   "likesAmount",
   "username",
+  "minReviews",
 ] as const;
 
 export const useSearchParamsState = () => {
@@ -26,14 +24,12 @@ export const useSearchParamsState = () => {
 
   const filters = useMemo<ISearchFiltersForm>(() => {
     return {
-      language: searchParams.get("language") || "",
       genre: searchParams.get("genre") || "",
       author: searchParams.get("author") || "",
-      yearPublishedFrom: searchParams.get("yearPublishedFrom") || "",
-      yearPublishedTo: searchParams.get("yearPublishedTo") || "",
       rating: Number(searchParams.get("rating")) || 0,
       likesAmount: Number(searchParams.get("likesAmount")) || 0,
       username: searchParams.get("username") || "",
+      minReviews: Number(searchParams.get("minReviews")) || 0,
     };
   }, [searchParams]);
 

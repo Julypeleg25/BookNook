@@ -9,6 +9,7 @@ import { booksService } from "@/api/services/bookService";
 import type { Book } from "@/models/Book";
 import { useSearchParamsState } from "@/hooks/useSearchParamsState";
 import { queryKeys } from "@/api/queryKeys";
+import { useIntersectionObserver } from "@hooks/useIntersectionObserver";
 
 const PAGE_SIZE = 20;
 
@@ -32,11 +33,13 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
 
     const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
     const observerTarget = useRef<HTMLDivElement>(null);
+    const queryResetKey = JSON.stringify([urlQuery, filters]);
 
     const hasActiveFilters =
         filters.author.trim().length > 0 ||
         filters.genre.trim().length > 0 ||
-        filters.rating > 0
+        filters.rating > 0 ||
+        filters.minReviews > 0
 
     const hasValidQuery = urlQuery.trim().length > 0 || hasActiveFilters;
 
@@ -48,6 +51,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 subject: filters.genre || undefined,
                 title: urlQuery,
                 rating: filters.rating || undefined,
+                reviewCount: filters.minReviews || undefined,
                 page: pageParam as number,
                 limit: PAGE_SIZE
             });
@@ -59,24 +63,12 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
         enabled: hasValidQuery,
     });
 
-    const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
-        const [target] = entries;
-        if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-        }
-    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-    useEffect(() => {
-        const element = observerTarget.current;
-        if (!element) return;
-
-        const observer = new IntersectionObserver(handleObserver, {
-            threshold: 0.1,
-        });
-
-        observer.observe(element);
-        return () => observer.disconnect();
-    }, [handleObserver]);
+    useIntersectionObserver({
+        targetRef: observerTarget,
+        onIntersect: fetchNextPage,
+        enabled: !!hasNextPage && !isFetchingNextPage,
+        resetKey: queryResetKey,
+    });
 
     const allBooks = data?.pages.flatMap((page) => page.items) ?? [];
     const showEmptyState = hasValidQuery && !isLoading && allBooks.length === 0;
@@ -112,6 +104,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                                 book={bookSummary}
                                 isOnlyInfo={true}
                                 onSelect={isSelectMode ? () => onBookSelect?.(bookSummary as Book) : undefined}
+                                hideMenu={true}
                             />
                         ))}
                     </Box>
@@ -124,6 +117,17 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                             <Typography sx={{ ml: 2 }}>Loading more...</Typography>
                         </Box>
                     )}
+                </Box>
+            )}
+
+            {!hasValidQuery && (
+                <Box sx={{ textAlign: 'center', mt: 8 }}>
+                    <Typography variant="h6" color="text.secondary">
+                        Search for a book
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Start typing to search for books, or apply some filters.
+                    </Typography>
                 </Box>
             )}
 

@@ -88,7 +88,9 @@ describe("UserReviewService", () => {
       review: "updated text",
     });
     expect(recomputeSpy).not.toHaveBeenCalled();
-    expect(syncReviewSpy).toHaveBeenCalledWith(updatedReview);
+    expect(syncReviewSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ _id: updatedReview._id }),
+    );
     expect(syncUserSpy).toHaveBeenCalledWith(
       expect.objectContaining({ _id: userId }),
     );

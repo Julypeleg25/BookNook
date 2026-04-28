@@ -2,6 +2,9 @@ import { z } from "zod";
 import {
   COMMENT_TEXT_MAX_LENGTH,
   COMMENT_TEXT_MIN_LENGTH,
+  RATING_MAX,
+  RATING_MIN,
+  RATING_STEP,
   REVIEW_TEXT_MAX_LENGTH,
   REVIEW_TEXT_MIN_LENGTH,
 } from "../constants/validation";
@@ -37,10 +40,10 @@ export const UserReviewZodSchema = z.object({
     ),
   rating: z
     .number()
-    .min(0)
-    .max(5)
-    .refine((n) => (n * 2) % 1 === 0, {
-      message: "Rating must be in increments of 0.5",
+    .min(RATING_MIN)
+    .max(RATING_MAX)
+    .refine((n) => Number.isInteger(n / RATING_STEP), {
+      message: `Rating must be in increments of ${RATING_STEP}`,
     }),
   likes: z.array(objectIdSchema).default([]),
   picturePath: z.string().optional(),

@@ -57,6 +57,7 @@ const SearchPosts = () => {
   const { visibleItems, loaderRef } = useInfiniteLoader<BookPost>({
     items: bookPosts,
     batchSize: 20,
+    resetKey: JSON.stringify([urlQuery, filters]),
   });
 
   return (
@@ -92,11 +93,7 @@ const SearchPosts = () => {
       {!isLoading && bookPosts.length === 0 && (
         <Box sx={{ textAlign: "center", mt: 8 }}>
           <Typography variant="h6" color="text.secondary">
-            {urlQuery.trim() !== "" ||
-              filters.likesAmount > 0 ||
-              filters.rating > 0 ||
-              filters.genre.trim() !== "" ||
-              filters.username.trim() !== ""
+            {urlQuery.trim() !== "" || hasActiveFilters
               ? "No posts found"
               : "No posts yet"}
           </Typography>

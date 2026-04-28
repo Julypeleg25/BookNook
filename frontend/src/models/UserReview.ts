@@ -30,3 +30,10 @@ export interface UserReview {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CreateReviewData {
+  bookId: string;
+  rating: number;
+  review: string;
+  picture?: File;
+}

@@ -1,72 +1,71 @@
-import { Tooltip, IconButton } from "@mui/material";
+import { CircularProgress, Tooltip, IconButton } from "@mui/material";
 import React from "react";
 import { BiBookmark } from "react-icons/bi";
 import { LuBookCheck } from "react-icons/lu";
 import { TbPencilPlus } from "react-icons/tb";
-import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ListsService } from "@/api/services/ListsService";
-import useUserStore from "@/state/useUserStore";
 import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
-import { invalidateBookListCache, setBookListCache } from "@/api/queryCache";
-import type { BookListType } from "@/models/List";
+import type { Book } from "@/models/Book";
+import { useBookListToggle } from "@/hooks/useBookListToggle";
+import { getBookId } from "@/utils/bookUtils";
 
 interface BookInfoActionsProps {
-  bookId: string;
+  book: Book;
 }
 
-const BookInfoActions = ({ bookId }: BookInfoActionsProps) => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { user } = useUserStore();
+const BookInfoActions = ({ book }: BookInfoActionsProps) => {
   const { isAuthenticated, navigateProtected, redirectToLogin } = useProtectedNavigation();
-
-  const { mutate: addBookToList } = useMutation({
-    mutationFn: (listType: BookListType) =>
-      ListsService.addBookToList(bookId, listType),
-    onSuccess: (data, variables) => {
-      setBookListCache(queryClient, user.username, variables, data);
-      invalidateBookListCache(queryClient, user.username, variables);
-      navigate("/lists");
-    },
+  const bookId = getBookId(book);
+  const wishlist = useBookListToggle({
+    book,
+    listType: "wish",
+    enabled: isAuthenticated,
+  });
+  const readlist = useBookListToggle({
+    book,
+    listType: "read",
+    enabled: isAuthenticated,
   });
 
   return (
     <div style={{ display: "flex", gap: "1.6rem" }}>
-      <Tooltip title="add to wish list">
+      <Tooltip title={wishlist.isAdded ? "remove from wish list" : "add to wish list"}>
         <IconButton
-          size="small"
+          color={wishlist.isAdded ? "primary" : "default"}
+          disabled={wishlist.isLoading}
           onClick={() => {
             if (!isAuthenticated) {
               redirectToLogin();
               return;
             }
-            addBookToList("wish");
+            wishlist.toggle();
           }}
+          sx={{ p: 1 }}
         >
-          <BiBookmark size={"1.2rem"} />
+          {wishlist.isLoading ? <CircularProgress size={22} /> : <BiBookmark size={"1.5rem"} />}
         </IconButton>
       </Tooltip>
       <Tooltip title="write a review">
         <IconButton
-          size="small"
-          onClick={() => navigateProtected(`/post/create/${bookId}`)}
+          onClick={() => navigateProtected(`/post/create/${bookId}`, { state: { book } })}
+          sx={{ p: 1 }}
         >
-          <TbPencilPlus size={"1.3rem"} />
+          <TbPencilPlus size={"1.5rem"} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="add to read list">
+      <Tooltip title={readlist.isAdded ? "remove from read list" : "add to read list"}>
         <IconButton
-          size="small"
+          color={readlist.isAdded ? "primary" : "default"}
+          disabled={readlist.isLoading}
           onClick={() => {
             if (!isAuthenticated) {
               redirectToLogin();
               return;
             }
-            addBookToList("read");
+            readlist.toggle();
           }}
+          sx={{ p: 1 }}
         >
-          <LuBookCheck size={"1.2rem"} />
+          {readlist.isLoading ? <CircularProgress size={22} /> : <LuBookCheck size={"1.5rem"} />}
         </IconButton>
       </Tooltip>
     </div>

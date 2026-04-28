@@ -46,13 +46,17 @@ describe("ListService", () => {
   });
 
   describe("addBookToUserList", () => {
-    it("adds the requested book to the selected user list", async () => {
-      mockAddBookToList.mockResolvedValue(["book1", "book2"]);
+    it("adds the requested book and returns the enriched source-of-truth list", async () => {
+      mockAddBookToList.mockResolvedValue(["id1"]);
+      mockGetList.mockResolvedValue(["id1"]);
+      mockGetBook.mockResolvedValue({ id: "id1", volumeInfo: { title: "Book 1" } });
+      mockNormalize.mockReturnValue({ id: "id1", title: "Book 1" });
 
       const result = await listService.addBookToUserList(userId, bookId, "wish");
 
-      expect(result).toEqual(["book1", "book2"]);
+      expect(result).toEqual([{ id: "id1", title: "Book 1" }]);
       expect(mockAddBookToList).toHaveBeenCalledWith(userId, bookId, "wish");
+      expect(mockGetList).toHaveBeenCalledWith(userId, "wish");
     });
   });
 
@@ -92,8 +96,11 @@ describe("ListService", () => {
   });
 
   describe("removeBookFromUserList", () => {
-    it("removes the requested book from the selected user list", async () => {
+    it("removes the requested book and returns the enriched source-of-truth list", async () => {
       mockRemoveBookFromList.mockResolvedValue(["book2"]);
+      mockGetList.mockResolvedValue(["book2"]);
+      mockGetBook.mockResolvedValue({ id: "book2", volumeInfo: { title: "Book 2" } });
+      mockNormalize.mockReturnValue({ id: "book2", title: "Book 2" });
 
       const result = await listService.removeBookFromUserList(
         userId,
@@ -101,12 +108,13 @@ describe("ListService", () => {
         "read",
       );
 
-      expect(result).toEqual(["book2"]);
+      expect(result).toEqual([{ id: "book2", title: "Book 2" }]);
       expect(mockRemoveBookFromList).toHaveBeenCalledWith(
         userId,
         bookId,
         "read",
       );
+      expect(mockGetList).toHaveBeenCalledWith(userId, "read");
     });
   });
 });

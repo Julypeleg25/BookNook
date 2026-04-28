@@ -10,10 +10,13 @@ import type { BookPost } from "@models/Book";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import PostActionsMenu from "./post/PostActionsMenu";
+import { RATING_STEP } from "@shared/constants/validation";
 
 interface FullBookPostCardProps {
   post: BookPost;
 }
+
+const DESCRIPTION_PREVIEW_LENGTH = 260;
 
 const FullBookPostCard = ({ post }: FullBookPostCardProps) => {
   return (
@@ -26,32 +29,37 @@ const FullBookPostCard = ({ post }: FullBookPostCardProps) => {
             alt={post.book.title}
             sx={{
               width: "11rem",
-              height: "14rem",
+              aspectRatio: "4 / 5",
               borderRadius: "1rem",
               objectFit: "cover",
             }}
           />
 
-          <Stack spacing="1rem" flex={1}>
+          <Stack spacing="1rem" flex={1} minWidth={0}>
             <Stack
               direction="row"
               justifyContent="space-between"
               alignItems="flex-start"
             >
               <Typography
+                title={post.book.title}
                 sx={{
                   fontSize: "1.4rem",
                   fontWeight: 600,
-                  transition: "text-decoration 0.2s ease",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
                 }}
               >
                 {post.book.title}
               </Typography>
               <PostActionsMenu post={post} />
             </Stack>
-            <Rating value={post.rating} readOnly size="small" />
+            <Rating value={post.rating} precision={RATING_STEP} readOnly size="small" />
             <Typography color="text.secondary">
-              {post.description.slice(0, 260)}…
+              {post.description.slice(0, DESCRIPTION_PREVIEW_LENGTH)}
+              {post.description.length > DESCRIPTION_PREVIEW_LENGTH ? "..." : ""}
             </Typography>
 
             <Stack direction="row" spacing="1.2rem" alignItems="center">

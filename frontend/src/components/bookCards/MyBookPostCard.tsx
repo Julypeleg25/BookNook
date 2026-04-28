@@ -12,6 +12,7 @@ import { formatDate } from "@utils/dateUtils";
 import { BsEye } from "react-icons/bs";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { FiEdit } from "react-icons/fi";
+import { RATING_STEP } from "@shared/constants/validation";
 
 interface MyBookPostCardProps {
   post: BookPost;
@@ -74,7 +75,7 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => {
         {formatDate(post.createdDate)}
       </Typography>
 
-      <Rating size="small" value={post.rating} precision={0.5} readOnly />
+      <Rating size="small" value={post.rating} precision={RATING_STEP} readOnly />
 
       <Stack direction="row" spacing="0.4rem">
         <Tooltip title="edit post">

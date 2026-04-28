@@ -61,7 +61,7 @@ const BookPost = () => {
 
 
   return (
-    <div style={{ margin: "3rem" }}>
+    <Box sx={{ m: { xs: "1rem", md: "3rem" } }}>
       <Box
         sx={{
           display: "flex",
@@ -75,17 +75,34 @@ const BookPost = () => {
       <Box
         display="grid"
         gap="2rem"
-        gridTemplateColumns={{ xs: "1fr", md: "60% 40%" }}
+        gridTemplateColumns={{ xs: "1fr", md: "minmax(0, 1.2fr) minmax(20rem, 0.8fr)" }}
         width="100%"
-        alignItems="center"
+        alignItems="stretch"
         mt="2rem"
       >
-        <Typography
-          variant="subtitle1"
-          sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+        <Box
+          sx={{
+            p: { xs: 2, md: 3 },
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: "1rem",
+            minHeight: "14rem",
+            display: "flex",
+            alignItems: "flex-start",
+            bgcolor: "background.paper",
+          }}
         >
-          {bookPost.description}
-        </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              whiteSpace: "pre-wrap",
+              overflowWrap: "anywhere",
+              lineHeight: 1.8,
+            }}
+          >
+            {bookPost.description}
+          </Typography>
+        </Box>
         {(() => {
           const rawUrl = bookPost.imageUrl;
           const resolvedUrl = rawUrl
@@ -95,17 +112,30 @@ const BookPost = () => {
             : (bookPost.book.thumbnail ?? null);
           return resolvedUrl ? (
             <Box
-              component="img"
-              src={resolvedUrl}
-              alt="Review visual"
               sx={{
                 width: "100%",
-                maxHeight: { xs: "22rem", md: "34rem" },
-                objectFit: "contain",
+                minHeight: "14rem",
+                maxHeight: { xs: "24rem", md: "34rem" },
                 borderRadius: "1rem",
                 backgroundColor: "grey.100",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
               }}
-            />
+            >
+              <Box
+                component="img"
+                src={resolvedUrl}
+                alt="Review visual"
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+              />
+            </Box>
           ) : null;
         })()}
       </Box>
@@ -120,7 +150,7 @@ const BookPost = () => {
       <div id="comments-section">
         <CommentsSection ref={commentsRef} bookPost={bookPost} />
       </div>
-    </div>
+    </Box>
   );
 };
 

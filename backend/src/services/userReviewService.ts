@@ -12,87 +12,14 @@ import * as vectorSyncService from "@services/ai/vectorSyncService";
 import User from "@models/User";
 import { logger } from "@utils/logger";
 import { userRepository } from "@repositories/userRepository";
-
-export type EnrichedUserReview = Omit<PopulatedUserReview, "book"> & {
-  book: BookDetail;
-};
-
-type ReviewDocumentLike = PopulatedUserReview & {
-  _id: Types.ObjectId;
-  toObject?: () => FlattenMaps<PopulatedUserReview>;
-};
-
-const buildUnavailableBook = (bookId: string | null): BookDetail => ({
-  id: bookId ?? "unknown",
-  title: "Book Unavailable",
-  authors: ["Unknown"],
-  thumbnail: "",
-  description: "Could not load book data.",
-  categories: [],
-  pageCount: 0,
-  previewLink: "",
-  genres: [],
-});
-
-const toReviewObject = (
-  review: PopulatedUserReview
-): FlattenMaps<PopulatedUserReview> | ReviewDocumentLike => {
-  const reviewDoc = review as ReviewDocumentLike;
-  return typeof reviewDoc.toObject === "function" ? reviewDoc.toObject() : reviewDoc;
-};
-
-const extractObjectIdString = (value: unknown): string | null => {
-  if (!value) {
-    return null;
-  }
-
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (value instanceof Types.ObjectId) {
-    return value.toString();
-  }
-
-  if (typeof value === "object") {
-    const typedValue = value as {
-      _id?: unknown;
-      id?: unknown;
-      toString?: () => string;
-    };
-
-    if (typedValue._id) {
-      return extractObjectIdString(typedValue._id);
-    }
-
-    if (typedValue.id) {
-      return extractObjectIdString(typedValue.id);
-    }
-
-    if (typeof typedValue.toString === "function") {
-      const stringified = typedValue.toString();
-      if (stringified && stringified !== "[object Object]") {
-        return stringified;
-      }
-    }
-  }
-
-  try {
-    const stringified = String(value);
-    return stringified && stringified !== "[object Object]" ? stringified : null;
-  } catch {
-    return null;
-  }
-};
-
-const requireObjectIdString = (value: unknown, fieldName: string): string => {
-  const id = extractObjectIdString(value);
-  if (!id) {
-    throw new Error(`Could not determine ${fieldName} ID`);
-  }
-
-  return id;
-};
+import {
+  EnrichedUserReview,
+  buildUnavailableBook,
+  toReviewObject,
+  extractObjectIdString,
+  requireObjectIdString,
+  ReviewDocumentLike
+} from "@utils/reviewUtils";
 
 const getNormalizedBookByLocalId = async (
   localBookId: string,
@@ -194,7 +121,7 @@ export const getAllReviews = async (
     }
   }
 
-  return await userReviewRepository.findAll(
+  const reviews = await userReviewRepository.findAll(
     minLikes,
     searchQuery,
     userIdFilter,
@@ -203,6 +130,8 @@ export const getAllReviews = async (
     genre,
     genreBookIds
   );
+
+  return reviews;
 };
 
 export const getReviewsByUserId = async (

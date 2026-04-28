@@ -30,7 +30,7 @@ const BookInfoHeader = ({ book }: BookInfoHeaderProps) => {
             <div style={{ color: "gray", fontSize: "1.5rem" }}>({year})</div>
           </Typography>
         </div>
-        <BookHeader id={book.id} />
+        <BookHeader book={book} />
       </div>
     </div>
   );

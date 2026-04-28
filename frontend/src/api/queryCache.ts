@@ -1,11 +1,61 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { Book } from "@/models/Book";
 import type { BookListType } from "@/models/List";
-import type { UserReview } from "@/models/UserReview";
+import type { ReviewComment, UserReview } from "@/models/UserReview";
 import type { UserDto } from "@shared/dtos/user.dto";
 import { queryKeys, authScopedQueryKeys } from "./queryKeys";
 import { getBookId } from "@/utils/bookUtils";
 import { applyUserToReviews, applyUserToReview } from "@/utils/reviewUtils";
+
+const updateReviewLikes = (
+  review: UserReview | undefined,
+  reviewId: string,
+  likes: string[],
+): UserReview | undefined =>
+  review && review._id === reviewId ? { ...review, likes } : review;
+
+const updateReviewComments = (
+  review: UserReview | undefined,
+  reviewId: string,
+  comments: ReviewComment[],
+): UserReview | undefined =>
+  review && review._id === reviewId ? { ...review, comments } : review;
+
+export const syncReviewLikesInCaches = (
+  queryClient: QueryClient,
+  reviewId: string,
+  likes: string[],
+) => {
+  queryClient.setQueriesData<UserReview[]>(
+    { queryKey: queryKeys.allReviews },
+    (reviews) =>
+      reviews?.map((review) =>
+        review._id === reviewId ? { ...review, likes } : review,
+      ),
+  );
+  queryClient.setQueriesData<UserReview>(
+    { queryKey: queryKeys.reviewPrefix },
+    (review) => updateReviewLikes(review, reviewId, likes),
+  );
+};
+
+export const syncReviewCommentsInCaches = (
+  queryClient: QueryClient,
+  reviewId: string,
+  comments: ReviewComment[],
+) => {
+  queryClient.setQueriesData<UserReview[]>(
+    { queryKey: queryKeys.allReviews },
+    (reviews) =>
+      reviews?.map((review) =>
+        review._id === reviewId ? { ...review, comments } : review,
+      ),
+  );
+  queryClient.setQueriesData<UserReview>(
+    { queryKey: queryKeys.reviewPrefix },
+    (review) => updateReviewComments(review, reviewId, comments),
+  );
+};
 
 export const invalidateAuthReviewState = (queryClient: QueryClient) => {
   queryClient.invalidateQueries({ queryKey: queryKeys.allReviews });
@@ -61,6 +111,26 @@ export const setBookListCache = (
   books: Book[],
 ) => {
   queryClient.setQueryData(queryKeys.listByType(username, listType), books);
+};
+
+export const addBookToListCache = (
+  queryClient: QueryClient,
+  username: string,
+  listType: BookListType,
+  book: Book,
+) => {
+  queryClient.setQueryData<Book[]>(
+    queryKeys.listByType(username, listType),
+    (currentBooks) => {
+      const books = currentBooks ?? [];
+      const bookId = getBookId(book);
+      const alreadyAdded = books.some(
+        (currentBook) => getBookId(currentBook) === bookId,
+      );
+
+      return alreadyAdded ? books : [...books, book];
+    },
+  );
 };
 
 export const removeBookFromListCache = (

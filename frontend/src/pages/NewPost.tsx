@@ -7,6 +7,7 @@ import {
   Rating,
   CircularProgress,
   Alert,
+  Chip,
 } from "@mui/material";
 import {
   Controller,
@@ -22,6 +23,9 @@ import { useSnackbar } from "notistack";
 import { useEffect } from "react";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import {
+  RATING_MAX,
+  RATING_MIN,
+  RATING_STEP,
   REVIEW_TEXT_MAX_LENGTH,
   REVIEW_TEXT_MIN_LENGTH,
 } from "@shared/constants/validation";
@@ -33,6 +37,7 @@ import type {
   UpdateReviewFormData,
 } from "@/models/PostForm";
 import { getErrorMessage } from "@/api/apiError";
+import { formatDate } from "@/utils/dateUtils";
 
 const NewPost = () => {
   const { bookId: routeBookId, id: reviewId } = useParams<{ bookId?: string; id?: string }>();
@@ -70,6 +75,7 @@ const NewPost = () => {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isDirty },
     reset,
   } = useForm<PostFormValues>({
@@ -78,7 +84,8 @@ const NewPost = () => {
       image: "",
       rating: 0,
     },
-    mode: "onSubmit",
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   useEffect(() => {
@@ -136,18 +143,31 @@ const NewPost = () => {
   const isSaving = createReviewMutation.isPending || updateReviewMutation.isPending;
 
   const onSubmit = (data: PostFormValues) => {
-    if (isSaving || !isDirty) return;
+    if (isSaving) return;
+
+    const normalizedRating = Number(data.rating);
+    if (
+      Number.isNaN(normalizedRating) ||
+      normalizedRating < RATING_STEP ||
+      normalizedRating > RATING_MAX ||
+      !Number.isInteger(normalizedRating / RATING_STEP)
+    ) {
+      return;
+    }
 
     if (reviewId) {
       updateReviewMutation.mutate({
         id: reviewId,
-        review: data
+        review: {
+          ...data,
+          rating: normalizedRating,
+        },
       });
     } else {
       if (!bookId) return;
       createReviewMutation.mutate({
         bookId,
-        rating: data.rating,
+        rating: normalizedRating,
         review: data.review,
         picture: data.image instanceof File ? data.image : undefined,
       });
@@ -189,7 +209,19 @@ const NewPost = () => {
       </Typography>
 
       {book && (
-        <Stack direction="row" spacing={2} sx={{ p: 2, bgcolor: "background.paper", borderRadius: 1, border: 1, borderColor: "divider" }}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2.5}
+          sx={{
+            p: 2,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            border: 1,
+            borderColor: "divider",
+            boxShadow: 1,
+            maxWidth: "54rem",
+          }}
+        >
           <Box
             component="img"
             src={getAvatarSrcUrl(book.thumbnail)}
@@ -198,19 +230,61 @@ const NewPost = () => {
             }}
             alt={book.title}
             sx={{
-              width: "5rem",
-              height: "7rem",
+              width: { xs: "100%", sm: "7rem" },
+              maxWidth: { xs: "14rem", sm: "7rem" },
+              aspectRatio: "2 / 3",
               objectFit: "cover",
-              borderRadius: 0.5,
+              borderRadius: 1,
               flexShrink: 0
             }}
           />
-          <Box>
-            <Typography variant="h6">{book.title}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {book.authors?.join(", ")}
+          <Stack spacing={1} minWidth={0}>
+            <Typography
+              variant="h6"
+              title={book.title}
+              sx={{
+                fontWeight: 700,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {book.title}
             </Typography>
-          </Box>
+            <Typography variant="body2" color="text.secondary">
+              {(book.authors?.length ?? 0) > 0 ? book.authors.join(", ") : "Unknown Author"}
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              {book.publishedDate && (
+                <Chip
+                  size="small"
+                  label={formatDate(book.publishedDate)}
+                  variant="outlined"
+                />
+              )}
+              {book.pageCount ? (
+                <Chip size="small" label={`${book.pageCount} pages`} variant="outlined" />
+              ) : null}
+              {(book.categories ?? []).slice(0, 3).map((genre: string) => (
+                <Chip key={genre} size="small" label={genre} />
+              ))}
+            </Stack>
+            {book.description && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {book.description.replace(/<[^>]*>?/gm, "")}
+              </Typography>
+            )}
+          </Stack>
         </Stack>
       )}
 
@@ -259,17 +333,27 @@ const NewPost = () => {
         name="rating"
         control={control}
         rules={{
-          min: { value: 1, message: "Rating is required (1-5)" },
-          max: { value: 5, message: "Rating must be between 1 and 5" },
+          min: { value: RATING_STEP, message: `Rating is required (${RATING_STEP}-${RATING_MAX})` },
+          max: { value: RATING_MAX, message: `Rating must be between ${RATING_MIN} and ${RATING_MAX}` },
+          validate: (value) =>
+            Number.isFinite(Number(value)) &&
+            Number.isInteger(Number(value) / RATING_STEP) ||
+            `Rating must use ${RATING_STEP} increments`,
         }}
         render={({ field }) => (
           <Box>
-            <Typography mb={"1rem"}>Rating (1-5 whole numbers)</Typography>
+            <Typography mb={"1rem"}>Rating</Typography>
             <Rating
-              precision={1}
-              value={field.value}
-              onChange={(_, value) => field.onChange(value || 0)}
-              max={5}
+              precision={RATING_STEP}
+              value={Number(field.value) || 0}
+              onChange={(_, value) => {
+                setValue("rating", Number(value ?? 0), {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                });
+              }}
+              max={RATING_MAX}
             />
             {errors.rating && (
               <Typography color="error" variant="caption">

@@ -5,20 +5,24 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import BookActionsMenu from "./BookActionsMenu";
 import React from "react";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
+import { RATING_STEP } from "@shared/constants/validation";
+import { getBookId } from "@/utils/bookUtils";
 
 interface BookInfoCardProps {
   book: Book;
   isOnlyInfo?: boolean;
   onSelect?: (book: Book) => void;
   listType?: "wish" | "read";
+  hideMenu?: boolean;
 }
 
-const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProps) => {
+const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType, hideMenu }: BookInfoCardProps) => {
   const displayAuthor = book.authors?.length > 0 ? book.authors.join(", ") : "Unknown Author";
   const navigate = useNavigate();
+  const bookId = getBookId(book);
 
   const handleCreateReview = () => {
-    navigate(`/post/create/${book.id}`, { state: { book } });
+    navigate(`/post/create/${bookId}`, { state: { book } });
   };
 
   const handleSelect = () => {
@@ -29,7 +33,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
 
   return (
     <Stack alignItems="center" spacing="0.6rem" position="relative">
-      {!isSelectMode && (
+      {!isSelectMode && !hideMenu && (
         <Box sx={{ position: "absolute", top: 4, right: 4, zIndex: 1 }}>
           <BookActionsMenu book={book} listType={listType} />
         </Box>
@@ -37,7 +41,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
       <Box
         {...(!isSelectMode && {
           component: RouterLink,
-          to: `/books/${book.id}`,
+          to: `/books/${bookId}`,
         })}
         sx={{
           width: "15rem",
@@ -59,7 +63,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
           component="img"
           src={getAvatarSrcUrl(book.thumbnail)}
           onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-            e.currentTarget.src = "https://via.placeholder.com/150*200?text=No+Cover";
+            e.currentTarget.src = "https://via.placeholder.com/150x200?text=No+Cover";
           }}
           alt={book.title}
           loading="lazy"
@@ -75,7 +79,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
         <Typography
           {...(!isSelectMode && {
             component: RouterLink,
-            to: `/books/${book.id}`,
+            to: `/books/${bookId}`,
           })}
           sx={{
             fontSize: "1rem",
@@ -83,6 +87,11 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
             color: "text.primary",
             textDecoration: "none",
             lineHeight: 1.3,
+            minHeight: "2.6rem",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
             transition: "color 0.2s ease",
             ...(!isSelectMode && {
               "&:hover": {
@@ -90,10 +99,21 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
               },
             }),
           }}
+          title={book.title}
         >
           {book.title}
         </Typography>
-        <Typography fontSize="0.85rem">{displayAuthor}</Typography>
+        <Typography
+          fontSize="0.85rem"
+          title={displayAuthor}
+          sx={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {displayAuthor}
+        </Typography>
         <Typography fontSize="0.85rem" color="text.secondary">
           {book.publishedDate ? formatDate(book.publishedDate) : "Unknown Date"}
         </Typography>
@@ -111,7 +131,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType }: BookInfoCardProp
           <Stack alignItems="center">
             <Rating
               value={book.avgRating ?? 0}
-              precision={0.5}
+              precision={RATING_STEP}
               readOnly
               size="small"
             />

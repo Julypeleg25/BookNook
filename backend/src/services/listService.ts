@@ -55,9 +55,10 @@ export const addBookToUserList = async (
   userId: Types.ObjectId | string,
   bookId: string,
   listType: ListType,
-): Promise<string[]> => {
+): Promise<BookSummary[]> => {
   assertValidListType(listType);
-  return await userRepository.addBookToList(userId, bookId, listType);
+  await userRepository.addBookToList(userId, bookId, listType);
+  return await getUserWishOrReadlist(userId, listType);
 };
 
 export const getUserWishOrReadlist = async (
@@ -75,7 +76,8 @@ export const removeBookFromUserList = async (
   userId: Types.ObjectId | string,
   bookId: string,
   listType: ListType,
-): Promise<string[]> => {
+): Promise<BookSummary[]> => {
   assertValidListType(listType);
-  return await userRepository.removeBookFromList(userId, bookId, listType);
+  await userRepository.removeBookFromList(userId, bookId, listType);
+  return await getUserWishOrReadlist(userId, listType);
 };
