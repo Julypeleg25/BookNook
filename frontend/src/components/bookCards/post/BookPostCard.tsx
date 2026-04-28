@@ -309,23 +309,6 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
             </Typography>
           </Stack>
         </Stack>
-
-        <Typography 
-          className="read-more-btn"
-          variant="caption" 
-          color="text.secondary" 
-          fontWeight={800} 
-          sx={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "4px",
-            transition: "all 0.2s ease",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px"
-          }}
-        >
-          Read full post
-        </Typography>
       </Stack>
     </Card>
   );

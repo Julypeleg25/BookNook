@@ -41,6 +41,123 @@ import type {
 } from "@/models/PostForm";
 import { getErrorMessage } from "@/api/apiError";
 
+const RATING_EPSILON = 1e-8;
+const EMPTY_RATING = 0;
+const MIN_SELECTABLE_RATING = RATING_STEP;
+
+const normalizeRating = (value: unknown): number => {
+  const numericRating = Number(value);
+  return Number.isFinite(numericRating) ? numericRating : EMPTY_RATING;
+};
+
+const isRatingStepAligned = (value: number): boolean =>
+  Math.abs(value / RATING_STEP - Math.round(value / RATING_STEP)) < RATING_EPSILON;
+
+const isAllowedRating = (value: unknown): boolean => {
+  const numericRating = normalizeRating(value);
+  return (
+    numericRating >= MIN_SELECTABLE_RATING &&
+    numericRating <= RATING_MAX &&
+    isRatingStepAligned(numericRating)
+  );
+};
+
+const validateRating = (value: unknown): true | string => {
+  const numericRating = normalizeRating(value);
+
+  if (numericRating < MIN_SELECTABLE_RATING) {
+    return `Choose a rating from ${MIN_SELECTABLE_RATING} to ${RATING_MAX}`;
+  }
+
+  if (numericRating > RATING_MAX || numericRating < RATING_MIN) {
+    return `Rating must be between ${RATING_MIN} and ${RATING_MAX}`;
+  }
+
+  return isRatingStepAligned(numericRating) || `Rating must use ${RATING_STEP} increments`;
+};
+
+interface RatingCardProps {
+  value: number;
+  error?: string;
+  onBlur: () => void;
+  onChange: (value: number) => void;
+}
+
+const RatingCard = ({ value, error, onBlur, onChange }: RatingCardProps) => {
+  const hasRating = value >= MIN_SELECTABLE_RATING;
+  const displayValue = hasRating ? value.toFixed(1) : "--";
+
+  return (
+    <Box
+      sx={{
+        border: "1px solid",
+        borderColor: error ? "error.main" : hasRating ? "primary.main" : "divider",
+        borderRadius: 2,
+        p: 2.25,
+        bgcolor: hasRating ? "rgba(91, 111, 106, 0.06)" : "rgba(91, 111, 106, 0.025)",
+        minHeight: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        gap: 1.5,
+      }}
+    >
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1.5}>
+        <Box>
+          <Typography fontWeight={800}>Your Rating</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Half-star ratings are supported.
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            minWidth: "4.25rem",
+            px: 1.25,
+            py: 0.75,
+            borderRadius: 2,
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h6" fontWeight={900} lineHeight={1}>
+            {displayValue}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            / {RATING_MAX}
+          </Typography>
+        </Box>
+      </Stack>
+
+      <Rating
+        precision={RATING_STEP}
+        value={hasRating ? value : null}
+        onChange={(_, nextValue) => onChange(normalizeRating(nextValue))}
+        onBlur={onBlur}
+        max={RATING_MAX}
+        sx={{
+          alignSelf: "center",
+          "& .MuiRating-icon": {
+            fontSize: { xs: "2.35rem", sm: "2.55rem" },
+          },
+          "& .MuiRating-iconFilled": {
+            color: "primary.main",
+          },
+        }}
+      />
+
+      <Typography
+        variant="body2"
+        color={error ? "error" : "text.secondary"}
+        sx={{ minHeight: "1.25rem", textAlign: "center" }}
+      >
+        {error ?? (hasRating ? "Looks good." : "Choose a rating to continue.")}
+      </Typography>
+    </Box>
+  );
+};
+
 const NewPost = () => {
   const { bookId: routeBookId, id: reviewId } = useParams<{ bookId?: string; id?: string }>();
   const location = useLocation();
@@ -77,7 +194,6 @@ const NewPost = () => {
   const {
     control,
     handleSubmit,
-    trigger,
     formState: { errors, isDirty, isValid },
     reset,
   } = useForm<PostFormValues>({
@@ -151,27 +267,13 @@ const NewPost = () => {
   const isSaving = createReviewMutation.isPending || updateReviewMutation.isPending;
   const hasImage = image instanceof File || (typeof image === "string" && image.trim().length > 0);
   const reviewLength = review?.length || 0;
-  const isValidRating = (value: unknown) => {
-    const numericRating = Number(value);
-    return (
-      Number.isFinite(numericRating) &&
-      numericRating >= RATING_STEP &&
-      numericRating <= RATING_MAX &&
-      Math.abs(numericRating / RATING_STEP - Math.round(numericRating / RATING_STEP)) < 1e-8
-    );
-  };
-  const canSubmit = isDirty && isValid && hasImage && isValidRating(rating) && !isSaving;
+  const canSubmit = isDirty && isValid && hasImage && isAllowedRating(rating) && !isSaving;
 
   const onSubmit = (data: PostFormValues) => {
     if (isSaving) return;
 
-    const normalizedRating = Number(data.rating);
-    if (
-      Number.isNaN(normalizedRating) ||
-      normalizedRating < RATING_STEP ||
-      normalizedRating > RATING_MAX ||
-      !isValidRating(normalizedRating)
-    ) {
+    const normalizedRating = normalizeRating(data.rating);
+    if (!isAllowedRating(normalizedRating)) {
       return;
     }
 
@@ -319,68 +421,21 @@ const NewPost = () => {
               />
 
               <Stack spacing={2} justifyContent="stretch">
-                <Box
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                    p: 2,
-                    bgcolor: "rgba(91, 111, 106, 0.035)",
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
+                <Controller
+                  name="rating"
+                  control={control}
+                  rules={{
+                    validate: validateRating,
                   }}
-                >
-                  <Controller
-                    name="rating"
-                    control={control}
-                    rules={{
-                      validate: (value) => {
-                        const numericRating = Number(value);
-                        if (!Number.isFinite(numericRating) || numericRating < RATING_STEP) {
-                          return `Rating is required (${RATING_STEP}-${RATING_MAX})`;
-                        }
-                        if (numericRating > RATING_MAX) {
-                          return `Rating must be between ${RATING_MIN} and ${RATING_MAX}`;
-                        }
-                        return isValidRating(numericRating) || `Rating must use ${RATING_STEP} increments`;
-                      },
-                    }}
-                    render={({ field, fieldState }) => (
-                      <Box>
-                        <Typography mb={1} fontWeight={800}>
-                          Rating
-                        </Typography>
-                        <Rating
-                          precision={RATING_STEP}
-                          value={Number(field.value) || 0}
-                          onChange={(_, value) => {
-                            const nextRating = Number(value ?? 0);
-                            field.onChange(nextRating);
-                            void trigger("rating");
-                          }}
-                          onBlur={field.onBlur}
-                          max={RATING_MAX}
-                          sx={{
-                            "& .MuiRating-icon": {
-                              fontSize: { xs: "2rem", sm: "2.2rem" },
-                            },
-                          }}
-                        />
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                          {Number(field.value) > 0
-                            ? `${Number(field.value).toFixed(1)} / ${RATING_MAX}`
-                            : "Choose a rating"}
-                        </Typography>
-                        {fieldState.error && (
-                          <Typography color="error" variant="caption">
-                            {fieldState.error.message}
-                          </Typography>
-                        )}
-                      </Box>
-                    )}
-                  />
-                </Box>
+                  render={({ field, fieldState }) => (
+                    <RatingCard
+                      value={normalizeRating(field.value)}
+                      error={fieldState.error?.message}
+                      onBlur={field.onBlur}
+                      onChange={(nextRating) => field.onChange(nextRating)}
+                    />
+                  )}
+                />
               </Stack>
             </Box>
           </Stack>
