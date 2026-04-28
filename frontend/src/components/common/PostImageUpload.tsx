@@ -9,7 +9,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { FiCamera, FiImage, FiRefreshCw } from "react-icons/fi";
+import { FiCamera, FiImage, FiUploadCloud } from "react-icons/fi";
 
 interface PostImageUploadProps {
   value: File | string | null;
@@ -126,6 +126,24 @@ const PostImageUpload = ({
             Use a clear photo or graphic that represents your review.
           </Typography>
         </Stack>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
+          <Button
+            variant="outlined"
+            onClick={() => fileInputRef.current?.click()}
+            startIcon={<FiUploadCloud size={16} />}
+            sx={{ width: { xs: "100%", sm: "fit-content" } }}
+          >
+            Upload Image
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => setCameraOpen(true)}
+            startIcon={<FiCamera size={16} />}
+            sx={{ width: { xs: "100%", sm: "fit-content" } }}
+          >
+            Take Photo
+          </Button>
+        </Stack>
       </Stack>
 
       <Box
@@ -185,27 +203,6 @@ const PostImageUpload = ({
           </Stack>
         )}
       </Box>
-
-      {preview && (
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-          <Button
-            variant="outlined"
-            onClick={() => fileInputRef.current?.click()}
-            startIcon={<FiRefreshCw size={16} />}
-            sx={{ width: { xs: "100%", sm: "fit-content" } }}
-          >
-            Replace Image
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => setCameraOpen(true)}
-            startIcon={<FiCamera size={16} />}
-            sx={{ width: { xs: "100%", sm: "fit-content" } }}
-          >
-            Take New Photo
-          </Button>
-        </Stack>
-      )}
 
       {helperText ? (
         <Alert severity={error ? "error" : "info"} sx={{ py: 0 }}>

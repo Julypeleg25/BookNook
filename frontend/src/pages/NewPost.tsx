@@ -1,6 +1,5 @@
 import {
   Alert,
-  Button,
   Box,
   CircularProgress,
   Chip,
@@ -12,20 +11,20 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { SyntheticEvent } from "react";
 import {
   Controller,
   useForm,
   useWatch,
 } from "react-hook-form";
 import PostImageUpload from "@components/common/PostImageUpload";
+import BookReferenceCard from "@components/postForm/BookReferenceCard";
+import PostPublishSection from "@components/postForm/PostPublishSection";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import { booksService } from "@/api/services/bookService";
 import { useSnackbar } from "notistack";
 import { useEffect } from "react";
-import { getAvatarSrcUrl } from "@/utils/userUtils";
 import {
   RATING_MAX,
   RATING_MIN,
@@ -41,7 +40,6 @@ import type {
   UpdateReviewFormData,
 } from "@/models/PostForm";
 import { getErrorMessage } from "@/api/apiError";
-import { formatDate } from "@/utils/dateUtils";
 
 const NewPost = () => {
   const { bookId: routeBookId, id: reviewId } = useParams<{ bookId?: string; id?: string }>();
@@ -129,8 +127,6 @@ const NewPost = () => {
       );
     },
   });
-
-
 
   const updateReviewMutation = useMutation({
     mutationFn: (data: UpdateReviewFormData) =>
@@ -264,125 +260,7 @@ const NewPost = () => {
           </Stack>
         </Stack>
 
-        {book && (
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 2, md: 3 },
-              borderRadius: 3,
-              border: "1px solid",
-              borderColor: "divider",
-              bgcolor: "background.paper",
-            }}
-          >
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={{ xs: 2, md: 3 }}
-              alignItems={{ xs: "stretch", sm: "stretch" }}
-            >
-              <Box
-                sx={{
-                  width: { xs: "100%", sm: "12rem", md: "14rem" },
-                  maxWidth: { xs: "18rem", sm: "12rem", md: "14rem" },
-                  minHeight: { sm: "18rem" },
-                  borderRadius: 2,
-                  flexShrink: 0,
-                  overflow: "hidden",
-                  bgcolor: "grey.100",
-                  boxShadow: "0 16px 36px rgba(31, 41, 51, 0.16)",
-                  alignSelf: { xs: "center", sm: "stretch" },
-                  position: "relative",
-                  "&::after": {
-                    content: '""',
-                    position: "absolute",
-                    inset: 0,
-                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.35)",
-                    pointerEvents: "none",
-                  },
-                }}
-              >
-                <Box
-                  component="img"
-                  src={getAvatarSrcUrl(book.thumbnail)}
-                  onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
-                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x450?text=No+Cover";
-                  }}
-                  alt={book.title}
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    minHeight: { xs: "20rem", sm: "100%" },
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                />
-              </Box>
-              <Stack spacing={1.4} minWidth={0} justifyContent="center" flex={1}>
-                <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 0, fontWeight: 800 }}>
-                  Book Reference
-                </Typography>
-                <Typography
-                  variant="h5"
-                  title={book.title}
-                  sx={{
-                    fontWeight: 800,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}
-                >
-                  {book.title}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {(book.authors?.length ?? 0) > 0 ? book.authors.join(", ") : "Unknown Author"}
-                </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  {book.publishedDate && (
-                    <Chip
-                      size="small"
-                      label={formatDate(book.publishedDate)}
-                      variant="outlined"
-                    />
-                  )}
-                  {book.pageCount ? (
-                    <Chip size="small" label={`${book.pageCount} pages`} variant="outlined" />
-                  ) : null}
-                  {(book.categories ?? []).slice(0, 3).map((genre: string) => (
-                    <Chip key={genre} size="small" label={genre} />
-                  ))}
-                </Stack>
-                {book.description && (
-                  <Box
-                    sx={{
-                      mt: 0.5,
-                      pt: 1.5,
-                      borderTop: "1px solid",
-                      borderColor: "divider",
-                    }}
-                  >
-                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
-                      Description
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: { xs: 5, md: 7 },
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                        lineHeight: 1.7,
-                      }}
-                    >
-                      {book.description.replace(/<[^>]*>?/gm, "")}
-                    </Typography>
-                  </Box>
-                )}
-              </Stack>
-            </Stack>
-          </Paper>
-        )}
+        {book && <BookReferenceCard book={book} />}
 
         <Paper
           elevation={0}
@@ -409,7 +287,7 @@ const NewPost = () => {
                   Choose the visual and rating first, then write the review below.
                 </Typography>
               </Box>
-           </Stack>
+            </Stack>
 
             <Divider />
 
@@ -501,36 +379,12 @@ const NewPost = () => {
                   />
                 </Box>
 
-                <Box
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                    p: { xs: 2, md: 2.5 },
-                    bgcolor: "background.paper",
-                  }}
-                >
-                  <Stack spacing={2}>
-                    <Box>
-                      <Typography fontWeight={800}>Publish</Typography>
-                    </Box>
-
-                    <Stack spacing={1.25}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={!canSubmit}
-                        fullWidth
-                        size="large"
-                      >
-                        {isSaving ? "Saving..." : (reviewId ? "Update Post" : "Publish Post")}
-                      </Button>
-                      <Button variant="outlined" onClick={onCancel} disabled={isSaving} fullWidth>
-                        Cancel
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </Box>
+                <PostPublishSection
+                  disabled={!canSubmit}
+                  isEditMode={Boolean(reviewId)}
+                  isSaving={isSaving}
+                  onCancel={onCancel}
+                />
               </Stack>
             </Box>
           </Stack>

@@ -1,4 +1,4 @@
-import { Alert, Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Stack } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useSnackbar } from "notistack";
 import useUserStore from "@state/useUserStore";
@@ -92,9 +92,6 @@ const ProfileForm = ({ onCancel }: ProfileFormProps) => {
           gap={2}
           flexDirection={{ xs: "column", sm: "row" }}
         >
-          <Typography variant="body2" color="text.secondary">
-            Changes are saved to your public profile.
-          </Typography>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
             <Button onClick={onCancel} variant="outlined" disabled={loading}>
               Cancel
