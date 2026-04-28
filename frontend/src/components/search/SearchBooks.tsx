@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 import BookCardSkeleton from "../bookCards/BookCardSkeleton";
-import { useRef, useCallback, useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import SearchHeader from "./SearchHeader";
 import SearchFiltersModal from "@components/searchFilters/SearchFiltersModal";
 import BookInfoCard from "@components/bookCards/BookInfoCard";

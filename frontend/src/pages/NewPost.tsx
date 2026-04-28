@@ -79,9 +79,8 @@ const NewPost = () => {
   const {
     control,
     handleSubmit,
-    setValue,
-    clearErrors,
-    formState: { errors, isDirty, isSubmitted, isValid },
+    trigger,
+    formState: { errors, isDirty, isValid },
     reset,
   } = useForm<PostFormValues>({
     defaultValues: {
@@ -466,7 +465,7 @@ const NewPost = () => {
                         return isValidRating(numericRating) || `Rating must use ${RATING_STEP} increments`;
                       },
                     }}
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <Box>
                         <Typography mb={1} fontWeight={800}>
                           Rating
@@ -477,15 +476,9 @@ const NewPost = () => {
                           onChange={(_, value) => {
                             const nextRating = Number(value ?? 0);
                             field.onChange(nextRating);
-                            setValue("rating", nextRating, {
-                              shouldDirty: true,
-                              shouldTouch: true,
-                              shouldValidate: true,
-                            });
-                            if (isValidRating(nextRating)) {
-                              clearErrors("rating");
-                            }
+                            void trigger("rating");
                           }}
+                          onBlur={field.onBlur}
                           max={RATING_MAX}
                           sx={{
                             "& .MuiRating-icon": {
@@ -498,9 +491,9 @@ const NewPost = () => {
                             ? `${Number(field.value).toFixed(1)} / ${RATING_MAX}`
                             : "Choose a rating"}
                         </Typography>
-                        {errors.rating && (
+                        {fieldState.error && (
                           <Typography color="error" variant="caption">
-                            {errors.rating.message}
+                            {fieldState.error.message}
                           </Typography>
                         )}
                       </Box>
