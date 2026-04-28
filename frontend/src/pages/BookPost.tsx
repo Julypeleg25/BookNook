@@ -139,12 +139,7 @@ const BookPost = () => {
           ) : null;
         })()}
       </Box>
-      <Box
-        display="grid"
-        gridTemplateColumns={{ xs: "1fr", md: "1fr 1fr" }}
-        gap="2rem"
-        mt="2rem"
-      >
+      <Box mt="2rem">
         <BookInfoSection book={bookPost.book} />
       </Box>
       <div id="comments-section">

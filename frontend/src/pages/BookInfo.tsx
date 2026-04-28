@@ -175,7 +175,23 @@ const InfoRow = ({
   value: string | number;
 }) => (
   <Stack direction="row" spacing={1.2} alignItems="center">
-    {icon}
+    <Box
+      sx={{
+        width: "2rem",
+        height: "2rem",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "primary.main",
+        flexShrink: 0,
+        "& svg": {
+          width: "1.5rem",
+          height: "1.5rem",
+        },
+      }}
+    >
+      {icon}
+    </Box>
     <Box>
       <Typography variant="caption" color="text.secondary">
         {label}
