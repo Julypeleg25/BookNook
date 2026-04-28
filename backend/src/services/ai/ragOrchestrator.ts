@@ -3,7 +3,6 @@ import { generateAnswer } from "./generationService";
 import { logger } from "@utils/logger";
 import { RagQueryRequestSchema } from "@utils/ragValidation";
 import { SearchResult } from "./vectorRepository";
-import { UserProfile } from "../../types/ai";
 
 const MAX_CONTEXT_CHARS = 6000;
 const MAX_SNIPPET_CHARS = 900;
@@ -60,7 +59,6 @@ const DELETE_CHAR_CODE = 127;
 
 export interface RAGOptions {
     userId?: string;
-    userProfile?: UserProfile;
 }
 
 export interface RAGResult {
@@ -256,10 +254,7 @@ export const processQuery = async (
             };
         }
 
-        const answer = await generateAnswer(validatedQuery, context, { 
-            personalized,
-            userProfile: opts.userProfile,
-        });
+        const answer = await generateAnswer(validatedQuery, context, { personalized });
 
         return {
             answer,

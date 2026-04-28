@@ -2,7 +2,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ENV } from "@config/config";
 import { logger } from "@utils/logger";
 import { z } from "zod";
-import { UserProfile } from "../../types/ai";
 
 const genAI = new GoogleGenerativeAI(ENV.GEMINI_API_KEY);
 
@@ -45,7 +44,6 @@ const removeFollowUpQuestions = (answer: string): string => {
 
 export interface GenerationOptions {
     personalized?: boolean;
-    userProfile?: UserProfile;
 }
 
 const getSystemInstruction = (opts: GenerationOptions = {}): string => {
@@ -61,17 +59,6 @@ const getSystemInstruction = (opts: GenerationOptions = {}): string => {
             "- Assume recommended books are unread unless the input explicitly marks them as already read.",
             "- Briefly explain why each book fits the user.",
             "- Keep the answer natural, confident, and user-facing.",
-        ]
-        : [];
-
-    const profileRules = opts.userProfile
-        ? [
-            "",
-            "User Personalization context:",
-            "- Use the user's interests and top-rated books to subtly influence recommendations.",
-            "- Avoid themes found in the user's disliked books.",
-            "- Do not mention the user's profile, interests, or liked books explicitly.",
-            "- The retrieved context remains the primary source for book details.",
         ]
         : [];
 
@@ -94,27 +81,7 @@ const getSystemInstruction = (opts: GenerationOptions = {}): string => {
         "- Keep the answer concise and friendly.",
         "- End cleanly without asking follow-up questions or asking about preferences.",
         ...personalizedRules,
-        ...profileRules,
     ].join("\n");
-};
-
-const formatProfileForPrompt = (profile?: UserProfile): string => {
-    if (!profile) return "";
-
-    const topLiked = [...profile.liked_books]
-        .sort((a, b) => b.rating - a.rating)
-        .slice(0, 3)
-        .map((b) => b.title);
-
-    const interests = profile.interests.slice(0, 5);
-    const disliked = profile.disliked_books.map((b) => b.title).slice(0, 5);
-
-    const parts = [];
-    if (topLiked.length > 0) parts.push(`Top liked books: ${topLiked.join(", ")}`);
-    if (interests.length > 0) parts.push(`Interests: ${interests.join(", ")}`);
-    if (disliked.length > 0) parts.push(`Avoid these themes/books: ${disliked.join(", ")}`);
-
-    return parts.length > 0 ? `\n<USER_PREFERENCES>\n${parts.join("\n")}\n</USER_PREFERENCES>` : "";
 };
 
 const getResponseInstruction = (): string => {
@@ -163,7 +130,6 @@ ${systemInstruction}
 <${PROMPT_INPUT_TAG}>
 ${context}
 </${PROMPT_INPUT_TAG}>
-${formatProfileForPrompt(opts.userProfile)}
 
 ${PROMPT_USER_QUESTION_LABEL}
 ${query}

@@ -1,20 +1,14 @@
 import { Request, Response } from "express";
 import { processQuery } from "@services/ai/ragOrchestrator";
-import { buildUserProfileForRag } from "@services/ai/profileService";
 import { parseRagQueryRequest } from "@utils/ragValidation";
 import { logger } from "@utils/logger";
 import { ZodError } from "zod";
 
 export const handleRagQuery = async (req: Request, res: Response) => {
   try {
-    const { query, userProfile: providedProfile } = parseRagQueryRequest(req.body);
-    const userId = req.authenticatedUser!.id;
-
-    const userProfile = providedProfile || await buildUserProfileForRag(userId);
-
+    const { query } = parseRagQueryRequest(req.body);
     const result = await processQuery(query, {
-      userId,
-      userProfile,
+      userId: req.authenticatedUser!.id,
     });
 
     res.json(result);
