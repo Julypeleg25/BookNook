@@ -1,0 +1,87 @@
+import { useSearchParams } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { ISearchFiltersForm } from "@/components/searchFilters/models/SearchFiltersOptions";
+
+const filterParamKeys = [
+  "genre",
+  "author",
+  "rating",
+  "likesAmount",
+  "username",
+  "minReviews",
+] as const;
+
+export const useSearchParamsState = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const urlQuery = searchParams.get("q") || "";
+
+  const [localSearchQuery, setLocalSearchQuery] = useState(urlQuery);
+
+  useEffect(() => {
+    setLocalSearchQuery(urlQuery);
+  }, [urlQuery]);
+
+  const filters = useMemo<ISearchFiltersForm>(() => {
+    return {
+      genre: searchParams.get("genre") || "",
+      author: searchParams.get("author") || "",
+      rating: Number(searchParams.get("rating")) || 0,
+      likesAmount: Number(searchParams.get("likesAmount")) || 0,
+      username: searchParams.get("username") || "",
+      minReviews: Number(searchParams.get("minReviews")) || 0,
+    };
+  }, [searchParams]);
+
+  const updateSearchParams = (newParams: Record<string, string | number | undefined | null>) => {
+    const nextParams = new URLSearchParams(searchParams);
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "" || value === 0) {
+        nextParams.delete(key);
+      } else {
+        nextParams.set(key, String(value));
+      }
+    });
+    setSearchParams(nextParams);
+  };
+
+  const handleSearch = (newSearchTerm?: string) => {
+    updateSearchParams({ q: newSearchTerm ?? localSearchQuery });
+  };
+
+  const handleApplyFilters = (newFilters: ISearchFiltersForm) => {
+    updateSearchParams({
+      ...newFilters,
+      q: urlQuery,
+    });
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearchQuery("");
+    updateSearchParams({ q: "" });
+  };
+
+  const handleClearFilters = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    filterParamKeys.forEach((key) => nextParams.delete(key));
+    setSearchParams(nextParams);
+  };
+
+  const setGenre = (genre: string) => {
+    const newGenre = filters.genre === genre ? "" : genre;
+    handleApplyFilters({ ...filters, genre: newGenre });
+  };
+
+  return {
+    filters,
+    urlQuery,
+    localSearchQuery,
+    setLocalSearchQuery,
+    updateSearchParams,
+    handleSearch,
+    handleApplyFilters,
+    handleClearSearch,
+    handleClearFilters,
+    setGenre,
+  };
+};
