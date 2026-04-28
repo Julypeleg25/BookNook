@@ -24,11 +24,15 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType, hideMenu }: BookIn
     navigate(`/post/create/${bookId}`, { state: { book } });
   };
 
-  const handleSelect = () => {
-    onSelect?.(book);
-  };
-
   const isSelectMode = !!onSelect;
+  const handleWriteReview = () => {
+    if (onSelect) {
+      onSelect(book);
+      return;
+    }
+
+    handleCreateReview();
+  };
 
   return (
     <Stack alignItems="center" spacing="0.6rem" position="relative">
@@ -126,21 +130,11 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType, hideMenu }: BookIn
           width: "100%",
         }}
       >
-        {isOnlyInfo && onSelect && (
+        {isOnlyInfo && (
           <Button
             variant="contained"
             size="small"
-            onClick={handleSelect}
-            sx={{ width: "15rem" }}
-          >
-            Write Review
-          </Button>
-        )}
-        {isOnlyInfo && !onSelect && (
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={handleCreateReview}
+            onClick={handleWriteReview}
             sx={{ width: "15rem" }}
           >
             Write Review

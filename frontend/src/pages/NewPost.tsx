@@ -69,10 +69,10 @@ const NewPost = () => {
       const response = await booksService.getById(bookId);
       return response.book;
     },
-    enabled: !!bookId && !bookFromState,
+    enabled: !!bookId,
   });
 
-  const book = bookFromState || bookData || (typeof reviewData?.book === "object" ? reviewData.book : null);
+  const book = bookData || (typeof reviewData?.book === "object" ? reviewData.book : null) || bookFromState || null;
 
   const {
     control,
