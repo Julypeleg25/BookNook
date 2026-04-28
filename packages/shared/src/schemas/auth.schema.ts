@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
+  REQUIRED_TEXT_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH,
 } from "../constants/validation";
@@ -26,6 +27,6 @@ export const RegisterSchema = z.object({
 });
 
 export const LoginSchema = z.object({
-  username: z.string().trim().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  username: z.string().trim().min(REQUIRED_TEXT_MIN_LENGTH, "Username is required"),
+  password: z.string().min(REQUIRED_TEXT_MIN_LENGTH, "Password is required"),
 });
