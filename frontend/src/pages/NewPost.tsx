@@ -1,14 +1,18 @@
 import {
+  Alert,
+  Button,
+  Box,
+  CircularProgress,
+  Chip,
+  LinearProgress,
+  Divider,
+  Paper,
+  Rating,
   Stack,
   TextField,
-  Button,
   Typography,
-  Box,
-  Rating,
-  CircularProgress,
-  Alert,
-  Chip,
 } from "@mui/material";
+import type { SyntheticEvent } from "react";
 import {
   Controller,
   useForm,
@@ -76,7 +80,8 @@ const NewPost = () => {
     control,
     handleSubmit,
     setValue,
-    formState: { errors, isDirty },
+    clearErrors,
+    formState: { errors, isDirty, isSubmitted, isValid },
     reset,
   } = useForm<PostFormValues>({
     defaultValues: {
@@ -101,6 +106,14 @@ const NewPost = () => {
   const review = useWatch({
     control,
     name: "review",
+  });
+  const image = useWatch({
+    control,
+    name: "image",
+  });
+  const rating = useWatch({
+    control,
+    name: "rating",
   });
 
   const createReviewMutation = useMutation({
@@ -141,6 +154,18 @@ const NewPost = () => {
   });
 
   const isSaving = createReviewMutation.isPending || updateReviewMutation.isPending;
+  const hasImage = image instanceof File || (typeof image === "string" && image.trim().length > 0);
+  const reviewLength = review?.length || 0;
+  const isValidRating = (value: unknown) => {
+    const numericRating = Number(value);
+    return (
+      Number.isFinite(numericRating) &&
+      numericRating >= RATING_STEP &&
+      numericRating <= RATING_MAX &&
+      Math.abs(numericRating / RATING_STEP - Math.round(numericRating / RATING_STEP)) < 1e-8
+    );
+  };
+  const canSubmit = isDirty && isValid && hasImage && isValidRating(rating) && !isSaving;
 
   const onSubmit = (data: PostFormValues) => {
     if (isSaving) return;
@@ -150,8 +175,13 @@ const NewPost = () => {
       Number.isNaN(normalizedRating) ||
       normalizedRating < RATING_STEP ||
       normalizedRating > RATING_MAX ||
-      !Number.isInteger(normalizedRating / RATING_STEP)
+      !isValidRating(normalizedRating)
     ) {
+      return;
+    }
+
+    if (!hasImage) {
+      enqueueSnackbar("Please upload an image before publishing.", { variant: "error" });
       return;
     }
 
@@ -196,187 +226,395 @@ const NewPost = () => {
   }
 
   return (
-    <Stack
-      margin="2rem"
-      justifyItems={"center"}
-      maxWidth={"80rem"}
-      spacing={3}
+    <Box
       component="form"
       onSubmit={handleSubmit(onSubmit)}
+      sx={{
+        minHeight: "calc(100vh - 4.5rem)",
+        px: { xs: 2, md: 4 },
+        py: { xs: 2.5, md: 4 },
+        bgcolor: "background.default",
+      }}
     >
-      <Typography fontSize="1.4rem" fontWeight={600}>
-        {reviewId ? "Edit Review" : "Create Review"}
-      </Typography>
-
-      {book && (
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2.5}
-          sx={{
-            p: 2,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            border: 1,
-            borderColor: "divider",
-            boxShadow: 1,
-            maxWidth: "54rem",
-          }}
-        >
-          <Box
-            component="img"
-            src={getAvatarSrcUrl(book.thumbnail)}
-            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-              (e.target as HTMLImageElement).src = "https://via.placeholder.com/150x200?text=No+Cover";
-            }}
-            alt={book.title}
+      <Stack spacing={3} maxWidth="76rem" mx="auto">
+        {isSaving && (
+          <LinearProgress
             sx={{
-              width: { xs: "100%", sm: "7rem" },
-              maxWidth: { xs: "14rem", sm: "7rem" },
-              aspectRatio: "2 / 3",
-              objectFit: "cover",
-              borderRadius: 1,
-              flexShrink: 0
+              position: "fixed",
+              top: "4.5rem",
+              left: 0,
+              right: 0,
+              zIndex: (theme) => theme.zIndex.appBar + 1,
             }}
           />
-          <Stack spacing={1} minWidth={0}>
-            <Typography
-              variant="h6"
-              title={book.title}
-              sx={{
-                fontWeight: 700,
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-            >
-              {book.title}
+        )}
+
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          justifyContent="space-between"
+          alignItems={{ xs: "flex-start", md: "flex-end" }}
+          gap={2}
+        >
+          <Stack spacing={0.75} maxWidth="44rem">
+            <Typography variant="h4" fontWeight={800}>
+              {reviewId ? "Edit Post" : "Create Post"}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {(book.authors?.length ?? 0) > 0 ? book.authors.join(", ") : "Unknown Author"}
+            <Typography variant="body1" color="text.secondary">
+              Pair your review with a real image, a clear rating, and enough context for other readers to decide.
             </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              {book.publishedDate && (
-                <Chip
-                  size="small"
-                  label={formatDate(book.publishedDate)}
-                  variant="outlined"
-                />
-              )}
-              {book.pageCount ? (
-                <Chip size="small" label={`${book.pageCount} pages`} variant="outlined" />
-              ) : null}
-              {(book.categories ?? []).slice(0, 3).map((genre: string) => (
-                <Chip key={genre} size="small" label={genre} />
-              ))}
-            </Stack>
-            {book.description && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  display: "-webkit-box",
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-              >
-                {book.description.replace(/<[^>]*>?/gm, "")}
-              </Typography>
-            )}
+          </Stack>
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Chip
+              label={hasImage ? "Image ready" : "Image required"}
+              color={hasImage ? "success" : "warning"}
+              variant={hasImage ? "filled" : "outlined"}
+            />
+            <Chip
+              label={`${reviewLength}/${REVIEW_TEXT_MAX_LENGTH}`}
+              variant="outlined"
+            />
           </Stack>
         </Stack>
-      )}
 
-      <Controller
-        name="image"
-        control={control}
-        render={({ field }) => (
-          <PostImageUpload value={field.value} onChange={field.onChange} />
+        {book && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2, md: 3 },
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+              bgcolor: "background.paper",
+            }}
+          >
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2.5}
+              alignItems={{ xs: "flex-start", sm: "stretch" }}
+            >
+              <Box
+                component="img"
+                src={getAvatarSrcUrl(book.thumbnail)}
+                onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
+                  (e.target as HTMLImageElement).src = "https://via.placeholder.com/150x200?text=No+Cover";
+                }}
+                alt={book.title}
+                sx={{
+                  width: { xs: "100%", sm: "8rem" },
+                  maxWidth: { xs: "14rem", sm: "8rem" },
+                  aspectRatio: "2 / 3",
+                  objectFit: "cover",
+                  borderRadius: 2,
+                  flexShrink: 0,
+                  boxShadow: "0 10px 26px rgba(31, 41, 51, 0.14)",
+                }}
+              />
+              <Stack spacing={1.25} minWidth={0} justifyContent="center">
+                <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 0, fontWeight: 800 }}>
+                  Book Reference
+                </Typography>
+                <Typography
+                  variant="h5"
+                  title={book.title}
+                  sx={{
+                    fontWeight: 800,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {book.title}
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  {(book.authors?.length ?? 0) > 0 ? book.authors.join(", ") : "Unknown Author"}
+                </Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {book.publishedDate && (
+                    <Chip
+                      size="small"
+                      label={formatDate(book.publishedDate)}
+                      variant="outlined"
+                    />
+                  )}
+                  {book.pageCount ? (
+                    <Chip size="small" label={`${book.pageCount} pages`} variant="outlined" />
+                  ) : null}
+                  {(book.categories ?? []).slice(0, 3).map((genre: string) => (
+                    <Chip key={genre} size="small" label={genre} />
+                  ))}
+                </Stack>
+                {book.description && (
+                  <Box
+                    sx={{
+                      mt: 0.5,
+                      pt: 1.5,
+                      borderTop: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                      Description
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: { xs: 5, md: 7 },
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      {book.description.replace(/<[^>]*>?/gm, "")}
+                    </Typography>
+                  </Box>
+                )}
+              </Stack>
+            </Stack>
+          </Paper>
         )}
-      />
 
-      <Controller
-        name="review"
-        control={control}
-        rules={{
-          required: "Review is required",
-          minLength: {
-            value: REVIEW_TEXT_MIN_LENGTH,
-            message: `Minimum ${REVIEW_TEXT_MIN_LENGTH} characters`,
-          },
-          maxLength: {
-            value: REVIEW_TEXT_MAX_LENGTH,
-            message: `Max ${REVIEW_TEXT_MAX_LENGTH} characters`,
-          },
-        }}
-        render={({ field }) => (
-          <TextField
-            {...field}
-            slotProps={{ htmlInput: { maxLength: REVIEW_TEXT_MAX_LENGTH } }}
-            label="Review"
-            placeholder="Write your opinions on the book, help others find out if they'll like it!"
-            multiline
-            maxRows={10}
-            fullWidth
-            error={!!errors.review}
-            helperText={
-              errors.review
-                ? errors.review.message
-                : `${review?.length || 0}/${REVIEW_TEXT_MAX_LENGTH}`
-            }
-          />
-        )}
-      />
-
-      <Controller
-        name="rating"
-        control={control}
-        rules={{
-          min: { value: RATING_STEP, message: `Rating is required (${RATING_STEP}-${RATING_MAX})` },
-          max: { value: RATING_MAX, message: `Rating must be between ${RATING_MIN} and ${RATING_MAX}` },
-          validate: (value) =>
-            Number.isFinite(Number(value)) &&
-            Number.isInteger(Number(value) / RATING_STEP) ||
-            `Rating must use ${RATING_STEP} increments`,
-        }}
-        render={({ field }) => (
-          <Box>
-            <Typography mb={"1rem"}>Rating</Typography>
-            <Rating
-              precision={RATING_STEP}
-              value={Number(field.value) || 0}
-              onChange={(_, value) => {
-                setValue("rating", Number(value ?? 0), {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                });
-              }}
-              max={RATING_MAX}
-            />
-            {errors.rating && (
-              <Typography color="error" variant="caption">
-                {errors.rating.message}
-              </Typography>
-            )}
-          </Box>
-        )}
-      />
-
-      <Stack direction="row" justifyContent="flex-end" spacing={2}>
-        <Button variant="outlined" onClick={onCancel} disabled={isSaving}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={!isDirty || isSaving}
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, md: 3 },
+            borderRadius: 3,
+            border: "1px solid",
+            borderColor: "divider",
+            bgcolor: "background.paper",
+          }}
         >
-          {isSaving ? "Saving..." : (reviewId ? "Update" : "Publish")}
-        </Button>
+          <Stack spacing={3}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              gap={2}
+            >
+              <Box>
+                <Typography variant="h6" fontWeight={800} gutterBottom>
+                  Post Setup
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Choose the visual and rating first, then write the review below.
+                </Typography>
+              </Box>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Chip
+                  size="small"
+                  label={hasImage ? "Image ready" : "Image missing"}
+                  color={hasImage ? "success" : "warning"}
+                  variant={hasImage ? "filled" : "outlined"}
+                />
+                <Chip
+                  size="small"
+                  label={isValidRating(rating) ? `${Number(rating).toFixed(1)} stars` : "Rating missing"}
+                  color={isValidRating(rating) ? "success" : "warning"}
+                  variant={isValidRating(rating) ? "filled" : "outlined"}
+                />
+              </Stack>
+            </Stack>
+
+            <Divider />
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1.15fr) minmax(20rem, 0.85fr)" },
+                gap: 3,
+                alignItems: "start",
+              }}
+            >
+              <Controller
+                name="image"
+                control={control}
+                rules={{
+                  validate: (value) =>
+                    (value instanceof File ||
+                      (typeof value === "string" && value.trim().length > 0)) ||
+                    "An image is required for every post",
+                }}
+                render={({ field }) => (
+                  <PostImageUpload
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={!!errors.image}
+                    helperText={errors.image?.message}
+                  />
+                )}
+              />
+
+              <Stack
+                spacing={2.5}
+                sx={{
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 2,
+                  p: { xs: 2, md: 2.5 },
+                  bgcolor: "rgba(91, 111, 106, 0.035)",
+                }}
+              >
+                <Controller
+                  name="rating"
+                  control={control}
+                  rules={{
+                    validate: (value) => {
+                      const numericRating = Number(value);
+                      if (!Number.isFinite(numericRating) || numericRating < RATING_STEP) {
+                        return `Rating is required (${RATING_STEP}-${RATING_MAX})`;
+                      }
+                      if (numericRating > RATING_MAX) {
+                        return `Rating must be between ${RATING_MIN} and ${RATING_MAX}`;
+                      }
+                      return isValidRating(numericRating) || `Rating must use ${RATING_STEP} increments`;
+                    },
+                  }}
+                  render={({ field }) => (
+                    <Box>
+                      <Typography mb={1} fontWeight={800}>
+                        Rating
+                      </Typography>
+                      <Rating
+                        precision={RATING_STEP}
+                        value={Number(field.value) || 0}
+                        onChange={(_, value) => {
+                          const nextRating = Number(value ?? 0);
+                          field.onChange(nextRating);
+                          setValue("rating", nextRating, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: true,
+                          });
+                          if (isValidRating(nextRating)) {
+                            clearErrors("rating");
+                          }
+                        }}
+                        max={RATING_MAX}
+                        sx={{
+                          "& .MuiRating-icon": {
+                            fontSize: { xs: "2rem", sm: "2.2rem" },
+                          },
+                        }}
+                      />
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        {Number(field.value) > 0
+                          ? `${Number(field.value).toFixed(1)} / ${RATING_MAX}`
+                          : "Choose a rating"}
+                      </Typography>
+                      {errors.rating && (
+                        <Typography color="error" variant="caption">
+                          {errors.rating.message}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                />
+
+                <Alert severity={hasImage ? "success" : isSubmitted ? "error" : "info"}>
+                  {hasImage
+                    ? "Image attached. Your post will use this visual."
+                    : "Upload an image before publishing. Book covers are not used as a fallback."}
+                </Alert>
+
+                <Stack spacing={1.25}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={!canSubmit}
+                    fullWidth
+                    size="large"
+                  >
+                    {isSaving ? "Saving..." : (reviewId ? "Update Post" : "Publish Post")}
+                  </Button>
+                  <Button variant="outlined" onClick={onCancel} disabled={isSaving} fullWidth>
+                    Cancel
+                  </Button>
+                </Stack>
+              </Stack>
+            </Box>
+          </Stack>
+        </Paper>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, md: 3 },
+            borderRadius: 3,
+            border: "1px solid",
+            borderColor: "divider",
+            bgcolor: "background.paper",
+          }}
+        >
+          <Stack spacing={3}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              gap={2}
+            >
+              <Box>
+                <Typography variant="h6" fontWeight={800} gutterBottom>
+                  Write Your Review
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Add a useful opinion, not just a summary.
+                </Typography>
+              </Box>
+              <Chip
+                label={`${reviewLength}/${REVIEW_TEXT_MAX_LENGTH}`}
+                variant="outlined"
+                size="small"
+              />
+            </Stack>
+
+            <Divider />
+
+            <Controller
+              name="review"
+              control={control}
+              rules={{
+                required: "Review is required",
+                minLength: {
+                  value: REVIEW_TEXT_MIN_LENGTH,
+                  message: `Minimum ${REVIEW_TEXT_MIN_LENGTH} characters`,
+                },
+                maxLength: {
+                  value: REVIEW_TEXT_MAX_LENGTH,
+                  message: `Max ${REVIEW_TEXT_MAX_LENGTH} characters`,
+                },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  slotProps={{ htmlInput: { maxLength: REVIEW_TEXT_MAX_LENGTH } }}
+                  label="Review"
+                  placeholder="What stood out, who is this book for, and how did it make you feel?"
+                  multiline
+                  minRows={9}
+                  maxRows={16}
+                  fullWidth
+                  error={!!errors.review}
+                  helperText={
+                    errors.review
+                      ? errors.review.message
+                      : reviewLength < REVIEW_TEXT_MIN_LENGTH
+                        ? `Minimum ${REVIEW_TEXT_MIN_LENGTH} characters`
+                        : `${reviewLength}/${REVIEW_TEXT_MAX_LENGTH}`
+                  }
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      alignItems: "flex-start",
+                    },
+                  }}
+                />
+              )}
+            />
+          </Stack>
+        </Paper>
       </Stack>
-    </Stack>
+    </Box>
   );
 };
 

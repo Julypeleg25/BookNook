@@ -27,13 +27,18 @@ import {
 } from "@services/userReviewService";
 import { validateOptionalTextInput, validateTextInput } from "@utils/textValidation";
 
+const isRatingStepValid = (rating: number): boolean => {
+  const steps = rating / RATING_STEP;
+  return Math.abs(steps - Math.round(steps)) < 1e-8;
+};
+
 const parseRating = (rating: unknown): number => {
   const parsedRating = Number(rating);
   if (
     Number.isNaN(parsedRating) ||
     parsedRating < RATING_MIN ||
     parsedRating > RATING_MAX ||
-    !Number.isInteger(parsedRating / RATING_STEP)
+    !isRatingStepValid(parsedRating)
   ) {
     throw new ValidationError(
       `Rating must be a number between ${RATING_MIN} and ${RATING_MAX} in ${RATING_STEP} increments`,
@@ -66,9 +71,13 @@ export const createReviewHandler = async (
       throw new ValidationError("Book ID is required");
     }
 
+    if (!req.file) {
+      throw new ValidationError("Post image is required");
+    }
+
     const parsedRating = parseRating(rating);
 
-    const picturePath = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const picturePath = `/uploads/${req.file.filename}`;
 
     const newReview = await createReview(
       new Types.ObjectId(req.authenticatedUser!.id),
