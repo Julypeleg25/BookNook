@@ -27,7 +27,6 @@ import { useSnackbar } from "notistack";
 import { useEffect } from "react";
 import {
   RATING_MAX,
-  RATING_MIN,
   RATING_STEP,
   REVIEW_TEXT_MAX_LENGTH,
   REVIEW_TEXT_MIN_LENGTH,
@@ -63,79 +62,35 @@ const isAllowedRating = (value: unknown): boolean => {
 };
 
 const validateRating = (value: unknown): true | string => {
-  const numericRating = normalizeRating(value);
-
-  if (numericRating < MIN_SELECTABLE_RATING) {
-    return `Choose a rating from ${MIN_SELECTABLE_RATING} to ${RATING_MAX}`;
-  }
-
-  if (numericRating > RATING_MAX || numericRating < RATING_MIN) {
-    return `Rating must be between ${RATING_MIN} and ${RATING_MAX}`;
-  }
-
-  return isRatingStepAligned(numericRating) || `Rating must use ${RATING_STEP} increments`;
+  return isAllowedRating(value) || "Choose a rating";
 };
 
-const formatRatingValue = (value: number): string => value.toFixed(1);
-
-interface RatingCardProps {
+interface RatingFieldProps {
   value: number;
   error?: string;
   onBlur: () => void;
   onChange: (value: number) => void;
 }
 
-const RatingCard = ({ value, error, onBlur, onChange }: RatingCardProps) => {
+const RatingField = ({ value, error, onBlur, onChange }: RatingFieldProps) => {
   const hasRating = value >= MIN_SELECTABLE_RATING;
-  const displayValue = hasRating ? formatRatingValue(value) : "--";
 
   return (
-    <Box
+    <Stack
+      spacing={0.75}
       sx={{
         border: "1px solid",
-        borderColor: error ? "error.main" : hasRating ? "primary.main" : "divider",
+        borderColor: error ? "error.main" : "divider",
         borderRadius: 2,
-        p: 2,
-        bgcolor: hasRating ? "rgba(91, 111, 106, 0.06)" : "rgba(91, 111, 106, 0.025)",
-        minHeight: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-start",
-        gap: 1.25,
+        px: 2,
+        py: 1.5,
+        bgcolor: "rgba(91, 111, 106, 0.025)",
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1.5}>
-        <Box>
-          <Typography fontWeight={800}>Your Rating</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Pick a score.
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            minWidth: "3.75rem",
-            px: 1.25,
-            py: 0.6,
-            borderRadius: 2,
-            bgcolor: hasRating ? "primary.main" : "background.paper",
-            color: hasRating ? "primary.contrastText" : "text.primary",
-            border: "1px solid",
-            borderColor: hasRating ? "primary.main" : "divider",
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="h6" fontWeight={900} lineHeight={1}>
-            {displayValue}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            / {RATING_MAX}
-          </Typography>
-        </Box>
-      </Stack>
-
+      <Typography fontWeight={800}>Rating</Typography>
       <Rating
         precision={RATING_STEP}
-        value={hasRating ? value : null}
+        value={value}
         onChange={(_, nextValue) => onChange(normalizeRating(nextValue))}
         onBlur={onBlur}
         max={RATING_MAX}
@@ -152,15 +107,12 @@ const RatingCard = ({ value, error, onBlur, onChange }: RatingCardProps) => {
           },
         }}
       />
-
-      <Typography
-        variant="body2"
-        color={error ? "error" : "text.secondary"}
-        sx={{ minHeight: "1.25rem" }}
-      >
-        {error ?? (hasRating ? "Rating selected." : "Required before publishing.")}
-      </Typography>
-    </Box>
+      {error && (
+        <Typography variant="caption" color="error">
+          {error}
+        </Typography>
+      )}
+    </Stack>
   );
 };
 
@@ -200,6 +152,7 @@ const NewPost = () => {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isDirty, isValid },
     reset,
   } = useForm<PostFormValues>({
@@ -401,12 +354,32 @@ const NewPost = () => {
 
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) 18rem" },
-                gap: 2.5,
-                alignItems: "stretch",
+                display: "block",
               }}
             >
+              <Stack spacing={2}>
+                <Controller
+                  name="rating"
+                  control={control}
+                  rules={{
+                    validate: validateRating,
+                  }}
+                  render={({ field, fieldState }) => (
+                    <RatingField
+                      value={normalizeRating(field.value)}
+                      error={fieldState.error?.message}
+                      onBlur={field.onBlur}
+                      onChange={(nextRating) => {
+                        setValue("rating", nextRating, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                    />
+                  )}
+                />
+
               <Controller
                 name="image"
                 control={control}
@@ -425,23 +398,6 @@ const NewPost = () => {
                   />
                 )}
               />
-
-              <Stack spacing={2} justifyContent="stretch">
-                <Controller
-                  name="rating"
-                  control={control}
-                  rules={{
-                    validate: validateRating,
-                  }}
-                  render={({ field, fieldState }) => (
-                    <RatingCard
-                      value={normalizeRating(field.value)}
-                      error={fieldState.error?.message}
-                      onBlur={field.onBlur}
-                      onChange={(nextRating) => field.onChange(nextRating)}
-                    />
-                  )}
-                />
               </Stack>
             </Box>
           </Stack>

@@ -37,6 +37,9 @@ const PostPublishSection = ({
         </Box>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ width: { xs: "100%", md: "auto" } }}>
+          <Button variant="outlined" onClick={onCancel} disabled={isSaving} sx={{ width: { xs: "100%", sm: "auto" }, minWidth: { sm: "8rem" } }}>
+            Cancel
+          </Button>
           <Button
             type="submit"
             variant="contained"
@@ -45,9 +48,6 @@ const PostPublishSection = ({
             sx={{ width: { xs: "100%", sm: "auto" }, minWidth: { sm: "11rem" } }}
           >
             {isSaving ? "Saving..." : (isEditMode ? "Update Review" : "Publish Review")}
-          </Button>
-          <Button variant="outlined" onClick={onCancel} disabled={isSaving} sx={{ width: { xs: "100%", sm: "auto" }, minWidth: { sm: "8rem" } }}>
-            Cancel
           </Button>
         </Stack>
       </Stack>
