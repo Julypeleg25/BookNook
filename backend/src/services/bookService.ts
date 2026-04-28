@@ -1,69 +1,24 @@
-import axios from "axios";
 import {
   BookSummary,
   BookDetail,
   GoogleBooksVolume,
-  GoogleBooksResponse,
   BooksQuery,
 } from "@models/ApiBook";
 import { bookRepository } from "@repositories/bookRepository";
 import { NotFoundError } from "@utils/errors";
-import { logger } from "@utils/logger";
-import { ENV } from "@config/config";
 import { IBook } from "@models/Book";
+import {
+  normalizeBookDetail,
+  normalizeBookSummary,
+  normalizeLocalBookSummary,
+} from "../mappers/book.mapper";
+import { getGoogleBookById, searchGoogleBooks } from "./googleBooksClient";
 
-const GOOGLE_BOOKS_API = ENV.GOOGLE_BOOKS_API;
-const API_KEY = ENV.GOOGLE_BOOKS_API_KEY;
-
-export const normalizeBookSummary = (
-  volume: GoogleBooksVolume,
-): BookSummary => {
-  const info = volume.volumeInfo;
-  const infoTyped = info as { averageRating?: number; ratingsCount?: number } & typeof info;
-  return {
-    id: volume.id,
-    title: info.title,
-    authors: info.authors ?? [],
-    thumbnail: info.imageLinks?.thumbnail,
-    publishedDate: info.publishedDate,
-    avgRating: infoTyped.averageRating,
-    ratingCount: infoTyped.ratingsCount,
-    genres: info.categories ?? [],
-  };
-};
-
-export const normalizeBookDetail = (volume: GoogleBooksVolume): BookDetail => {
-  const info = volume.volumeInfo;
-  const infoTyped = info as { averageRating?: number; ratingsCount?: number } & typeof info;
-  return {
-    id: volume.id,
-    title: info.title,
-    subtitle: info.subtitle,
-    authors: info.authors ?? [],
-    categories: info.categories ?? [],
-    description: info.description,
-    publishedDate: info.publishedDate,
-    pageCount: info.pageCount,
-    thumbnail: info.imageLinks?.thumbnail,
-    previewLink: info.previewLink,
-    avgRating: infoTyped.averageRating,
-    ratingCount: infoTyped.ratingsCount,
-    genres: info.categories ?? [],
-  };
-};
-
-export const normalizeLocalBookSummary = (book: IBook): BookSummary => {
-  return {
-    id: book.externalId,
-    title: book.title,
-    authors: book.authors,
-    thumbnail: book.thumbnail,
-    publishedDate: book.publishedDate,
-    avgRating: book.avgRating,
-    ratingCount: book.ratingCount,
-    genres: book.categories,
-  };
-};
+export {
+  normalizeBookDetail,
+  normalizeBookSummary,
+  normalizeLocalBookSummary,
+} from "../mappers/book.mapper";
 
 interface PaginatedBooks {
   page: number;
@@ -91,17 +46,14 @@ export const searchBooks = async (
   const fields =
     "items(id,volumeInfo(title,authors,imageLinks/thumbnail,publishedDate)),totalItems";
 
-  const response = await axios.get<GoogleBooksResponse>(GOOGLE_BOOKS_API, {
-    params: {
-      q,
-      startIndex,
-      maxResults: limitNumber,
-      fields,
-      ...(API_KEY ? { key: API_KEY } : {}),
-    },
+  const response = await searchGoogleBooks({
+    q,
+    startIndex,
+    maxResults: limitNumber,
+    fields,
   });
 
-  const items = response.data.items?.map(normalizeBookSummary) ?? [];
+  const items = response.items?.map(normalizeBookSummary) ?? [];
 
   return {
     page: pageNumber,
@@ -150,21 +102,7 @@ export const localSearchBooks = async (
 export const getBookByGoogleIdFromGoogle = async (
   googleId: string,
 ): Promise<GoogleBooksVolume> => {
-  try {
-    const response = await axios.get<GoogleBooksVolume>(
-      `${GOOGLE_BOOKS_API}/${googleId}`,
-      {
-        params: API_KEY ? { key: API_KEY } : undefined,
-      },
-    );
-    return response.data;
-  } catch (error) {
-    logger.error(
-      `Error fetching book ${googleId} from Google Books API:`,
-      error,
-    );
-    throw new NotFoundError("Book not found in Google Books");
-  }
+  return getGoogleBookById(googleId);
 };
 
 export const getLocalBookByGoogleId = async (

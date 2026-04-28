@@ -11,42 +11,19 @@ import { isImageFile, deleteFile } from "@utils/fileUtils";
 import { Types } from "mongoose";
 import { HttpStatusCode } from "axios";
 import {
-  REVIEW_TEXT_MAX_LENGTH,
-  REVIEW_TEXT_MIN_LENGTH,
-  RATING_MAX,
-  RATING_MIN,
-  RATING_STEP,
-  SEARCH_QUERY_MAX_LENGTH,
-} from "@shared/constants/validation";
-import {
   deleteReview,
   getPopulatedReviewById,
   isReviewAuthor,
   updateReview,
   getEnrichedReviews,
 } from "@services/userReviewService";
-import { validateOptionalTextInput, validateTextInput } from "@utils/textValidation";
-
-const isRatingStepValid = (rating: number): boolean => {
-  const steps = rating / RATING_STEP;
-  return Math.abs(steps - Math.round(steps)) < 1e-8;
-};
-
-const parseRating = (rating: unknown): number => {
-  const parsedRating = Number(rating);
-  if (
-    Number.isNaN(parsedRating) ||
-    parsedRating < RATING_MIN ||
-    parsedRating > RATING_MAX ||
-    !isRatingStepValid(parsedRating)
-  ) {
-    throw new ValidationError(
-      `Rating must be a number between ${RATING_MIN} and ${RATING_MAX} in ${RATING_STEP} increments`,
-    );
-  }
-
-  return parsedRating;
-};
+import {
+  parseGetAllReviewsQuery,
+  parseRating,
+  validateOptionalReviewText,
+  validateReviewText,
+  type ReviewUpdateInput,
+} from "../validators/userReview.validators";
 
 export const createReviewHandler = async (
   req: Request,
@@ -55,11 +32,7 @@ export const createReviewHandler = async (
 ): Promise<void> => {
   try {
     const { bookId, rating } = req.body;
-    const normalizedReview = validateTextInput(req.body.review, {
-      fieldLabel: "Review",
-      minLength: REVIEW_TEXT_MIN_LENGTH,
-      maxLength: REVIEW_TEXT_MAX_LENGTH,
-    });
+    const normalizedReview = validateReviewText(req.body.review);
 
     if (req.file && !isImageFile(req.file.originalname)) {
       await deleteFile(req.file.path);
@@ -101,21 +74,8 @@ export const getAllReviewsHandler = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const minLikes = req.query.minLikes
-      ? Number(req.query.minLikes)
-      : undefined;
-    const username = req.query.username
-      ? String(req.query.username)
-      : undefined;
-    const rawSearchQuery = req.query.search ? String(req.query.search).trim() : undefined;
-    const searchQuery = rawSearchQuery
-      ? validateTextInput(rawSearchQuery, {
-          fieldLabel: "Search query",
-          maxLength: SEARCH_QUERY_MAX_LENGTH,
-        })
-      : undefined;
-    const rating = req.query.rating ? Number(req.query.rating) : undefined;
-    const genre = req.query.genre ? String(req.query.genre) : undefined;
+    const { minLikes, searchQuery, username, rating, genre } =
+      parseGetAllReviewsQuery(req.query);
     const reviews = await getAllReviews(minLikes, searchQuery, username, rating, genre);
     const enriched = await getEnrichedReviews(reviews);
 
@@ -204,17 +164,8 @@ export const updateReviewHandler = async (
 
     const { rating } = req.body;
 
-    const updateData: {
-      review?: string;
-      rating?: number;
-      picturePath?: string;
-    } = {};
-
-    const normalizedReview = validateOptionalTextInput(req.body.review, {
-      fieldLabel: "Review",
-      minLength: REVIEW_TEXT_MIN_LENGTH,
-      maxLength: REVIEW_TEXT_MAX_LENGTH,
-    });
+    const updateData: ReviewUpdateInput = {};
+    const normalizedReview = validateOptionalReviewText(req.body.review);
 
     if (normalizedReview !== undefined) {
       updateData.review = normalizedReview;
