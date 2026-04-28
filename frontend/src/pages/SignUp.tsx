@@ -90,7 +90,12 @@ const SignUp = () => {
               name="avatar"
               control={control}
               render={({ field }) => (
-                <ImageUpload value={field.value ?? null} onChange={field.onChange} disabled={loading} />
+                <ImageUpload
+                  value={field.value ?? null}
+                  onChange={field.onChange}
+                  disabled={loading}
+                  compactActions
+                />
               )}
             />
 

@@ -153,14 +153,13 @@ const Profile = () => {
                   gridTemplateColumns={{
                     xs: "1fr",
                     sm: "repeat(2, minmax(0, 1fr))",
-                    lg: "repeat(4, minmax(0, 1fr))",
+                    lg: "repeat(3, minmax(0, 1fr))",
                   }}
                   gap={1.5}
                 >
                   <StatTile icon={<MdPostAdd />} label="Posts" value={reviews.length} loading={isReviewsLoading} />
                   <StatTile icon={<LuBookCheck />} label="Readlist" value={readlistBooks.length} loading={isReadlistLoading} />
                   <StatTile icon={<BsBookmark />} label="Wishlist" value={wishlistBooks.length} loading={isWishlistLoading} />
-                  <StatTile icon={<FiHeart />} label="Likes received" value={profileStats.totalLikes} loading={isReviewsLoading} />
                 </Box>
 
                 <Paper
