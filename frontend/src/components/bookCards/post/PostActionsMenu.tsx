@@ -5,6 +5,8 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  SxProps,
+  Theme,
 } from "@mui/material";
 import { FiEdit, FiMoreVertical, FiBookOpen } from "react-icons/fi";
 import { MdDelete } from "react-icons/md";
@@ -19,9 +21,11 @@ import { getBookId } from "@/utils/bookUtils";
 interface PostActionsMenuProps {
   post: BookPost;
   edge?: "start" | "end" | false;
+  sx?: SxProps<Theme>;
+  variant?: "glass" | "standard";
 }
 
-const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
+const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostActionsMenuProps) => {
   const { user } = useUserStore();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -47,6 +51,8 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
     handleClose();
   };
 
+  const isGlass = variant === "glass";
+
   return (
     <>
       <IconButton
@@ -54,12 +60,27 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
         onClick={handleOpen}
         edge={edge}
         sx={{
-          color: "text.secondary",
-          "&:hover": { color: "primary.main" },
+          color: isGlass ? "#fff" : "text.secondary",
           p: 0.75,
+          transition: "all 0.2s ease",
+          ...(isGlass && {
+            bgcolor: "rgba(255, 255, 255, 0.15)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "12px",
+            "&:hover": {
+              bgcolor: "rgba(255, 255, 255, 0.25)",
+              transform: "scale(1.1)",
+              color: "#fff",
+            },
+          }),
+          ...(!isGlass && {
+            "&:hover": { color: "primary.main", transform: "scale(1.1)" },
+          }),
+          ...sx,
         }}
       >
-        <FiMoreVertical size={18} />
+        <FiMoreVertical size={20} />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -69,6 +90,17 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         onClick={(e) => e.stopPropagation()}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: "12px",
+              minWidth: 180,
+              boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
+              border: "1px solid",
+              borderColor: "divider",
+            }
+          }
+        }}
       >
         <MenuItem
           component={Link}
@@ -79,7 +111,7 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
           <ListItemIcon>
             <BsEye size={18} />
           </ListItemIcon>
-          <ListItemText>View Post</ListItemText>
+          <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>View Post</ListItemText>
         </MenuItem>
         <MenuItem
           component={Link}
@@ -90,13 +122,13 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
           <ListItemIcon>
             <FiEdit size={18} />
           </ListItemIcon>
-          <ListItemText>Edit</ListItemText>
+          <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>Edit</ListItemText>
         </MenuItem>
         <MenuItem onClick={onDeleteClick} sx={{ color: "error.main" }}>
           <ListItemIcon>
             <MdDelete size={20} color="inherit" />
           </ListItemIcon>
-          <ListItemText>Delete</ListItemText>
+          <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>Delete</ListItemText>
         </MenuItem>
 
         <MenuItem
@@ -107,7 +139,7 @@ const PostActionsMenu = ({ post, edge = "end" }: PostActionsMenuProps) => {
           <ListItemIcon>
             <FiBookOpen size={18} color="inherit" />
           </ListItemIcon>
-          <ListItemText>View Book Details</ListItemText>
+          <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>View Book Details</ListItemText>
         </MenuItem>
       </Menu>
 

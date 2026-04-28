@@ -378,13 +378,6 @@ const NewPost = () => {
                     )}
                   />
                 </Box>
-
-                <PostPublishSection
-                  disabled={!canSubmit}
-                  isEditMode={Boolean(reviewId)}
-                  isSaving={isSaving}
-                  onCancel={onCancel}
-                />
               </Stack>
             </Box>
           </Stack>
@@ -466,6 +459,17 @@ const NewPost = () => {
             />
           </Stack>
         </Paper>
+
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Box sx={{ width: { xs: "100%", md: "24rem" } }}>
+            <PostPublishSection
+              disabled={!canSubmit}
+              isEditMode={Boolean(reviewId)}
+              isSaving={isSaving}
+              onCancel={onCancel}
+            />
+          </Box>
+        </Box>
       </Stack>
     </Box>
   );
