@@ -32,6 +32,13 @@ export const userReviewService = {
         return res.data;
     },
 
+    async getReviewsByUserId(userId: string): Promise<UserReview[]> {
+        const res = await axiosClient.get<UserReview[]>(
+            endpoints.userReviews.byUser(userId)
+        );
+        return res.data;
+    },
+
     async getAllReviews(
         minLikes?: number,
         searchQuery?: string,

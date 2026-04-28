@@ -27,7 +27,6 @@ import { useSnackbar } from "notistack";
 import { useEffect } from "react";
 import {
   RATING_MAX,
-  RATING_MIN,
   RATING_STEP,
   REVIEW_TEXT_MAX_LENGTH,
   REVIEW_TEXT_MIN_LENGTH,
@@ -40,6 +39,85 @@ import type {
   UpdateReviewFormData,
 } from "@/models/PostForm";
 import { getErrorMessage } from "@/api/apiError";
+
+const RATING_EPSILON = 1e-8;
+const EMPTY_RATING = 0;
+const MIN_SELECTABLE_RATING = RATING_STEP;
+
+const normalizeRating = (value: unknown): number => {
+  const numericRating = Number(value);
+  return Number.isFinite(numericRating) ? numericRating : EMPTY_RATING;
+};
+
+const isRatingStepAligned = (value: number): boolean =>
+  Math.abs(value / RATING_STEP - Math.round(value / RATING_STEP)) < RATING_EPSILON;
+
+const isAllowedRating = (value: unknown): boolean => {
+  const numericRating = normalizeRating(value);
+  return (
+    numericRating >= MIN_SELECTABLE_RATING &&
+    numericRating <= RATING_MAX &&
+    isRatingStepAligned(numericRating)
+  );
+};
+
+const validateRating = (value: unknown): true | string => {
+  return isAllowedRating(value) || "Choose a rating";
+};
+
+interface RatingFieldProps {
+  value: number;
+  error?: string;
+  onBlur: () => void;
+  onChange: (value: number) => void;
+}
+
+const RatingField = ({ value, error, onBlur, onChange }: RatingFieldProps) => {
+  const hasRating = value >= MIN_SELECTABLE_RATING;
+
+  return (
+    <Stack
+      spacing={0.75}
+      sx={{
+        alignSelf: "flex-start",
+        width: "fit-content",
+        maxWidth: "100%",
+        border: "1px solid",
+        borderColor: error ? "error.main" : "divider",
+        borderRadius: 2,
+        px: 1.5,
+        py: 1,
+        bgcolor: "rgba(91, 111, 106, 0.025)",
+      }}
+    >
+      <Typography fontWeight={800}>Rating</Typography>
+      <Rating
+        precision={RATING_STEP}
+        value={value}
+        onChange={(_, nextValue) => onChange(normalizeRating(nextValue))}
+        onBlur={onBlur}
+        max={RATING_MAX}
+        sx={{
+          alignSelf: "center",
+          "& .MuiRating-icon": {
+            fontSize: { xs: "1.6rem", sm: "1.75rem" },
+          },
+          "& .MuiRating-iconFilled": {
+            color: "primary.main",
+          },
+          "& .MuiRating-iconHover": {
+            color: "primary.dark",
+          },
+        }}
+      />
+      {error && (
+        <Typography variant="caption" color="error">
+          {error}
+        </Typography>
+      )}
+    </Stack>
+  );
+};
 
 const NewPost = () => {
   const { bookId: routeBookId, id: reviewId } = useParams<{ bookId?: string; id?: string }>();
@@ -69,15 +147,15 @@ const NewPost = () => {
       const response = await booksService.getById(bookId);
       return response.book;
     },
-    enabled: !!bookId && !bookFromState,
+    enabled: !!bookId,
   });
 
-  const book = bookFromState || bookData || (typeof reviewData?.book === "object" ? reviewData.book : null);
+  const book = bookData || (typeof reviewData?.book === "object" ? reviewData.book : null) || bookFromState || null;
 
   const {
     control,
     handleSubmit,
-    trigger,
+    setValue,
     formState: { errors, isDirty, isValid },
     reset,
   } = useForm<PostFormValues>({
@@ -151,27 +229,13 @@ const NewPost = () => {
   const isSaving = createReviewMutation.isPending || updateReviewMutation.isPending;
   const hasImage = image instanceof File || (typeof image === "string" && image.trim().length > 0);
   const reviewLength = review?.length || 0;
-  const isValidRating = (value: unknown) => {
-    const numericRating = Number(value);
-    return (
-      Number.isFinite(numericRating) &&
-      numericRating >= RATING_STEP &&
-      numericRating <= RATING_MAX &&
-      Math.abs(numericRating / RATING_STEP - Math.round(numericRating / RATING_STEP)) < 1e-8
-    );
-  };
-  const canSubmit = isDirty && isValid && hasImage && isValidRating(rating) && !isSaving;
+  const canSubmit = isDirty && isValid && hasImage && isAllowedRating(rating) && !isSaving;
 
   const onSubmit = (data: PostFormValues) => {
     if (isSaving) return;
 
-    const normalizedRating = Number(data.rating);
-    if (
-      Number.isNaN(normalizedRating) ||
-      normalizedRating < RATING_STEP ||
-      normalizedRating > RATING_MAX ||
-      !isValidRating(normalizedRating)
-    ) {
+    const normalizedRating = normalizeRating(data.rating);
+    if (!isAllowedRating(normalizedRating)) {
       return;
     }
 
@@ -231,7 +295,7 @@ const NewPost = () => {
         bgcolor: "background.default",
       }}
     >
-      <Stack spacing={3} maxWidth="76rem" mx="auto">
+      <Stack spacing={2.25} maxWidth="76rem" mx="auto">
         {isSaving && (
           <LinearProgress
             sx={{
@@ -250,12 +314,12 @@ const NewPost = () => {
           alignItems={{ xs: "flex-start", md: "flex-end" }}
           gap={2}
         >
-          <Stack spacing={0.75} maxWidth="44rem">
+          <Stack spacing={0.5} maxWidth="44rem">
             <Typography variant="h4" fontWeight={800}>
-              {reviewId ? "Edit Post" : "Create Post"}
+              {reviewId ? "Edit Review" : "Write Review"}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Pair your review with a real image, a clear rating, and enough context for other readers to decide.
+              Add a rating, image, and clear thoughts for other readers.
             </Typography>
           </Stack>
         </Stack>
@@ -265,14 +329,14 @@ const NewPost = () => {
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, md: 3 },
+            p: { xs: 2, md: 2.5 },
             borderRadius: 3,
             border: "1px solid",
             borderColor: "divider",
             bgcolor: "background.paper",
           }}
         >
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <Stack
               direction={{ xs: "column", sm: "row" }}
               justifyContent="space-between"
@@ -284,7 +348,7 @@ const NewPost = () => {
                   Post Setup
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Choose the visual and rating first, then write the review below.
+                  Add the image and rating for this review.
                 </Typography>
               </Box>
             </Stack>
@@ -293,12 +357,32 @@ const NewPost = () => {
 
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1.15fr) minmax(20rem, 0.85fr)" },
-                gap: 3,
-                alignItems: "start",
+                display: "block",
               }}
             >
+              <Stack spacing={2}>
+                <Controller
+                  name="rating"
+                  control={control}
+                  rules={{
+                    validate: validateRating,
+                  }}
+                  render={({ field, fieldState }) => (
+                    <RatingField
+                      value={normalizeRating(field.value)}
+                      error={fieldState.error?.message}
+                      onBlur={field.onBlur}
+                      onChange={(nextRating) => {
+                        setValue("rating", nextRating, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                    />
+                  )}
+                />
+
               <Controller
                 name="image"
                 control={control}
@@ -317,74 +401,6 @@ const NewPost = () => {
                   />
                 )}
               />
-
-              <Stack spacing={2}>
-                <Box
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                    p: { xs: 2, md: 2.5 },
-                    bgcolor: "rgba(91, 111, 106, 0.035)",
-                  }}
-                >
-                  <Controller
-                    name="rating"
-                    control={control}
-                    rules={{
-                      validate: (value) => {
-                        const numericRating = Number(value);
-                        if (!Number.isFinite(numericRating) || numericRating < RATING_STEP) {
-                          return `Rating is required (${RATING_STEP}-${RATING_MAX})`;
-                        }
-                        if (numericRating > RATING_MAX) {
-                          return `Rating must be between ${RATING_MIN} and ${RATING_MAX}`;
-                        }
-                        return isValidRating(numericRating) || `Rating must use ${RATING_STEP} increments`;
-                      },
-                    }}
-                    render={({ field, fieldState }) => (
-                      <Box>
-                        <Typography mb={1} fontWeight={800}>
-                          Rating
-                        </Typography>
-                        <Rating
-                          precision={RATING_STEP}
-                          value={Number(field.value) || 0}
-                          onChange={(_, value) => {
-                            const nextRating = Number(value ?? 0);
-                            field.onChange(nextRating);
-                            void trigger("rating");
-                          }}
-                          onBlur={field.onBlur}
-                          max={RATING_MAX}
-                          sx={{
-                            "& .MuiRating-icon": {
-                              fontSize: { xs: "2rem", sm: "2.2rem" },
-                            },
-                          }}
-                        />
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                          {Number(field.value) > 0
-                            ? `${Number(field.value).toFixed(1)} / ${RATING_MAX}`
-                            : "Choose a rating"}
-                        </Typography>
-                        {fieldState.error && (
-                          <Typography color="error" variant="caption">
-                            {fieldState.error.message}
-                          </Typography>
-                        )}
-                      </Box>
-                    )}
-                  />
-                </Box>
-
-                <PostPublishSection
-                  disabled={!canSubmit}
-                  isEditMode={Boolean(reviewId)}
-                  isSaving={isSaving}
-                  onCancel={onCancel}
-                />
               </Stack>
             </Box>
           </Stack>
@@ -393,14 +409,14 @@ const NewPost = () => {
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, md: 3 },
+            p: { xs: 2, md: 2.5 },
             borderRadius: 3,
             border: "1px solid",
             borderColor: "divider",
             bgcolor: "background.paper",
           }}
         >
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <Stack
               direction={{ xs: "column", sm: "row" }}
               justifyContent="space-between"
@@ -409,10 +425,10 @@ const NewPost = () => {
             >
               <Box>
                 <Typography variant="h6" fontWeight={800} gutterBottom>
-                  Write Your Review
+                  Write Review
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Add a useful opinion, not just a summary.
+                  Share what did you think, what stood out, and who might enjoy it.
                 </Typography>
               </Box>
               <Chip
@@ -445,8 +461,8 @@ const NewPost = () => {
                   label="Review"
                   placeholder="What stood out, who is this book for, and how did it make you feel?"
                   multiline
-                  minRows={9}
-                  maxRows={16}
+                  minRows={7}
+                  maxRows={14}
                   fullWidth
                   error={!!errors.review}
                   helperText={
@@ -466,6 +482,13 @@ const NewPost = () => {
             />
           </Stack>
         </Paper>
+
+        <PostPublishSection
+          disabled={!canSubmit}
+          isEditMode={Boolean(reviewId)}
+          isSaving={isSaving}
+          onCancel={onCancel}
+        />
       </Stack>
     </Box>
   );

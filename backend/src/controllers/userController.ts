@@ -31,6 +31,9 @@ export const updateUserHandler = async (
 
       await deleteOldAvatar(req.authenticatedUser!.avatar);
       updateData.avatar = `/uploads/${req.file.filename}`;
+    } else if ("avatar" in req.body && req.body.avatar === "") {
+      await deleteOldAvatar(req.authenticatedUser!.avatar);
+      updateData.avatar = "";
     }
 
     const updatedUser = await updateUser(userId, updateData);

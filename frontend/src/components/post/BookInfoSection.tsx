@@ -1,8 +1,7 @@
-import { Box, Chip, Divider, Paper, Rating, Stack, Typography } from "@mui/material";
+import { Box, Chip, Divider, Paper, Stack, Typography } from "@mui/material";
 import type { Book } from "@models/Book";
 import { formatDate } from "@utils/dateUtils";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
-import { RATING_STEP } from "@shared/constants/validation";
 
 interface BookInfoSectionProps {
   book: Book;
@@ -16,7 +15,6 @@ interface InfoRowProps {
 const BookInfoSection = ({ book }: BookInfoSectionProps) => {
   const description = book.description?.replace(/<[^>]*>?/gm, "").trim();
   const genres = book.genres?.length ? book.genres : book.categories ?? [];
-  const hasCommunityRating = typeof book.avgRating === "number" && (book.ratingCount ?? 0) > 0;
 
   return (
     <Paper
@@ -83,25 +81,7 @@ const BookInfoSection = ({ book }: BookInfoSectionProps) => {
             >
               <InfoRow label="Pages" value={book.pageCount ?? "N/A"} />
               <InfoRow label="Published" value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"} />
-              <InfoRow
-                label="Community"
-                value={hasCommunityRating ? `${book.avgRating!.toFixed(1)} (${book.ratingCount})` : "No ratings yet"}
-              />
             </Box>
-
-            {hasCommunityRating && (
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Rating
-                  value={book.avgRating}
-                  precision={RATING_STEP}
-                  readOnly
-                  size="small"
-                />
-                <Typography variant="body2" color="text.secondary">
-                  Average reader rating
-                </Typography>
-              </Stack>
-            )}
 
             {genres.length > 0 && (
               <Box>

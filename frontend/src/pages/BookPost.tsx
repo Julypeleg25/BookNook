@@ -11,7 +11,6 @@ import { useQuery } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import type { BookPost } from "@models/Book";
 import env from "@/config/env";
-import PostActionsMenu from "@components/bookCards/post/PostActionsMenu";
 import { mapReviewToBookPost } from "@/utils/reviewUtils";
 import { queryKeys } from "@/api/queryKeys";
 
@@ -79,7 +78,6 @@ const BookPost = () => {
           }}
         >
           <BookPostHeader bookPost={bookPost} />
-          <PostActionsMenu post={bookPost} />
         </Box>
         <Box
           display="grid"

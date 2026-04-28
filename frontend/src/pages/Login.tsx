@@ -3,6 +3,7 @@ import {
   Button,
   Divider,
   IconButton,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -76,153 +77,133 @@ const Login = () => {
   };
 
   return (
-    <Box display="flex" marginTop={"5rem"} marginLeft={"4rem"}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Box flex={1} display="flex" marginLeft={"8rem"}>
-          <div>
-            <div style={{ justifySelf: "start", gap: "2rem", display: "grid" }}>
-              <Typography variant="h4">Welcome to BookNook</Typography>
+    <Box sx={{ display: "flex", minHeight: "100vh", alignItems: "center", px: "4rem" }}>
+      <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+        <Stack
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          spacing="1.5rem"
+          sx={{ width: "100%", maxWidth: "23rem" }}
+        >
+          <Typography variant="h4" fontWeight="bold">
+            Welcome back
+          </Typography>
+
+          <Stack spacing="1.5rem">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <GoogleLogin
                 shape="circle"
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleFailure}
               />
-              <Divider>or</Divider>
-            </div>
-            <div
-              style={{
-                gap: "1rem",
-                marginTop: "1rem",
-                marginBottom: "1rem",
-                justifySelf: "start",
-              }}
-            >
-              <div
-                style={{
-                  gap: "1rem",
-                  marginTop: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <Typography style={{ justifySelf: "start" }}>
-                  Username
-                </Typography>
-                <Controller
-                  name="username"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      helperText={errors.username?.message}
-                      error={!!errors.username}
-                      style={{ width: "23rem" }}
-                      placeholder="Enter your username"
-                    />
-                  )}
-                />
-              </div>
-              <div
-                style={{
-                  gap: "1rem",
-                  marginTop: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <Typography style={{ justifySelf: "start" }}>
-                  Password
-                </Typography>
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      type={showPassword ? "text" : "password"}
-                      helperText={errors.password?.message}
-                      error={!!errors.password}
-                      style={{ width: "23rem" }}
-                      placeholder="Enter your password"
-                      slotProps={{
-                        input: {
-                          endAdornment: (
-                            <IconButton
-                              onClick={() => setShowPassword((prev) => !prev)}
-                              edge="end"
-                              sx={{
-                                outline: "none",
-                                border: "none",
-                                "&:focus": { outline: "none" },
-                              }}
-                            >
-                              {showPassword ? (
-                                <BsEyeSlashFill />
-                              ) : (
-                                <BsEyeFill />
-                              )}
-                            </IconButton>
-                          ),
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </div>
-              {(errors.root || loginError) && (
-                <Typography
-                  color="error"
-                  textAlign="center"
-                  sx={{ mb: "1rem" }}
-                >
-                  {errors.root?.message || loginError}
-                </Typography>
-              )}
-              <Button
-                style={{
-                  width: "18rem",
-                  marginTop: "2rem",
-                  justifySelf: "center",
-                  display: "flex",
-                }}
-                variant="outlined"
-                type="submit"
-              >
-                Log in
-              </Button>
-            </div>
-          </div>
-        </Box>
-      </form>
-      <Box
-        flex={1}
-        marginRight={"2em"}
-        marginTop={"1rem"}
-        justifyItems={"center"}
-        display={"grid"}
-      >
-        <img src={loginIcon} style={{ width: "50%", height: "90%" }} />
-        <Box>
-          <Typography
-            variant="body2"
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            Don't have an account?
-          </Typography>
+            </Box>
 
-          <div
+            <Divider>or</Divider>
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: "0.5rem", fontWeight: 600 }}>
+                Username
+              </Typography>
+              <Controller
+                name="username"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    helperText={errors.username?.message}
+                    error={!!errors.username}
+                    placeholder="Enter your username"
+                  />
+                )}
+              />
+            </Box>
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: "0.5rem", fontWeight: 600 }}>
+                Password
+              </Typography>
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    type={showPassword ? "text" : "password"}
+                    helperText={errors.password?.message}
+                    error={!!errors.password}
+                    placeholder="Enter your password"
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <IconButton
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            edge="end"
+                            sx={{
+                              outline: "none",
+                              border: "none",
+                              "&:focus": { outline: "none" },
+                            }}
+                          >
+                            {showPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
+                          </IconButton>
+                        ),
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Box>
+          </Stack>
+
+          {(errors.root || loginError) && (
+            <Typography color="error" variant="body2" textAlign="center">
+              {errors.root?.message || loginError}
+            </Typography>
+          )}
+
+          <Button
+            sx={{
+              width: "18rem",
+              marginTop: "2rem",
+              alignSelf: "center",
+            }}
+            variant="outlined"
+            type="submit"
+          >
+            Log in
+          </Button>
+        </Stack>
+      </Box>
+
+      <Box
+        sx={{
+          flex: 1,
+          display: "grid",
+          justifyItems: "center",
+          alignSelf: "center",
+          gap: 2,
+        }}
+      >
+        <Box
+          component="img"
+          src={loginIcon}
+          sx={{ display: { xs: "none", md: "block" }, width: "100%", maxWidth: "30rem" }}
+        />
+        <Box sx={{ textAlign: "center" }}>
+          <Typography variant="body2">Don't have an account?</Typography>
+
+          <Box
             onClick={handleSignup}
-            style={{
+            sx={{
               color: "blue",
-              textDecoration: "underline",
               cursor: "pointer",
+              textDecoration: "underline",
             }}
           >
             Sign up
-          </div>
+          </Box>
         </Box>
       </Box>
     </Box>

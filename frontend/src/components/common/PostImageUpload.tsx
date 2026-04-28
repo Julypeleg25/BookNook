@@ -3,13 +3,10 @@ import {
   Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
   Stack,
   Typography,
 } from "@mui/material";
-import { FiCamera, FiImage, FiUploadCloud } from "react-icons/fi";
+import { FiImage, FiUploadCloud } from "react-icons/fi";
 
 interface PostImageUploadProps {
   value: File | string | null;
@@ -25,13 +22,8 @@ const PostImageUpload = ({
   helperText,
 }: PostImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [cameraOpen, setCameraOpen] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
 
   const preview = useMemo(
     () => (value instanceof File ? URL.createObjectURL(value) : value || ""),
@@ -45,52 +37,6 @@ const PostImageUpload = ({
       }
     };
   }, [preview, value]);
-
-  useEffect(() => {
-    if (!cameraOpen) return;
-
-    let activeStream: MediaStream | null = null;
-
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((mediaStream) => {
-        activeStream = mediaStream;
-        setStream(mediaStream);
-        setCameraError(null);
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-        }
-      })
-      .catch(() => {
-        setCameraError("Camera access is unavailable. Upload an image from your device instead.");
-      });
-
-    return () => {
-      activeStream?.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    };
-  }, [cameraOpen]);
-
-  const takePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.drawImage(video, 0, 0);
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-
-      const file = new File([blob], "post-image.jpg", { type: "image/jpeg" });
-      onChange(file);
-      setCameraOpen(false);
-    }, "image/jpeg");
-  };
 
   const handleFile = (file?: File) => {
     if (file?.type.startsWith("image/")) {
@@ -135,14 +81,6 @@ const PostImageUpload = ({
           >
             Upload Image
           </Button>
-          <Button
-            variant="outlined"
-            onClick={() => setCameraOpen(true)}
-            startIcon={<FiCamera size={16} />}
-            sx={{ width: { xs: "100%", sm: "fit-content" } }}
-          >
-            Take Photo
-          </Button>
         </Stack>
       </Stack>
 
@@ -156,7 +94,8 @@ const PostImageUpload = ({
         onClick={() => !preview && fileInputRef.current?.click()}
         sx={{
           width: "100%",
-          aspectRatio: { xs: "4 / 3", sm: "16 / 10" },
+          maxWidth: "32rem",
+          aspectRatio: { xs: "16 / 10", sm: "16 / 9" },
           bgcolor: preview ? "grey.50" : "rgba(91, 111, 106, 0.04)",
           borderRadius: "12px",
           overflow: "hidden",
@@ -218,32 +157,6 @@ const PostImageUpload = ({
         onChange={handleFileSelect}
       />
 
-      <Dialog
-        open={cameraOpen}
-        onClose={() => setCameraOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogContent>
-          {cameraError ? (
-            <Alert severity="warning">{cameraError}</Alert>
-          ) : (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              style={{ width: "100%", borderRadius: 12, backgroundColor: "#111827" }}
-            />
-          )}
-          <canvas ref={canvasRef} hidden />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCameraOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={takePhoto} disabled={!stream}>
-            Capture
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

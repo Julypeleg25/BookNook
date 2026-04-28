@@ -137,7 +137,7 @@ ${query}
 ${PROMPT_RESPONSE_REQUIREMENTS_LABEL}
 ${responseInstruction}
 
-Provide a helpful, natural book recommendation answer for the user.
+Provide a helpful, 2-5 sentences long, natural book recommendation answer for the user.
 `.trim();
 
         const result = await model.generateContent(prompt);
