@@ -76,6 +76,8 @@ const validateRating = (value: unknown): true | string => {
   return isRatingStepAligned(numericRating) || `Rating must use ${RATING_STEP} increments`;
 };
 
+const formatRatingValue = (value: number): string => value.toFixed(1);
+
 interface RatingCardProps {
   value: number;
   error?: string;
@@ -85,7 +87,7 @@ interface RatingCardProps {
 
 const RatingCard = ({ value, error, onBlur, onChange }: RatingCardProps) => {
   const hasRating = value >= MIN_SELECTABLE_RATING;
-  const displayValue = hasRating ? value.toFixed(1) : "--";
+  const displayValue = hasRating ? formatRatingValue(value) : "--";
 
   return (
     <Box
@@ -93,31 +95,32 @@ const RatingCard = ({ value, error, onBlur, onChange }: RatingCardProps) => {
         border: "1px solid",
         borderColor: error ? "error.main" : hasRating ? "primary.main" : "divider",
         borderRadius: 2,
-        p: 2.25,
+        p: 2,
         bgcolor: hasRating ? "rgba(91, 111, 106, 0.06)" : "rgba(91, 111, 106, 0.025)",
         minHeight: "100%",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        gap: 1.5,
+        justifyContent: "flex-start",
+        gap: 1.25,
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1.5}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1.5}>
         <Box>
           <Typography fontWeight={800}>Your Rating</Typography>
           <Typography variant="body2" color="text.secondary">
-            Half-star ratings are supported.
+            Pick a score.
           </Typography>
         </Box>
         <Box
           sx={{
-            minWidth: "4.25rem",
+            minWidth: "3.75rem",
             px: 1.25,
-            py: 0.75,
+            py: 0.6,
             borderRadius: 2,
-            bgcolor: "background.paper",
+            bgcolor: hasRating ? "primary.main" : "background.paper",
+            color: hasRating ? "primary.contrastText" : "text.primary",
             border: "1px solid",
-            borderColor: "divider",
+            borderColor: hasRating ? "primary.main" : "divider",
             textAlign: "center",
           }}
         >
@@ -139,10 +142,13 @@ const RatingCard = ({ value, error, onBlur, onChange }: RatingCardProps) => {
         sx={{
           alignSelf: "center",
           "& .MuiRating-icon": {
-            fontSize: { xs: "2.35rem", sm: "2.55rem" },
+            fontSize: { xs: "2rem", sm: "2.15rem" },
           },
           "& .MuiRating-iconFilled": {
             color: "primary.main",
+          },
+          "& .MuiRating-iconHover": {
+            color: "primary.dark",
           },
         }}
       />
@@ -150,9 +156,9 @@ const RatingCard = ({ value, error, onBlur, onChange }: RatingCardProps) => {
       <Typography
         variant="body2"
         color={error ? "error" : "text.secondary"}
-        sx={{ minHeight: "1.25rem", textAlign: "center" }}
+        sx={{ minHeight: "1.25rem" }}
       >
-        {error ?? (hasRating ? "Looks good." : "Choose a rating to continue.")}
+        {error ?? (hasRating ? "Rating selected." : "Required before publishing.")}
       </Typography>
     </Box>
   );

@@ -137,8 +137,8 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         <Box
           sx={{
             position: "absolute",
-            top: 12,
-            right: 18,
+            top: 14,
+            right: 30,
             zIndex: 2,
           }}
           onClick={(event) => event.stopPropagation()}
