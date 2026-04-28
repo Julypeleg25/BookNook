@@ -36,7 +36,8 @@ const ProfileForm = ({ onCancel }: ProfileFormProps) => {
   const watchedValues = watch();
   const trimmedUsername = watchedValues.username.trim();
   const usernameChanged = trimmedUsername !== initialValues.username;
-  const avatarChanged = watchedValues.avatar instanceof File;
+  const avatarChanged =
+    watchedValues.avatar instanceof File || watchedValues.avatar !== initialValues.avatar;
   const hasChanges = usernameChanged || avatarChanged;
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -53,7 +54,7 @@ const ProfileForm = ({ onCancel }: ProfileFormProps) => {
     try {
       await updateUser({
         ...(usernameChanged ? { username } : {}),
-        ...(avatarChanged ? { avatar: data.avatar } : {}),
+        ...(avatarChanged ? { avatar: data.avatar instanceof File ? data.avatar : null } : {}),
       });
       enqueueSnackbar("Profile updated successfully!", { variant: "success" });
       reset({ ...data, username });

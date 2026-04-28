@@ -13,7 +13,12 @@ const AvatarField = ({ control, disabled = false }: AvatarFieldProps) => {
       name="avatar"
       control={control}
       render={({ field }) => (
-        <ImageUpload value={field.value} onChange={field.onChange} disabled={disabled} />
+        <ImageUpload
+          value={field.value}
+          onChange={field.onChange}
+          onRemove={() => field.onChange(null)}
+          disabled={disabled}
+        />
       )}
     />
   );

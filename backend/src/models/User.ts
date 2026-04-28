@@ -1,4 +1,8 @@
 import mongoose, { Document, Schema } from "mongoose";
+import {
+  PASSWORD_MIN_LENGTH,
+  STORED_PASSWORD_MAX_LENGTH,
+} from "@shared/constants/validation";
 
 export interface IUser extends Document {
   provider: "local" | "google";
@@ -25,10 +29,9 @@ const userSchema = new Schema<IUser>(
     },
     username: {
       type: String,
-      lowercase: true,
       unique: true,
       required: [true, "can't be blank"],
-      match: [/^[a-zA-Z0-9_]+$/, "is invalid"],
+      match: [/^[\p{L}\p{N}_]+$/u, "is invalid"],
       index: true,
     },
     email: {
@@ -42,8 +45,8 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       trim: true,
-      minlength: 6,
-      maxlength: 60,
+      minlength: PASSWORD_MIN_LENGTH,
+      maxlength: STORED_PASSWORD_MAX_LENGTH,
       required: false,
     },
     googleId: { type: String, unique: true, sparse: true },

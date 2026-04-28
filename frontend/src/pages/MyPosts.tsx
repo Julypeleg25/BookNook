@@ -19,11 +19,12 @@ interface MyPostsProps {
 
 const MyPosts = ({ disablePadding }: MyPostsProps) => {
   const {
-    user: { username },
+    user: { id: userId },
   } = useUserStore();
   const { data: reviews = [], isLoading, isError } = useQuery({
-    queryKey: queryKeys.allReviewsByUsername(username),
-    queryFn: () => userReviewService.getAllReviews(0, "", username, 0, ""),
+    queryKey: queryKeys.allReviewsByUserId(userId),
+    queryFn: () => userReviewService.getReviewsByUserId(userId),
+    enabled: !!userId,
   });
 
   const bookPosts: BookPost[] = useMemo(

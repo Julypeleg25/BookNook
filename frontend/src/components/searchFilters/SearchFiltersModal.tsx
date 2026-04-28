@@ -49,6 +49,7 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters, mode }: Se
     <Dialog
       open={open}
       onClose={onClose}
+      disableScrollLock
       fullWidth
       maxWidth="sm"
       PaperProps={{

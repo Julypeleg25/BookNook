@@ -1,6 +1,6 @@
 export interface ProfileFormValues {
   username: string;
-  avatar: File | string;
+  avatar: File | string | null;
 }
 
 export interface ProfileFormProps {
