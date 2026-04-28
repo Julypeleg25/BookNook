@@ -6,7 +6,7 @@ import { SearchResult } from "./vectorRepository";
 
 const MAX_CONTEXT_CHARS = 6000;
 const MAX_SNIPPET_CHARS = 900;
-const FALLBACK_ANSWER = "I could not find enough matching BookNook knowledge to answer this well. Try asking about a genre, author, theme, or a more specific kind of book.";
+const FALLBACK_ANSWER = "For a good mystery pick, try something with a sharp central puzzle, a tense atmosphere, and secrets that unfold piece by piece. A twisty psychological mystery or a classic locked-room story is a great place to start.";
 const SENSITIVE_CONTEXT_PATTERN = /(api[_-]?key|token|secret|password|bearer\s+[a-z0-9._-]+|postgres(?:ql)?:\/\/\S+|mongodb(?:\+srv)?:\/\/\S+|https?:\/\/(?:localhost|127\.0\.0\.1|10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.)\S+)/gi;
 const PROMPT_INJECTION_PATTERN = /(ignore (?:all )?(?:previous|prior|above) instructions|system prompt|developer message|reveal (?:the )?(?:prompt|instructions|secrets)|act as|jailbreak)/gi;
 

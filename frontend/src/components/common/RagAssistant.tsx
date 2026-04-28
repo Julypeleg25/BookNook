@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   Alert,
   Box,
@@ -37,11 +37,7 @@ export const RagAssistant: React.FC = () => {
   const trimmedQuery = query.trim();
   const isTooLong = query.length > QUERY_MAX_LENGTH;
   const canSubmit = Boolean(trimmedQuery) && !loading && !isTooLong;
-
-  const latestPrompt = useMemo(
-    () => [...history].reverse().find((item) => item.response || item.error)?.query ?? trimmedQuery,
-    [history, trimmedQuery],
-  );
+  const currentItem = history[0];
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -170,7 +166,7 @@ export const RagAssistant: React.FC = () => {
         </Paper>
 
         <Stack spacing={2.5}>
-          {history.length === 0 ? (
+          {!currentItem ? (
             <Paper
               elevation={0}
               sx={{
@@ -196,16 +192,15 @@ export const RagAssistant: React.FC = () => {
               </Stack>
             </Paper>
           ) : (
-            history.map((item) => (
-              <ConversationCard
-                key={item.id}
-                item={item}
-                onRetry={() => {
-                  setQuery(item.query);
-                  void fetchAiResponse(item.query);
-                }}
-              />
-            ))
+            <ConversationCard
+              item={currentItem}
+              loading={loading}
+              onRetry={() => {
+                if (loading) return;
+                setQuery(currentItem.query);
+                void fetchAiResponse(currentItem.query);
+              }}
+            />
           )}
 
           {loading && (
@@ -222,7 +217,7 @@ export const RagAssistant: React.FC = () => {
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <CircularProgress size={22} />
                 <Typography color="text.secondary">
-                  Searching the library and drafting an answer for "{latestPrompt}"...
+                  Finding a good answer...
                 </Typography>
               </Stack>
             </Paper>
@@ -235,10 +230,11 @@ export const RagAssistant: React.FC = () => {
 
 interface ConversationCardProps {
   item: RagConversationItem;
+  loading: boolean;
   onRetry: () => void;
 }
 
-const ConversationCard = ({ item, onRetry }: ConversationCardProps) => (
+const ConversationCard = ({ item, loading, onRetry }: ConversationCardProps) => (
   <Paper
     elevation={0}
     sx={{
@@ -263,21 +259,21 @@ const ConversationCard = ({ item, onRetry }: ConversationCardProps) => (
           </Typography>
         </Box>
         {item.error && (
-          <IconButton onClick={onRetry} aria-label="Retry question" size="small">
+          <IconButton onClick={onRetry} aria-label="Retry question" size="small" disabled={loading}>
             <FiRefreshCw size={18} />
           </IconButton>
         )}
       </Stack>
 
       {item.error ? (
-        <Alert severity="error" action={<Button onClick={onRetry}>Retry</Button>}>
+        <Alert severity="error" action={<Button onClick={onRetry} disabled={loading}>Retry</Button>}>
           {item.error}
         </Alert>
       ) : item.response ? (
         <>
           {item.response.sourceCount === 0 && (
             <Alert severity="info">
-              No relevant BookNook context was found, so the assistant returned a safe fallback.
+              Here is a broad recommendation to get you started.
             </Alert>
           )}
           <Box

@@ -47,8 +47,7 @@ export const useRag = () => {
     loadingRef.current = true;
     setLoading(true);
 
-    setHistory((previous) => [
-      ...previous,
+    setHistory([
       {
         id: requestId,
         query: normalizedQuery,
@@ -67,7 +66,7 @@ export const useRag = () => {
     } catch (err: unknown) {
       const errorName = err instanceof Error ? err.name : "";
       if (errorName === "CanceledError" || errorName === "AbortError") {
-        setHistory((previous) => previous.filter((item) => item.id !== requestId));
+        setHistory([]);
         return;
       }
 
