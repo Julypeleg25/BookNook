@@ -7,7 +7,9 @@ import { ZodError } from "zod";
 export const handleRagQuery = async (req: Request, res: Response) => {
   try {
     const { query } = parseRagQueryRequest(req.body);
-    const result = await processQuery(query);
+    const result = await processQuery(query, {
+      userId: req.authenticatedUser!.id,
+    });
 
     res.json(result);
   } catch (error) {

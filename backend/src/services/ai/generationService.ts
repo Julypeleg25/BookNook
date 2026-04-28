@@ -5,9 +5,16 @@ import { z } from "zod";
 
 const genAI = new GoogleGenerativeAI(ENV.GEMINI_API_KEY);
 
+const GEMINI_MODEL_NAME = "gemini-2.5-flash";
+const GENERATION_TEMPERATURE = 0.4;
 const MAX_ANSWER_LENGTH = 4000;
+const PROMPT_INPUT_TAG = "BOOK_RECOMMENDATION_INPUT";
+const PROMPT_USER_QUESTION_LABEL = "UNTRUSTED USER QUESTION:";
+const PROMPT_RESPONSE_REQUIREMENTS_LABEL = "RESPONSE REQUIREMENTS:";
+const SAFE_FALLBACK_ANSWER = "For a strong mystery pick, try a story with a sharp central puzzle, a tense atmosphere, and characters whose secrets unfold piece by piece. A twisty psychological mystery or a classic locked-room setup is a great place to start.";
 const SENSITIVE_OUTPUT_PATTERN = /(api[_-]?key|token|secret|password|bearer\s+[a-z0-9._-]+|postgres(?:ql)?:\/\/|mongodb(?:\+srv)?:\/\/|https?:\/\/(?:localhost|127\.0\.0\.1|10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.))/i;
 const INTERNAL_LANGUAGE_PATTERN = /(context limitations?|provided context|limited context|retrieved context|booknook|rag|embedding|retrieval|dataset|system data|source ids?|raw context|xml tags?|prompts?|internal system)/i;
+const LIMITATION_LANGUAGE_PATTERN = /(not enough information|not enough info|insufficient information|limited information|limited data|cannot determine|can't determine|do not have enough|don't have enough)/i;
 const FOLLOW_UP_QUESTION_PATTERN = /\?\s*$/;
 
 const ModelAnswerSchema = z
@@ -17,9 +24,44 @@ const ModelAnswerSchema = z
     .max(MAX_ANSWER_LENGTH)
     .refine((answer) => !SENSITIVE_OUTPUT_PATTERN.test(answer), "Model response contained sensitive data.")
     .refine((answer) => !INTERNAL_LANGUAGE_PATTERN.test(answer), "Model response mentioned internal generation details.")
+    .refine((answer) => !LIMITATION_LANGUAGE_PATTERN.test(answer), "Model response mentioned information limitations.")
     .refine((answer) => !FOLLOW_UP_QUESTION_PATTERN.test(answer), "Model response ended with a follow-up question.");
 
-const getSystemInstruction = (): string => {
+const FOLLOW_UP_LINE_PATTERN = /(would you like|do you want|want me to|tell me|let me know|share your|what kind|which genres|if you want)/i;
+
+const removeFollowUpQuestions = (answer: string): string => {
+    const cleanedLines = answer
+        .split("\n")
+        .map((line) => line.trimEnd())
+        .filter((line) => {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) return true;
+            return !trimmedLine.endsWith("?") && !FOLLOW_UP_LINE_PATTERN.test(trimmedLine);
+        });
+
+    return cleanedLines.join("\n").trim();
+};
+
+export interface GenerationOptions {
+    personalized?: boolean;
+}
+
+const getSystemInstruction = (opts: GenerationOptions = {}): string => {
+    const personalizedRules = opts.personalized
+        ? [
+            "",
+            "Personalized recommendation rules:",
+            "- Infer one clear taste profile from the current user's reviews, ratings, saved books, and interactions.",
+            "- Use only the current user's taste signals to describe the user's taste.",
+            "- Other readers' reviews may help discover candidate books, but never describe them as the current user's taste.",
+            "- Do not describe multiple readers or profiles.",
+            "- Recommend 3-5 books the user likely has not read.",
+            "- Assume recommended books are unread unless the input explicitly marks them as already read.",
+            "- Briefly explain why each book fits the user.",
+            "- Keep the answer natural, confident, and user-facing.",
+        ]
+        : [];
+
     return [
         "You are a friendly, practical book advisor.",
         "You will receive trusted book and review snippets.",
@@ -38,6 +80,7 @@ const getSystemInstruction = (): string => {
         "- Briefly explain why each book fits.",
         "- Keep the answer concise and friendly.",
         "- End cleanly without asking follow-up questions or asking about preferences.",
+        ...personalizedRules,
     ].join("\n");
 };
 
@@ -67,41 +110,43 @@ const getResponseInstruction = (): string => {
 
 export const generateAnswer = async (
     query: string,
-    context: string
+    context: string,
+    opts: GenerationOptions = {}
 ): Promise<string> => {
     try {
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
+            model: GEMINI_MODEL_NAME,
             generationConfig: {
-                temperature: 0.4,
+                temperature: GENERATION_TEMPERATURE,
             }
         });
 
-        const systemInstruction = getSystemInstruction();
+        const systemInstruction = getSystemInstruction(opts);
         const responseInstruction = getResponseInstruction();
 
         const prompt = `
 ${systemInstruction}
 
-<BOOK_RECOMMENDATION_INPUT>
+<${PROMPT_INPUT_TAG}>
 ${context}
-</BOOK_RECOMMENDATION_INPUT>
+</${PROMPT_INPUT_TAG}>
 
-UNTRUSTED USER QUESTION:
+${PROMPT_USER_QUESTION_LABEL}
 ${query}
 
-RESPONSE REQUIREMENTS:
+${PROMPT_RESPONSE_REQUIREMENTS_LABEL}
 ${responseInstruction}
 
 Provide a helpful, natural book recommendation answer for the user.
 `.trim();
 
         const result = await model.generateContent(prompt);
-        const parsedAnswer = ModelAnswerSchema.safeParse(result.response.text());
+        const answerWithoutFollowUps = removeFollowUpQuestions(result.response.text());
+        const parsedAnswer = ModelAnswerSchema.safeParse(answerWithoutFollowUps);
 
         if (!parsedAnswer.success) {
             logger.warn("[GenerationService] Model response failed validation.");
-            return "For a strong mystery pick, try a story with a sharp central puzzle, a tense atmosphere, and characters whose secrets unfold piece by piece. A twisty psychological mystery or a classic locked-room setup is a great place to start.";
+            return SAFE_FALLBACK_ANSWER;
         }
 
         return parsedAnswer.data;

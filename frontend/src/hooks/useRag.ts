@@ -11,6 +11,8 @@ export interface RagConversationItem {
   createdAt: Date;
 }
 
+const STOPPED_RESPONSE_MESSAGE = "Response stopped.";
+
 const createId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
@@ -27,12 +29,20 @@ export const useRag = () => {
     abortControllerRef.current = null;
     setLoading(false);
     loadingRef.current = false;
+    setHistory((previous) =>
+      previous.map((item) =>
+        item.response || item.error ? item : { ...item, error: STOPPED_RESPONSE_MESSAGE },
+      ),
+    );
   }, []);
 
   const clearHistory = useCallback(() => {
-    cancel();
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setLoading(false);
+    loadingRef.current = false;
     setHistory([]);
-  }, [cancel]);
+  }, []);
 
   const fetchAiResponse = useCallback(async (query: string) => {
     const normalizedQuery = query.trim();
@@ -66,7 +76,6 @@ export const useRag = () => {
     } catch (err: unknown) {
       const errorName = err instanceof Error ? err.name : "";
       if (errorName === "CanceledError" || errorName === "AbortError") {
-        setHistory([]);
         return;
       }
 
