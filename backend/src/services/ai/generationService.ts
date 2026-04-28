@@ -19,6 +19,7 @@ const getSystemInstruction = (mode: GenerationOptions["mode"]): string => {
             "2. NEVER attribute opinions found in <GLOBAL_KNOWLEDGE> to the user in <USER_PROFILE> unless the names match exactly.",
             "3. If <USER_PROFILE> contains 'NEW_USER', do not invent a persona. Say that you are using available BookNook context and ask one useful preference question at the end.",
             "4. Use profile evidence to explain WHY a recommendation fits, for example liked themes, readlist/wishlist signals, reviewed genres, or inferred interests.",
+            "5. DO NOT recommend or suggest books that the user has already read (found in their 'Read List' in the <USER_PROFILE> section).",
             "",
             "Answer style:",
             "- Be detailed enough to be genuinely useful, not generic.",

@@ -19,6 +19,7 @@ export interface SearchOptions {
     typeFilter?: ChunkType | null;
     minRating?: number | null;
     userId?: string | null;
+    excludeExternalIds?: string[];
 }
 
 export interface SearchResult {
@@ -231,6 +232,10 @@ export const similaritySearch = async (
         if (userId) {
             whereClause += ` AND metadata->>'userId' = $${pIdx++}`;
             params.push(userId);
+        }
+        if (excludeExternalIds && excludeExternalIds.length > 0) {
+            whereClause += ` AND (metadata->>'externalId' IS NULL OR NOT (metadata->>'externalId' = ANY($${pIdx++})))`;
+            params.push(excludeExternalIds);
         }
 
         const result = await client.query<{

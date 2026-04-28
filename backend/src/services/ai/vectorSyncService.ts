@@ -43,6 +43,7 @@ export const syncBookToVector = async (book: IBook): Promise<void> => {
             rating: book.avgRating ?? null,
             metadata: {
                 mongoId: bookIdStr,
+                externalId: book.externalId,
                 title: book.title,
                 authors: book.authors ?? [],
                 genres: book.categories ?? [],
@@ -92,6 +93,7 @@ export const syncReviewToVector = async (review: IUserReview): Promise<void> => 
             metadata: {
                 mongoId: reviewIdStr,
                 bookId,
+                externalId: book.externalId,
                 bookTitle: book.title,
                 genres: book.categories ?? [],
                 userId,
@@ -154,10 +156,25 @@ export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
             .slice(0, 5)
             .map(([theme]) => theme);
 
+        const resolveIdentifiers = async (ids: string[]) => {
+            const results = await Promise.all(
+                ids.map(async (id) => {
+                    const b = await bookRepository.findByExternalId(id);
+                    return b ? `${b.title} (by ${b.authors?.join(", ")})` : null;
+                })
+            );
+            return results.filter((id): id is string => id !== null);
+        };
+
+        const [readIdentifiers, wishIdentifiers] = await Promise.all([
+            resolveIdentifiers(user.readlist || []),
+            resolveIdentifiers(user.wishlist || [])
+        ]);
+
         const text = buildProfileChunk(
             user.username,
-            user.readlist || [],
-            user.wishlist || [],
+            readIdentifiers,
+            wishIdentifiers,
             Array.from(inferredInterests).slice(0, 10),
             Array.from(dislikes).slice(0, 5),
             topThemes
