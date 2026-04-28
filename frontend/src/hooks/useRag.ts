@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ragService } from "@api/services/ragService";
 import type { RagQueryRequest, RagQueryResponse } from "@models/Rag";
-import { RAGMode } from "@models/Rag";
 import { getErrorMessage } from "@/api/apiError";
 
 export interface RagConversationItem {
   id: string;
-  mode: RAGMode;
   query: string;
   response?: RagQueryResponse;
   error?: string;
@@ -36,7 +34,7 @@ export const useRag = () => {
     setHistory([]);
   }, [cancel]);
 
-  const fetchAiResponse = useCallback(async (query: string, mode: RAGMode = RAGMode.GENERAL) => {
+  const fetchAiResponse = useCallback(async (query: string) => {
     const normalizedQuery = query.trim();
     if (!normalizedQuery || loadingRef.current) return;
 
@@ -53,14 +51,13 @@ export const useRag = () => {
       ...previous,
       {
         id: requestId,
-        mode,
         query: normalizedQuery,
         createdAt,
       },
     ]);
 
     try {
-      const data: RagQueryRequest = { query: normalizedQuery, mode };
+      const data: RagQueryRequest = { query: normalizedQuery };
       const result = await ragService.query(data, abortControllerRef.current.signal);
       setHistory((previous) =>
         previous.map((item) =>

@@ -10,9 +10,6 @@ import {
   Paper,
   Stack,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import {
@@ -23,30 +20,19 @@ import {
 } from "@mui/icons-material";
 import { FiBookOpen, FiRefreshCw } from "react-icons/fi";
 import { useRag, type RagConversationItem } from "@hooks/useRag";
-import { RAGMode, type RagSource } from "@models/Rag";
+import type { RagSource } from "@models/Rag";
 import { MarkdownMessage } from "./MarkdownMessage";
 
 const QUERY_MAX_LENGTH = 500;
 
-const EXAMPLE_PROMPTS: Record<RAGMode, string[]> = {
-  [RAGMode.GENERAL]: [
-    "Recommend thoughtful fantasy books with strong character arcs",
-    "What are good romance books for someone who likes emotional slow burns?",
-    "Find books similar to mystery reviews people liked",
-  ],
-  [RAGMode.PERSONAL]: [
-    "Based on my taste, what should I read next?",
-    "Suggest something outside my comfort zone but still likely to work for me",
-    "What patterns do you see in books I enjoy?",
-  ],
-};
-
-const getModeLabel = (mode: RAGMode) =>
-  mode === RAGMode.PERSONAL ? "Personal" : "General";
+const EXAMPLE_PROMPTS = [
+  "Recommend thoughtful fantasy books with strong character arcs",
+  "What are good romance books for someone who likes emotional slow burns?",
+  "Find books similar to mystery reviews people liked",
+];
 
 export const RagAssistant: React.FC = () => {
   const [query, setQuery] = useState("");
-  const [mode, setMode] = useState<RAGMode>(RAGMode.GENERAL);
   const { cancel, clearHistory, fetchAiResponse, history, loading } = useRag();
   const trimmedQuery = query.trim();
   const isTooLong = query.length > QUERY_MAX_LENGTH;
@@ -60,17 +46,8 @@ export const RagAssistant: React.FC = () => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!canSubmit) return;
-    void fetchAiResponse(trimmedQuery, mode);
+    void fetchAiResponse(trimmedQuery);
     setQuery("");
-  };
-
-  const handleModeChange = (
-    _event: React.MouseEvent<HTMLElement>,
-    newMode: RAGMode | null,
-  ) => {
-    if (newMode !== null) {
-      setMode(newMode);
-    }
   };
 
   return (
@@ -124,36 +101,6 @@ export const RagAssistant: React.FC = () => {
 
             <Divider />
 
-            <Box>
-              <Typography fontWeight={800} sx={{ mb: 1 }}>
-                Mode
-              </Typography>
-              <ToggleButtonGroup
-                value={mode}
-                exclusive
-                onChange={handleModeChange}
-                size="small"
-                color="primary"
-                aria-label="assistant mode"
-                sx={{
-                  gap: 1,
-                  flexWrap: "wrap",
-                  "& .MuiToggleButton-root": {
-                    border: "1px solid !important",
-                    borderRadius: "8px !important",
-                    px: 2,
-                  },
-                }}
-              >
-                <Tooltip title="Uses community book and review knowledge">
-                  <ToggleButton value={RAGMode.GENERAL}>General</ToggleButton>
-                </Tooltip>
-                <Tooltip title="Uses your lists, likes, and reading profile when available">
-                  <ToggleButton value={RAGMode.PERSONAL}>Personal</ToggleButton>
-                </Tooltip>
-              </ToggleButtonGroup>
-            </Box>
-
             <form onSubmit={handleSubmit}>
               <Stack spacing={1.5}>
                 <TextField
@@ -162,11 +109,7 @@ export const RagAssistant: React.FC = () => {
                   minRows={5}
                   maxRows={8}
                   label="Ask a book question"
-                  placeholder={
-                    mode === RAGMode.PERSONAL
-                      ? "Based on my taste, what should I read next?"
-                      : "Recommend a character-driven fantasy book"
-                  }
+                  placeholder="Recommend a character-driven fantasy book"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   disabled={loading}
@@ -210,7 +153,7 @@ export const RagAssistant: React.FC = () => {
                 Try asking
               </Typography>
               <Stack spacing={1}>
-                {EXAMPLE_PROMPTS[mode].map((prompt) => (
+                {EXAMPLE_PROMPTS.map((prompt) => (
                   <Button
                     key={prompt}
                     variant="outlined"
@@ -248,7 +191,7 @@ export const RagAssistant: React.FC = () => {
                   Your reading assistant is ready
                 </Typography>
                 <Typography color="text.secondary">
-                  Ask for recommendations, compare genres, or use personal mode to connect ideas to your own reading history.
+                  Ask for recommendations, compare genres, or explore what BookNook readers are saying.
                 </Typography>
               </Stack>
             </Paper>
@@ -259,7 +202,7 @@ export const RagAssistant: React.FC = () => {
                 item={item}
                 onRetry={() => {
                   setQuery(item.query);
-                  void fetchAiResponse(item.query, item.mode);
+                  void fetchAiResponse(item.query);
                 }}
               />
             ))
@@ -310,7 +253,7 @@ const ConversationCard = ({ item, onRetry }: ConversationCardProps) => (
       <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
         <Box>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-            <Chip size="small" label={getModeLabel(item.mode)} color={item.mode === RAGMode.PERSONAL ? "primary" : "default"} />
+            <Chip size="small" label="BookNook AI" color="primary" />
             <Typography variant="caption" color="text.secondary">
               {item.createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </Typography>
@@ -332,6 +275,11 @@ const ConversationCard = ({ item, onRetry }: ConversationCardProps) => (
         </Alert>
       ) : item.response ? (
         <>
+          {item.response.sourceCount === 0 && (
+            <Alert severity="info">
+              No relevant BookNook context was found, so the assistant returned a safe fallback.
+            </Alert>
+          )}
           <Box
             sx={{
               p: { xs: 2, md: 2.5 },

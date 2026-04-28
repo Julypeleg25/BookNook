@@ -36,7 +36,7 @@ export const securityFilter = (req: Request, res: Response, next: NextFunction) 
   const hasSensitivePattern = SENSITIVE_PATTERNS.some(pattern => pattern.test(normalizedQuery));
 
   if (hasSensitiveKeyword || hasSensitivePattern) {
-    console.warn(`[SECURITY ALERT] Rejected query: "${query}" | Reason: Sensitive ${hasSensitiveKeyword ? 'Keyword' : 'Pattern'}`);
+    console.warn(`[SECURITY ALERT] Rejected RAG query. Reason: Sensitive ${hasSensitiveKeyword ? 'keyword' : 'pattern'}.`);
     return res.status(200).json(REFUSAL_RESPONSE);
   }
 

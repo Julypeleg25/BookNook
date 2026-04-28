@@ -1,71 +1,138 @@
 import { performSearch } from "./searchService";
 import { generateAnswer } from "./generationService";
 import { logger } from "@utils/logger";
+import { RagQueryRequestSchema } from "@utils/ragValidation";
+import { SearchResult } from "./vectorRepository";
 
-export interface RAGOptions {
-    mode?: "general" | "personalized";
-    userId?: string;
-    minRating?: number | null;
-}
+const MAX_CONTEXT_CHARS = 6000;
+const MAX_SNIPPET_CHARS = 900;
+const FALLBACK_ANSWER = "I could not find enough matching BookNook knowledge to answer this well. Try asking about a genre, author, theme, or a more specific kind of book.";
+const SENSITIVE_CONTEXT_PATTERN = /(api[_-]?key|token|secret|password|bearer\s+[a-z0-9._-]+|postgres(?:ql)?:\/\/\S+|mongodb(?:\+srv)?:\/\/\S+|https?:\/\/(?:localhost|127\.0\.0\.1|10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.)\S+)/gi;
+const PROMPT_INJECTION_PATTERN = /(ignore (?:all )?(?:previous|prior|above) instructions|system prompt|developer message|reveal (?:the )?(?:prompt|instructions|secrets)|act as|jailbreak)/gi;
 
 export interface RAGResult {
     answer: string;
-    mode: "general" | "personalized";
     sourceCount: number;
     sources: Array<{
         id: string;
         bookId: string;
         type: string;
-        text: string;
         score: number;
         metadata: Record<string, unknown>;
     }>;
 }
 
-export const processQuery = async (
-    query: string,
-    opts: RAGOptions = {}
-): Promise<RAGResult> => {
-    const { mode = "general", userId, minRating = null } = opts;
+const normalizeText = (value: string): string =>
+    value
+        .replace(SENSITIVE_CONTEXT_PATTERN, "[redacted]")
+        .replace(PROMPT_INJECTION_PATTERN, "[removed unsafe instruction]")
+        .replace(/[\u0000-\u001f\u007f]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 
-    try {
-        const { chunks, userProfile } = await performSearch(query, {
-            mode,
-            userId,
-            minRating,
-            topK: 6,
+const sanitizeMetadata = (metadata: Record<string, unknown> | null): Record<string, unknown> => {
+    if (!metadata) return {};
+
+    const safeKeys = ["title", "authors", "genres", "rating", "username", "externalId"];
+    return safeKeys.reduce<Record<string, unknown>>((safeMetadata, key) => {
+        const value = metadata[key];
+        if (typeof value === "string") {
+            safeMetadata[key] = normalizeText(value).slice(0, 200);
+        } else if (typeof value === "number" || typeof value === "boolean") {
+            safeMetadata[key] = value;
+        } else if (Array.isArray(value)) {
+            safeMetadata[key] = value
+                .filter((item): item is string => typeof item === "string")
+                .map((item) => normalizeText(item).slice(0, 80))
+                .slice(0, 8);
+        }
+        return safeMetadata;
+    }, {});
+};
+
+const sanitizeAndDeduplicateChunks = (chunks: SearchResult[]): SearchResult[] => {
+    const seenTexts = new Set<string>();
+
+    return chunks.reduce<SearchResult[]>((safeChunks, chunk) => {
+        const sanitizedText = normalizeText(chunk.text).slice(0, MAX_SNIPPET_CHARS);
+        const dedupeKey = sanitizedText.toLowerCase();
+
+        if (!sanitizedText || seenTexts.has(dedupeKey)) {
+            return safeChunks;
+        }
+
+        seenTexts.add(dedupeKey);
+        safeChunks.push({
+            ...chunk,
+            text: sanitizedText,
+            metadata: sanitizeMetadata(chunk.metadata),
         });
 
-        if (chunks.length === 0) {
+        return safeChunks;
+    }, []);
+};
+
+const buildPromptContext = (chunks: SearchResult[]): string => {
+    let context = "";
+
+    for (const [index, chunk] of chunks.entries()) {
+        const title = typeof chunk.metadata?.title === "string" ? chunk.metadata.title : "Untitled";
+        const authors = Array.isArray(chunk.metadata?.authors) ? chunk.metadata.authors.join(", ") : "Unknown author";
+        const snippet = [
+            `[Snippet ${index + 1}]`,
+            `type: ${chunk.type}`,
+            `title: ${title}`,
+            `authors: ${authors}`,
+            `content: ${chunk.text}`,
+        ].join("\n");
+
+        if ((context + "\n\n" + snippet).length > MAX_CONTEXT_CHARS) {
+            break;
+        }
+
+        context = context ? `${context}\n\n${snippet}` : snippet;
+    }
+
+    return context;
+};
+
+export const processQuery = async (
+    query: string
+): Promise<RAGResult> => {
+    try {
+        const { query: validatedQuery } = RagQueryRequestSchema.parse({ query });
+        const chunks = await performSearch(validatedQuery, {
+            topK: 6,
+        });
+        const safeChunks = sanitizeAndDeduplicateChunks(chunks);
+
+        if (safeChunks.length === 0) {
             return {
-                answer: "I could not find enough matching BookNook knowledge to answer this well. Try asking about a genre, author, theme, or a more specific kind of book.",
-                mode,
+                answer: FALLBACK_ANSWER,
                 sourceCount: 0,
                 sources: [],
             };
         }
 
-        const context = `
-<USER_PROFILE>
-${userProfile}
-</USER_PROFILE>
+        const context = buildPromptContext(safeChunks);
 
-<GLOBAL_KNOWLEDGE>
-${chunks.map((c, i) => `[Result #${i + 1}] type: ${c.type}, authorId: ${c.metadata?.userId || 'system'}\nContent: ${c.text}`).join("\n\n")}
-</GLOBAL_KNOWLEDGE>
-`.trim();
+        if (!context) {
+            return {
+                answer: FALLBACK_ANSWER,
+                sourceCount: 0,
+                sources: [],
+            };
+        }
 
-        const answer = await generateAnswer(query, context, { mode });
+        const answer = await generateAnswer(validatedQuery, context);
 
         return {
             answer,
-            mode,
-            sourceCount: chunks.length,
-            sources: chunks.map((c) => ({
+            sourceCount: safeChunks.length,
+            sources: safeChunks.map((c) => ({
                 id: c.id,
                 bookId: c.bookId,
                 type: c.type,
-                text: c.text,
                 score: c.score,
                 metadata: c.metadata || {},
             })),

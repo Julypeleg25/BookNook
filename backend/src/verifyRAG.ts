@@ -1,5 +1,6 @@
 import { securityFilter } from "@middlewares/securityMiddleware";
 import { processQuery } from "@services/ai/ragOrchestrator";
+import { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -16,12 +17,13 @@ async function testSecurity() {
   ];
 
   for (const tc of testCases) {
-    const mockReq: any = { body: { query: tc.query } };
-    let nextCalled = false;
-    const mockRes: any = {
+    const mockReq = { body: { query: tc.query } } as Request;
+    const mockRes = {
       status: (code: number) => {
+        void code;
         return {
-          json: (data: any) => {
+          json: (data: unknown) => {
+            void data;
             if (tc.expectedBlock) {
               console.log(`[PASS] ${tc.name} blocked as expected.`);
             } else {
@@ -30,9 +32,8 @@ async function testSecurity() {
           }
         };
       }
-    };
-    const next = () => {
-      nextCalled = true;
+    } as Response;
+    const next: NextFunction = () => {
       if (!tc.expectedBlock) {
         console.log(`[PASS] ${tc.name} allowed correctly.`);
       } else {
