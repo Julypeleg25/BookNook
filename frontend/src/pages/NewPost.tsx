@@ -231,7 +231,7 @@ const NewPost = () => {
         bgcolor: "background.default",
       }}
     >
-      <Stack spacing={3} maxWidth="76rem" mx="auto">
+      <Stack spacing={2.25} maxWidth="76rem" mx="auto">
         {isSaving && (
           <LinearProgress
             sx={{
@@ -250,12 +250,12 @@ const NewPost = () => {
           alignItems={{ xs: "flex-start", md: "flex-end" }}
           gap={2}
         >
-          <Stack spacing={0.75} maxWidth="44rem">
+          <Stack spacing={0.5} maxWidth="44rem">
             <Typography variant="h4" fontWeight={800}>
-              {reviewId ? "Edit Post" : "Create Post"}
+              {reviewId ? "Edit Review" : "Write Review"}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Pair your review with a real image, a clear rating, and enough context for other readers to decide.
+              Add a rating, image, and clear thoughts for other readers.
             </Typography>
           </Stack>
         </Stack>
@@ -265,14 +265,14 @@ const NewPost = () => {
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, md: 3 },
+            p: { xs: 2, md: 2.5 },
             borderRadius: 3,
             border: "1px solid",
             borderColor: "divider",
             bgcolor: "background.paper",
           }}
         >
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <Stack
               direction={{ xs: "column", sm: "row" }}
               justifyContent="space-between"
@@ -284,7 +284,7 @@ const NewPost = () => {
                   Post Setup
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Choose the visual and rating first, then write the review below.
+                  Add the image and rating for this review.
                 </Typography>
               </Box>
             </Stack>
@@ -294,9 +294,9 @@ const NewPost = () => {
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1.15fr) minmax(20rem, 0.85fr)" },
-                gap: 3,
-                alignItems: "start",
+                gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) 18rem" },
+                gap: 2.5,
+                alignItems: "stretch",
               }}
             >
               <Controller
@@ -318,14 +318,17 @@ const NewPost = () => {
                 )}
               />
 
-              <Stack spacing={2}>
+              <Stack spacing={2} justifyContent="stretch">
                 <Box
                   sx={{
                     border: "1px solid",
                     borderColor: "divider",
                     borderRadius: 2,
-                    p: { xs: 2, md: 2.5 },
+                    p: 2,
                     bgcolor: "rgba(91, 111, 106, 0.035)",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
                   }}
                 >
                   <Controller
@@ -386,14 +389,14 @@ const NewPost = () => {
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, md: 3 },
+            p: { xs: 2, md: 2.5 },
             borderRadius: 3,
             border: "1px solid",
             borderColor: "divider",
             bgcolor: "background.paper",
           }}
         >
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <Stack
               direction={{ xs: "column", sm: "row" }}
               justifyContent="space-between"
@@ -402,10 +405,10 @@ const NewPost = () => {
             >
               <Box>
                 <Typography variant="h6" fontWeight={800} gutterBottom>
-                  Write Your Review
+                  Write Review
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Add a useful opinion, not just a summary.
+                  Share what worked, what stood out, and who might enjoy it.
                 </Typography>
               </Box>
               <Chip
@@ -438,8 +441,8 @@ const NewPost = () => {
                   label="Review"
                   placeholder="What stood out, who is this book for, and how did it make you feel?"
                   multiline
-                  minRows={9}
-                  maxRows={16}
+                  minRows={7}
+                  maxRows={14}
                   fullWidth
                   error={!!errors.review}
                   helperText={
@@ -460,16 +463,12 @@ const NewPost = () => {
           </Stack>
         </Paper>
 
-        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-          <Box sx={{ width: { xs: "100%", md: "24rem" } }}>
-            <PostPublishSection
-              disabled={!canSubmit}
-              isEditMode={Boolean(reviewId)}
-              isSaving={isSaving}
-              onCancel={onCancel}
-            />
-          </Box>
-        </Box>
+        <PostPublishSection
+          disabled={!canSubmit}
+          isEditMode={Boolean(reviewId)}
+          isSaving={isSaving}
+          onCancel={onCancel}
+        />
       </Stack>
     </Box>
   );

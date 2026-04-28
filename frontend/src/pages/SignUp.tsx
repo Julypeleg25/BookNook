@@ -207,10 +207,19 @@ const SignUp = () => {
 
           <Button
             type="submit"
-            variant="contained"
+            variant="outlined"
             size="large"
             disabled={loading}
-            sx={{ py: "0.8rem", borderRadius: "0.5rem", fontWeight: "bold", textTransform: "none" }}
+            sx={{
+              width: "18rem",
+              mt: "0.5rem",
+              justifySelf: "center",
+              alignSelf: "center",
+              py: "0.8rem",
+              borderRadius: "0.5rem",
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : "Sign up"}
           </Button>

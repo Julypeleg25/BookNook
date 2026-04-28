@@ -14,7 +14,7 @@ export const RegisterSchema = z.object({
     .min(6, "Password must be at least 6 characters")
     .max(20, "Password must be at most 20 characters")
     .regex(
-      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
+      /^(?=.*[A-Za-z])(?=.*\d).+$/,
       "Password must contain at least one English letter and one number"
     ),
 });

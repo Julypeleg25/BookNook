@@ -1,14 +1,10 @@
-import { Box, Paper, Stack, Typography, Divider, Skeleton } from "@mui/material";
+import { Box, Paper, Stack, Divider, Skeleton } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NotFound from "./NotFound";
 import BookInfoHeader from "@components/bookHeaders/BookInfoHeader";
-import { FaTheaterMasks } from "react-icons/fa";
-import { FaUserPen } from "react-icons/fa6";
-import { MdMenuBook, MdNumbers } from "react-icons/md";
-import { GrLanguage } from "react-icons/gr";
 import { booksService, BookDetail } from "@/api/services/bookService";
-import { formatDate } from "@/utils/dateUtils";
+import BookInfoSection from "@components/post/BookInfoSection";
 
 const BookInfo = () => {
   const { id } = useParams<{ id: string }>();
@@ -82,9 +78,6 @@ const BookInfo = () => {
   }
   if (error || !book) return <NotFound />;
 
-  const displayAuthors = book.authors?.join(", ") || "Unknown Author";
-  const displayGenres = book.categories?.join(", ") || "Unknown Genre";
-
   return (
     <Box
       sx={{
@@ -108,129 +101,10 @@ const BookInfo = () => {
           <BookInfoHeader book={book} />
         </Paper>
 
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2.5, md: 3 },
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 3,
-            bgcolor: "background.paper",
-          }}
-        >
-          <Box
-            display="grid"
-            gridTemplateColumns={{ xs: "1fr", md: "minmax(0, 1fr) 18rem" }}
-            gap={{ xs: 3, md: 4 }}
-            alignItems="start"
-          >
-            <Stack spacing={3}>
-              <Stack direction="row" spacing={2} alignItems="flex-start">
-                <Box
-                  sx={{
-                    width: "3rem",
-                    height: "3rem",
-                    borderRadius: "50%",
-                    bgcolor: "rgba(91, 111, 106, 0.12)",
-                    color: "primary.main",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <MdMenuBook size="1.7rem" />
-                </Box>
-                <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-                  {book.description?.replace(/<[^>]*>?/gm, "") || "No description available."}
-                </Typography>
-              </Stack>
-              <Divider />
-              <Box
-                display="grid"
-                gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
-                gap="1.5rem"
-              >
-                <InfoRow icon={<FaUserPen />} label="Author" value={displayAuthors} />
-                <InfoRow icon={<MdNumbers />} label="Pages" value={book.pageCount || "N/A"} />
-                <InfoRow
-                  icon={<FaTheaterMasks />}
-                  label="Genres"
-                  value={displayGenres}
-                />
-                <InfoRow
-                  icon={<GrLanguage />}
-                  label="Published"
-                  value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"}
-                />
-              </Box>
-            </Stack>
-            <Box display="flex" justifyContent={{ xs: "flex-start", md: "center" }}>
-              <Box
-                sx={{
-                  width: { xs: "12rem", md: "18rem" },
-                  borderRadius: "1rem",
-                  overflow: "hidden",
-                  boxShadow: "0 14px 34px rgba(31, 41, 51, 0.16)",
-                  bgcolor: "grey.100",
-                }}
-              >
-                {book.thumbnail && (
-                  <Box
-                    component="img"
-                    src={book.thumbnail}
-                    alt={book.title}
-                    sx={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                )}
-              </Box>
-            </Box>
-          </Box>
-        </Paper>
+        <BookInfoSection book={book} />
       </Stack>
     </Box>
   );
 };
 
 export default BookInfo;
-
-const InfoRow = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-}) => (
-  <Stack direction="row" spacing={1.2} alignItems="center">
-    <Box
-      sx={{
-        width: "2rem",
-        height: "2rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "primary.main",
-        flexShrink: 0,
-        "& svg": {
-          width: "1.5rem",
-          height: "1.5rem",
-        },
-      }}
-    >
-      {icon}
-    </Box>
-    <Box>
-      <Typography variant="caption" color="text.secondary">
-        {label}
-      </Typography>
-      <Typography fontWeight={500}>{value}</Typography>
-    </Box>
-  </Stack>
-);
