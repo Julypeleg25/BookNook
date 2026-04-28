@@ -18,7 +18,7 @@ const REMOVED_UNSAFE_INSTRUCTION_TOKEN = "[removed unsafe instruction]";
 const DEFAULT_TITLE = "Untitled";
 const DEFAULT_AUTHORS = "Unknown author";
 const DEFAULT_TASTE_SIGNAL_TITLE = "Reading signal";
-const FALLBACK_ANSWER = "For a good mystery pick, try something with a sharp central puzzle, a tense atmosphere, and secrets that unfold piece by piece. A twisty psychological mystery or a classic locked-room story is a great place to start.";
+const FALLBACK_ANSWER = "I couldn't find enough relevant information in our collection to answer your specific request. Please try a different query or topic.";
 
 const TASTE_SIGNAL_SECTION_TITLE = "CURRENT_USER_TASTE_SIGNALS:";
 const CANDIDATE_SECTION_TITLE = "CANDIDATE_BOOKS_AND_REVIEWS:";
