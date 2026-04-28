@@ -17,8 +17,9 @@ export const handleRagQuery = async (req: Request, res: Response) => {
     }
 
     const userId = req.authenticatedUser?.id;
+    const normalizedQuery = validation.normalizedQuery!;
 
-    const result = await processQuery(query, {
+    const result = await processQuery(normalizedQuery, {
       mode: mode.toLowerCase() === "personalized" ? "personalized" : "general",
       userId,
       minRating: minRating !== undefined ? Number(minRating) : null,

@@ -29,5 +29,7 @@ export interface RagSource {
 
 export interface RagQueryResponse {
   answer: string;
+  mode?: RAGMode;
+  sourceCount?: number;
   sources: RagSource[];
 }

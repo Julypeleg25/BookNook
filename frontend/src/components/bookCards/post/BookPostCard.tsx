@@ -249,9 +249,6 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
             {post.comments.length}
           </Typography>
         </Stack>
-        <Typography variant="caption" color="text.secondary" fontWeight={700}>
-          Read post
-        </Typography>
       </Stack>
     </Card>
   );

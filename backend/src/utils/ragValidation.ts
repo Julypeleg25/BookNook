@@ -1,26 +1,35 @@
-export const validateRagQuery = (query: string): { isValid: boolean, error?: string } => {
-    if (!query || typeof query !== "string") {
-        return { isValid: false, error: "Query is required and must be a string." };
-    }
+const MAX_QUERY_LENGTH = 500;
+const SEARCHABLE_TEXT_REGEX = /[\p{L}\p{N}]/u;
+const SUPPORTED_QUERY_REGEX = /^[\p{L}\p{N}\s'"?!.,:;()[\]\-_/]+$/u;
 
-    if (query.length > 500) {
-        return { isValid: false, error: "Query exceeds maximum allowed length." };
-    }
+export const validateRagQuery = (query: unknown): { isValid: boolean; normalizedQuery?: string; error?: string } => {
+  if (typeof query !== "string") {
+    return { isValid: false, error: "Question is required." };
+  }
 
-    const strippedQuery = query.replace(/[0-9\s!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?£€]/g, "");
+  const normalizedQuery = query.trim();
 
-    if (strippedQuery.length === 0) {
-        return { isValid: false, error: "Query must contain searchable text." };
-    }
+  if (!normalizedQuery) {
+    return { isValid: false, error: "Question is required." };
+  }
 
-    const forbiddenExtendedRegex = /[À-ž]/;
+  if (normalizedQuery.length > MAX_QUERY_LENGTH) {
+    return {
+      isValid: false,
+      error: `Question must be ${MAX_QUERY_LENGTH} characters or fewer.`,
+    };
+  }
 
+  if (!SEARCHABLE_TEXT_REGEX.test(normalizedQuery)) {
+    return { isValid: false, error: "Question must contain searchable text." };
+  }
 
-    const englishAndHebrewRegex = /^[a-zA-Z\u0590-\u05FF]+$/;
+  if (!SUPPORTED_QUERY_REGEX.test(normalizedQuery)) {
+    return {
+      isValid: false,
+      error: "Question contains unsupported characters.",
+    };
+  }
 
-    if (forbiddenExtendedRegex.test(strippedQuery) || !englishAndHebrewRegex.test(strippedQuery)) {
-        return { isValid: false, error: "Only Hebrew and English queries are supported." };
-    }
-
-    return { isValid: true };
+  return { isValid: true, normalizedQuery };
 };

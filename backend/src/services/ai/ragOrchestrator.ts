@@ -10,6 +10,8 @@ export interface RAGOptions {
 
 export interface RAGResult {
     answer: string;
+    mode: "general" | "personalized";
+    sourceCount: number;
     sources: Array<{
         id: string;
         bookId: string;
@@ -34,6 +36,15 @@ export const processQuery = async (
             topK: 6,
         });
 
+        if (chunks.length === 0) {
+            return {
+                answer: "I could not find enough matching BookNook knowledge to answer this well. Try asking about a genre, author, theme, or a more specific kind of book.",
+                mode,
+                sourceCount: 0,
+                sources: [],
+            };
+        }
+
         const context = `
 <USER_PROFILE>
 ${userProfile}
@@ -48,6 +59,8 @@ ${chunks.map((c, i) => `[Result #${i + 1}] type: ${c.type}, authorId: ${c.metada
 
         return {
             answer,
+            mode,
+            sourceCount: chunks.length,
             sources: chunks.map((c) => ({
                 id: c.id,
                 bookId: c.bookId,
