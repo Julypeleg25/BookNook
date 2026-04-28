@@ -33,9 +33,9 @@ const Profile = () => {
   const { user } = useUserStore();
 
   const { data: reviews = [], isLoading: isReviewsLoading } = useQuery({
-    queryKey: queryKeys.allReviewsByUsername(user.username),
-    queryFn: () => userReviewService.getAllReviews(0, "", user.username, 0, ""),
-    enabled: !!user.username,
+    queryKey: queryKeys.allReviewsByUserId(user.id),
+    queryFn: () => userReviewService.getReviewsByUserId(user.id),
+    enabled: !!user.id,
   });
 
   const { data: readlistBooks = [], isLoading: isReadlistLoading } = useQuery({

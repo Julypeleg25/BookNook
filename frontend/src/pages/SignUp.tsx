@@ -93,6 +93,7 @@ const SignUp = () => {
                 <ImageUpload
                   value={field.value ?? null}
                   onChange={field.onChange}
+                  onRemove={() => field.onChange(null)}
                   disabled={loading}
                   compactActions
                 />

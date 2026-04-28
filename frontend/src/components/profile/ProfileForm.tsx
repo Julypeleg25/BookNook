@@ -54,7 +54,7 @@ const ProfileForm = ({ onCancel }: ProfileFormProps) => {
     try {
       await updateUser({
         ...(usernameChanged ? { username } : {}),
-        ...(avatarChanged ? { avatar: data.avatar instanceof File ? data.avatar : "" } : {}),
+        ...(avatarChanged ? { avatar: data.avatar instanceof File ? data.avatar : null } : {}),
       });
       enqueueSnackbar("Profile updated successfully!", { variant: "success" });
       reset({ ...data, username });

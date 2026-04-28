@@ -15,17 +15,21 @@ const formatZodErrors = (zodError: ZodError): Record<string, string[]> => {
   return fieldErrors;
 };
 
+const getFirstZodErrorMessage = (zodError: ZodError): string =>
+  zodError.issues[0]?.message ?? "Validation failed";
+
 export const validateBody =
   (schema: ZodType) =>
   (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
+      const details = formatZodErrors(result.error);
       res.status(400).json({
         success: false,
-        message: "Validation failed",
+        message: getFirstZodErrorMessage(result.error),
         code: "VALIDATION_ERROR",
-        details: formatZodErrors(result.error),
+        details,
       });
       return;
     }
@@ -40,11 +44,12 @@ export const validateParams =
     const result = schema.safeParse(req.params);
 
     if (!result.success) {
+      const details = formatZodErrors(result.error);
       res.status(400).json({
         success: false,
-        message: "Invalid request parameters",
+        message: getFirstZodErrorMessage(result.error),
         code: "VALIDATION_ERROR",
-        details: formatZodErrors(result.error),
+        details,
       });
       return;
     }
@@ -58,11 +63,12 @@ export const validateQuery =
     const result = schema.safeParse(req.query);
 
     if (!result.success) {
+      const details = formatZodErrors(result.error);
       res.status(400).json({
         success: false,
-        message: "Invalid query parameters",
+        message: getFirstZodErrorMessage(result.error),
         code: "VALIDATION_ERROR",
-        details: formatZodErrors(result.error),
+        details,
       });
       return;
     }

@@ -22,7 +22,7 @@ export const RegisterSchema = z.object({
     .max(PASSWORD_MAX_LENGTH, `Password must be at most ${PASSWORD_MAX_LENGTH} characters`)
     .regex(
       /^(?=.*\p{L})(?=.*\d)[\s\S]+$/u,
-      "Password must contain at least one letter and one number"
+      "Password can include special characters, and must contain at least one letter and one number"
     ),
 });
 
