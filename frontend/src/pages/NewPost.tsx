@@ -428,7 +428,7 @@ const NewPost = () => {
                   Write Review
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Share what worked, what stood out, and who might enjoy it.
+                  Share what did you think, what stood out, and who might enjoy it.
                 </Typography>
               </Box>
               <Chip
