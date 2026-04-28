@@ -63,6 +63,8 @@ const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostA
           color: isGlass ? "#fff" : "text.secondary",
           p: 0.75,
           transition: "all 0.2s ease",
+          width: 36,
+          height: 36,
           ...(isGlass && {
             bgcolor: "rgba(255, 255, 255, 0.15)",
             backdropFilter: "blur(12px)",
@@ -70,7 +72,7 @@ const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostA
             borderRadius: "12px",
             "&:hover": {
               bgcolor: "rgba(255, 255, 255, 0.25)",
-              transform: "scale(1.1)",
+              transform: "scale(1.04)",
               color: "#fff",
             },
           }),
