@@ -46,6 +46,16 @@ export const RagAssistant: React.FC = () => {
     setQuery("");
   };
 
+  const handleQueryKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Enter" || event.shiftKey) return;
+
+    event.preventDefault();
+    if (!canSubmit) return;
+
+    void fetchAiResponse(trimmedQuery);
+    setQuery("");
+  };
+
   return (
     <Box sx={{ maxWidth: "76rem", mx: "auto" }}>
       <Box
@@ -108,6 +118,7 @@ export const RagAssistant: React.FC = () => {
                   placeholder="Recommend a character-driven fantasy book"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
+                  onKeyDown={handleQueryKeyDown}
                   disabled={loading}
                   error={isTooLong}
                   helperText={`${query.length}/${QUERY_MAX_LENGTH}${isTooLong ? " - shorten your question" : ""}`}
