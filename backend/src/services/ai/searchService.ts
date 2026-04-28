@@ -10,7 +10,6 @@ import User from "@models/User";
 const DEFAULT_SEARCH_TOP_K = 8;
 const USER_LIST_FIELDS = "readlist wishlist";
 const PROFILE_METADATA_TYPE = "profile";
-const PROFILE_CHUNK_TYPE: ChunkType = "profile";
 const REVIEW_CHUNK_TYPE: ChunkType = "review";
 const BOOK_CHUNK_TYPE: ChunkType = "book";
 const USER_ID_METADATA_KEY = "userId";

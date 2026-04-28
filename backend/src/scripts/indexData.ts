@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 import mongoose, { Types } from "mongoose";
 import { ENV } from "@config/config";
-import { BookModel } from "@models/Book";
-import User from "@models/User";
+import { BookModel, IBook } from "@models/Book";
+import User, { IUser } from "@models/User";
 import { UserReviewModel } from "@models/UserReview";
 import { buildBookChunk, buildProfileChunk, buildReviewChunk } from "@services/ai/chunkBuilder";
 import { generateEmbeddingsBatch } from "@services/ai/embeddingService";
@@ -94,7 +94,7 @@ async function indexBooks(): Promise<void> {
 
 async function indexUsers(
   tasteMap: Map<string, string[]>,
-  allBooks: any[]
+  allBooks: IBook[]
 ): Promise<void> {
   const users = await User.find({});
   logger.info(`[IndexData] Indexing ${users.length} users...`);
@@ -147,8 +147,8 @@ async function indexUsers(
 
 async function indexReviews(
   tasteMap: Map<string, string[]>,
-  allBooks: any[],
-  allUsers: any[]
+  allBooks: IBook[],
+  allUsers: IUser[]
 ): Promise<void> {
   const reviews = await UserReviewModel.find({});
 
@@ -194,7 +194,7 @@ async function indexReviews(
         metadata: {
           mongoId: reviewId,
           bookId,
-          externalId: allBooks.find(b => (b._id as Types.ObjectId).toString() === bookId)?.externalId,
+          externalId: allBooks.find((book) => (book._id as Types.ObjectId).toString() === bookId)?.externalId,
           userId,
           username: userNamesMap.get(userId),
           rating: review.rating,

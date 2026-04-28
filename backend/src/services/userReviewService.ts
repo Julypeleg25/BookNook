@@ -1,4 +1,4 @@
-import { Types, FlattenMaps } from "mongoose";
+import { Types } from "mongoose";
 import { BookDetail } from "@models/ApiBook";
 import { IUserReview } from "@models/UserReview";
 import { userReviewRepository, PopulatedUserReview } from "@repositories/userReviewRepository";
