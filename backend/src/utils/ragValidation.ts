@@ -4,6 +4,12 @@ export const MAX_RAG_QUERY_LENGTH = 500;
 const SEARCHABLE_TEXT_REGEX = /[\p{L}\p{N}]/u;
 const SUPPORTED_QUERY_REGEX = /^[\p{L}\p{N}\s'"?!.,:;()[\]\-_/]+$/u;
 
+export const UserProfileSchema = z.object({
+  liked_books: z.array(z.object({ title: z.string(), rating: z.number() })),
+  disliked_books: z.array(z.object({ title: z.string(), rating: z.number() })),
+  interests: z.array(z.string()),
+});
+
 export const RagQueryRequestSchema = z
   .object({
     query: z
@@ -13,11 +19,12 @@ export const RagQueryRequestSchema = z
       .max(MAX_RAG_QUERY_LENGTH, `Question must be ${MAX_RAG_QUERY_LENGTH} characters or fewer.`)
       .refine((value) => SEARCHABLE_TEXT_REGEX.test(value), "Question must contain searchable text.")
       .refine((value) => SUPPORTED_QUERY_REGEX.test(value), "Question contains unsupported characters."),
+    userProfile: UserProfileSchema.optional(),
   })
   .strict();
 
 export type RagQueryRequest = z.infer<typeof RagQueryRequestSchema>;
 
-export const parseRagQueryRequest = (body: unknown): { query: string } => {
+export const parseRagQueryRequest = (body: unknown): RagQueryRequest => {
   return RagQueryRequestSchema.parse(body);
 };
