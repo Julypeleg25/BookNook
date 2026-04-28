@@ -14,6 +14,10 @@ import {
   type ForwardedRef,
 } from "react";
 import { MdSend } from "react-icons/md";
+import {
+  COMMENT_TEXT_MAX_LENGTH,
+  COMMENT_TEXT_MIN_LENGTH,
+} from "@shared/constants/validation";
 
 interface NewCommentProps {
   avatarUrl?: string;
@@ -37,12 +41,18 @@ const NewComment = forwardRef(
     }));
 
     const sendComment = () => {
-      if (!value.trim()) {
+      const normalizedValue = value.trim();
+
+      if (normalizedValue.length < COMMENT_TEXT_MIN_LENGTH) {
         setError("Required");
         return;
       }
+      if (normalizedValue.length > COMMENT_TEXT_MAX_LENGTH) {
+        setError(`Max ${COMMENT_TEXT_MAX_LENGTH} characters`);
+        return;
+      }
       if (onSubmit) {
-        onSubmit(value);
+        onSubmit(normalizedValue);
         setValue("");
       }
     };
@@ -77,10 +87,13 @@ const NewComment = forwardRef(
             setError(null);
           }}
           error={Boolean(error)}
-          helperText={error ?? `${value.length}/500`}
+          helperText={error ?? `${value.length}/${COMMENT_TEXT_MAX_LENGTH}`}
           multiline
           maxRows={3}
           slotProps={{
+            htmlInput: {
+              maxLength: COMMENT_TEXT_MAX_LENGTH,
+            },
             input: {
               endAdornment: (
                 <InputAdornment position="end">

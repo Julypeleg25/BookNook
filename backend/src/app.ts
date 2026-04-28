@@ -40,8 +40,8 @@ const initApp = async () => {
   app.use(express.json({ limit: "10mb" }));
 
   app.use("/auth", authRoutes);
-  app.use("/api/books", authenticate, booksRouter);
-  app.use("/userReviews", authenticate, userReviewsRouter);
+  app.use("/api/books", booksRouter);
+  app.use("/userReviews", userReviewsRouter);
   app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use("/api/lists", authenticate, listRouter);
   app.use("/api/users", userRouter);

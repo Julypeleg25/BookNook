@@ -1,29 +1,27 @@
-import { type ReactNode } from "react";
-import { Navigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { useUserStore } from "../stores/userStore";
+import useUserStore from "@/state/useUserStore";
+import type { ReactNode } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { buildRedirectTarget } from "@/utils/redirects";
 
 interface ProtectedRouteProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, fetchUser } = useUserStore();
+  const { isAuthenticated } = useUserStore();
+  const location = useLocation();
 
-  const { isLoading, isError } = useQuery({
-    queryKey: ["user"],
-    queryFn: fetchUser,
-  });
-
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (!isAuthenticated) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: buildRedirectTarget(location) }}
+      />
+    );
   }
 
-  if (isError || !user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
+  return children ? <>{children}</> : <Outlet />;
 };
 
 export default ProtectedRoute;

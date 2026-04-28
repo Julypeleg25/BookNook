@@ -11,12 +11,18 @@ import { isImageFile, deleteFile } from "@utils/fileUtils";
 import { Types } from "mongoose";
 import { HttpStatusCode } from "axios";
 import {
+  REVIEW_TEXT_MAX_LENGTH,
+  REVIEW_TEXT_MIN_LENGTH,
+  SEARCH_QUERY_MAX_LENGTH,
+} from "@shared/constants/validation";
+import {
   deleteReview,
   getPopulatedReviewById,
   isReviewAuthor,
   updateReview,
   getEnrichedReviews,
 } from "@services/userReviewService";
+import { validateOptionalTextInput, validateTextInput } from "@utils/textValidation";
 
 export const createReviewHandler = async (
   req: Request,
@@ -24,7 +30,12 @@ export const createReviewHandler = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { bookId, review, rating } = req.body;
+    const { bookId, rating } = req.body;
+    const normalizedReview = validateTextInput(req.body.review, {
+      fieldLabel: "Review",
+      minLength: REVIEW_TEXT_MIN_LENGTH,
+      maxLength: REVIEW_TEXT_MAX_LENGTH,
+    });
 
     if (req.file && !isImageFile(req.file.originalname)) {
       await deleteFile(req.file.path);
@@ -48,7 +59,7 @@ export const createReviewHandler = async (
       new Types.ObjectId(req.authenticatedUser!.id),
       bookId,
       parsedRating,
-      review,
+      normalizedReview,
       picturePath,
     );
 
@@ -72,7 +83,13 @@ export const getAllReviewsHandler = async (
     const username = req.query.username
       ? String(req.query.username)
       : undefined;
-    const searchQuery = req.query.search ? String(req.query.search) : undefined;
+    const rawSearchQuery = req.query.search ? String(req.query.search).trim() : undefined;
+    const searchQuery = rawSearchQuery
+      ? validateTextInput(rawSearchQuery, {
+          fieldLabel: "Search query",
+          maxLength: SEARCH_QUERY_MAX_LENGTH,
+        })
+      : undefined;
     const rating = req.query.rating ? Number(req.query.rating) : undefined;
     const genre = req.query.genre ? String(req.query.genre) : undefined;
     const reviews = await getAllReviews(minLikes, searchQuery, username, rating, genre);
@@ -161,7 +178,7 @@ export const updateReviewHandler = async (
       throw new ValidationError("Review ID is required");
     }
 
-    const { review, rating } = req.body;
+    const { rating } = req.body;
 
     const updateData: {
       review?: string;
@@ -169,7 +186,15 @@ export const updateReviewHandler = async (
       picturePath?: string;
     } = {};
 
-    if (review !== undefined) updateData.review = review;
+    const normalizedReview = validateOptionalTextInput(req.body.review, {
+      fieldLabel: "Review",
+      minLength: REVIEW_TEXT_MIN_LENGTH,
+      maxLength: REVIEW_TEXT_MAX_LENGTH,
+    });
+
+    if (normalizedReview !== undefined) {
+      updateData.review = normalizedReview;
+    }
     if (rating !== undefined) {
       const parsedRating = Number(rating);
       if (isNaN(parsedRating) || parsedRating < 0 || parsedRating > 5) {

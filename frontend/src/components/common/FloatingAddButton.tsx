@@ -1,12 +1,12 @@
 import { Fab } from "@mui/material";
 import { HiPlus } from "react-icons/hi2";
-import { useNavigate } from "react-router-dom";
+import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
 
 const FloatingAddButton = () => {
-    const navigate = useNavigate();
+    const { navigateProtected } = useProtectedNavigation();
 
     const handleClick = () => {
-        navigate("/books/select");
+        navigateProtected("/books/select");
     };
 
     return (

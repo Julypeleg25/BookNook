@@ -3,6 +3,8 @@ import { searchBooks, getBookDetails, localSearchBooks } from "@services/bookSer
 import { logger } from "@utils/logger";
 import { BooksQuery } from "@models/ApiBook";
 import { ValidationError } from "@utils/errors";
+import { SEARCH_QUERY_MAX_LENGTH } from "@shared/constants/validation";
+import { validateTextInput } from "@utils/textValidation";
 
 export const searchBooksHandler = async (
   req: Request,
@@ -19,6 +21,14 @@ export const searchBooksHandler = async (
       rating: typeof req.query.rating === "string" ? Number(req.query.rating) : undefined,
       reviewCount: typeof req.query.reviewCount === "string" ? Number(req.query.reviewCount) : undefined,
     };
+
+    const normalizedTitle = query.title?.trim();
+    query.title = normalizedTitle
+      ? validateTextInput(normalizedTitle, {
+          fieldLabel: "Book title",
+          maxLength: SEARCH_QUERY_MAX_LENGTH,
+        })
+      : undefined;
 
     if (query.rating !== undefined && (isNaN(query.rating) || query.rating < 0 || query.rating > 5)) {
       throw new ValidationError("Rating must be a number between 0 and 5");

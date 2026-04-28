@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+  COMMENT_TEXT_MAX_LENGTH,
+  COMMENT_TEXT_MIN_LENGTH,
+  REVIEW_TEXT_MAX_LENGTH,
+  REVIEW_TEXT_MIN_LENGTH,
+} from "../constants/validation";
 
 const objectIdSchema = z
   .string()
@@ -6,7 +12,13 @@ const objectIdSchema = z
 
 export const ReviewCommentSchema = z.object({
   user: objectIdSchema,
-  comment: z.string().min(1, "Comment cannot be empty").max(200, "Comment must be at most 200 characters"),
+  comment: z
+    .string()
+    .min(COMMENT_TEXT_MIN_LENGTH, "Comment cannot be empty")
+    .max(
+      COMMENT_TEXT_MAX_LENGTH,
+      `Comment must be at most ${COMMENT_TEXT_MAX_LENGTH} characters`
+    ),
   createdAt: z.coerce.date().optional(),
 });
 
@@ -15,8 +27,14 @@ export const UserReviewZodSchema = z.object({
   book: objectIdSchema,
   review: z
     .string()
-    .min(5, "Review must be at least 5 characters long")
-    .max(1500, "Review must be at most 1500 characters long"),
+    .min(
+      REVIEW_TEXT_MIN_LENGTH,
+      `Review must be at least ${REVIEW_TEXT_MIN_LENGTH} characters long`
+    )
+    .max(
+      REVIEW_TEXT_MAX_LENGTH,
+      `Review must be at most ${REVIEW_TEXT_MAX_LENGTH} characters long`
+    ),
   rating: z
     .number()
     .min(0)

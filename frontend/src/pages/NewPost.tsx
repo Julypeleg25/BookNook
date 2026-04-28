@@ -23,6 +23,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { useEffect } from "react";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
+import {
+  REVIEW_TEXT_MAX_LENGTH,
+  REVIEW_TEXT_MIN_LENGTH,
+} from "@shared/constants/validation";
 
 interface INewPostInputs {
   review: string;
@@ -235,8 +239,14 @@ const NewPost = () => {
         control={control}
         rules={{
           required: "Review is required",
-          minLength: { value: 5, message: "Minimum 5 characters" },
-          maxLength: { value: 1500, message: "Max 1500 characters" },
+          minLength: {
+            value: REVIEW_TEXT_MIN_LENGTH,
+            message: `Minimum ${REVIEW_TEXT_MIN_LENGTH} characters`,
+          },
+          maxLength: {
+            value: REVIEW_TEXT_MAX_LENGTH,
+            message: `Max ${REVIEW_TEXT_MAX_LENGTH} characters`,
+          },
         }}
         render={({
           field,
@@ -245,7 +255,7 @@ const NewPost = () => {
         }) => (
           <TextField
             {...field}
-            slotProps={{ htmlInput: { maxLength: 1500 } }}
+            slotProps={{ htmlInput: { maxLength: REVIEW_TEXT_MAX_LENGTH } }}
             label="Review"
             placeholder="Write your opinions on the book, help others find out if they'll like it!"
             multiline
@@ -255,7 +265,7 @@ const NewPost = () => {
             helperText={
               errors.review
                 ? errors.review.message
-                : `${review?.length || 0}/1500`
+                : `${review?.length || 0}/${REVIEW_TEXT_MAX_LENGTH}`
             }
           />
         )}

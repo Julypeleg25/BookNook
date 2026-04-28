@@ -1,20 +1,26 @@
 import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useUserStore from "@/state/useUserStore";
 import { AuthService } from "@/api/services/authService";
 import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
 import { tokenService } from "@/api/services/tokenService";
+import { DEFAULT_AUTH_REDIRECT, normalizeRedirectTarget } from "@/utils/redirects";
 
 export const useAuth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setUser, resetUser } = useUserStore();
+  const redirectTarget = normalizeRedirectTarget(
+    (location.state as { from?: unknown } | null)?.from,
+    DEFAULT_AUTH_REDIRECT
+  );
 
   const login = async (payload: LoginRequestDTO) => {
     const data = await AuthService.login(payload);
 
     tokenService.setAccess(data.accessToken);
     setUser(data.user);
-    navigate("/posts");
+    navigate(redirectTarget, { replace: true });
   };
 
   const register = async (payload: RegisterRequestDTO | FormData) => {
@@ -22,7 +28,7 @@ export const useAuth = () => {
 
     tokenService.setAccess(data.accessToken);
     setUser(data.user);
-    navigate("/posts");
+    navigate(redirectTarget, { replace: true });
   };
 
   const logout = async () => {
@@ -40,7 +46,6 @@ export const useAuth = () => {
 
     if (!token) {
       resetUser();
-      navigate("/login");
       return;
     }
 
@@ -51,7 +56,7 @@ export const useAuth = () => {
       tokenService.clear();
       resetUser();
     }
-  }, [navigate, resetUser, setUser]);
+  }, [resetUser, setUser]);
 
   return { login, register, logout, syncUser };
 };

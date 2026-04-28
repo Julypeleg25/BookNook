@@ -54,7 +54,7 @@ const router = Router();
  *         description: List of reviews
  */
 router.post("/", authenticate, upload.single("picture"), createReviewHandler);
-router.get("/", authenticate, getAllReviewsHandler);
+router.get("/", getAllReviewsHandler);
 
 /**
  * @swagger
@@ -74,7 +74,7 @@ router.get("/", authenticate, getAllReviewsHandler);
  *       200:
  *         description: List of user reviews
  */
-router.get("/user/:userId", authenticate, getReviewsByUserIdHandler);
+router.get("/user/:userId", getReviewsByUserIdHandler);
 
 /**
  * @swagger
@@ -94,7 +94,7 @@ router.get("/user/:userId", authenticate, getReviewsByUserIdHandler);
  *       200:
  *         description: List of book reviews
  */
-router.get("/book/:bookId", authenticate, getReviewsByBookIdHandler);
+router.get("/book/:bookId", getReviewsByBookIdHandler);
 
 /**
  * @swagger
@@ -155,7 +155,7 @@ router.get("/book/:bookId", authenticate, getReviewsByBookIdHandler);
  *       200:
  *         description: Review deleted
  */
-router.get("/:id", authenticate, getReviewById);
+router.get("/:id", getReviewById);
 router.patch("/:id", authenticate, isReviewAuthorMiddleware, upload.single("picture"), updateReviewHandler);
 router.delete("/:id", authenticate, isReviewAuthorMiddleware, deleteReviewHandler);
 
