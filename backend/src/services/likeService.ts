@@ -1,17 +1,29 @@
-
-
-
 import { Types } from "mongoose";
-import { UserReviewModel } from "@models/UserReview";
-import User from "@models/User";
+import { userReviewRepository } from "@repositories/userReviewRepository";
+import { userRepository } from "@repositories/userRepository";
 import { NotFoundError, ForbiddenError } from "@utils/errors";
 import { syncUserProfileToVector } from "@services/ai/vectorSyncService";
+import { logger } from "@utils/logger";
+
+const syncLikedUserProfile = async (userId: Types.ObjectId): Promise<void> => {
+  try {
+    const user = await userRepository.findById(userId);
+    if (user) {
+      await syncUserProfileToVector(user);
+    }
+  } catch (error) {
+    logger.warn(
+      `Failed to sync profile after like state changed for user ${userId.toString()}.`,
+      error,
+    );
+  }
+};
 
 export const likeReview = async (
   reviewId: string,
   userId: Types.ObjectId
 ): Promise<number> => {
-  const review = await UserReviewModel.findById(reviewId);
+  const review = await userReviewRepository.findById(reviewId);
   if (!review) {
     throw new NotFoundError("Review not found");
   }
@@ -20,39 +32,31 @@ export const likeReview = async (
     throw new ForbiddenError("You can't like your own review");
   }
 
-  const updatedReview = await UserReviewModel.findByIdAndUpdate(
-    reviewId,
-    { $addToSet: { likes: userId } },
-    { new: true }
-  );
-
-  const user = await User.findById(userId);
-  if (user) {
-    syncUserProfileToVector(user).catch(err => console.error("Profile sync failed", err));
+  const updatedReview = await userReviewRepository.addLike(reviewId, userId);
+  if (!updatedReview) {
+    throw new NotFoundError("Review not found");
   }
 
-  return updatedReview?.likes.length ?? 0;
+  void syncLikedUserProfile(userId);
+
+  return updatedReview.likes.length;
 };
 
 export const unlikeReview = async (
   reviewId: string,
   userId: Types.ObjectId
 ): Promise<number> => {
-  const review = await UserReviewModel.findById(reviewId);
+  const review = await userReviewRepository.findById(reviewId);
   if (!review) {
     throw new NotFoundError("Review not found");
   }
 
-  const updatedReview = await UserReviewModel.findByIdAndUpdate(
-    reviewId,
-    { $pull: { likes: userId } },
-    { new: true }
-  );
-
-  const user = await User.findById(userId);
-  if (user) {
-    syncUserProfileToVector(user).catch(err => console.error("Profile sync failed", err));
+  const updatedReview = await userReviewRepository.removeLike(reviewId, userId);
+  if (!updatedReview) {
+    throw new NotFoundError("Review not found");
   }
 
-  return updatedReview?.likes.length ?? 0;
+  void syncLikedUserProfile(userId);
+
+  return updatedReview.likes.length;
 };
