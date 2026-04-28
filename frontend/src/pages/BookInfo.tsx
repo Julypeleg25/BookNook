@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, Divider, Skeleton } from "@mui/material";
+import { Box, Paper, Stack, Typography, Divider, Skeleton } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NotFound from "./NotFound";
@@ -34,8 +34,8 @@ const BookInfo = () => {
 
   if (loading) {
     return (
-      <Box sx={{ margin: "1.5rem", px: "1rem", py: "2rem" }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
+      <Box sx={{ bgcolor: "background.default", minHeight: "calc(100vh - 4.5rem)", px: { xs: 2, md: 4 }, py: { xs: 2.5, md: 4 } }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ maxWidth: "76rem", mx: "auto" }}>
           <Skeleton variant="text" width="40%" height={60} />
           <Skeleton variant="rectangular" width="30%" height={40} />
         </Stack>
@@ -45,6 +45,7 @@ const BookInfo = () => {
           gap="3rem"
           mt="3rem"
           alignItems="start"
+          sx={{ maxWidth: "76rem", mx: "auto" }}
         >
           <Stack spacing={3}>
             <Skeleton variant="text" width="100%" height={24} />
@@ -85,80 +86,113 @@ const BookInfo = () => {
   const displayGenres = book.categories?.join(", ") || "Unknown Genre";
 
   return (
-    <Box sx={{ margin: "1.5rem", px: "1rem", py: "2rem" }}>
-      <BookInfoHeader book={book} />
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 4.5rem)",
+        bgcolor: "background.default",
+        px: { xs: 2, md: 4 },
+        py: { xs: 2.5, md: 4 },
+      }}
+    >
+      <Stack spacing={3} sx={{ maxWidth: "76rem", mx: "auto" }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2.5, md: 3 },
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 3,
+            bgcolor: "background.paper",
+          }}
+        >
+          <BookInfoHeader book={book} />
+        </Paper>
 
-      <Box
-        display="grid"
-        gridTemplateColumns={{ xs: "1fr", md: "2fr 1fr" }}
-        gap="3rem"
-        mt="3rem"
-        alignItems="start"
-      >
-        <Stack spacing={3}>
-          <Stack direction="row" spacing={2} alignItems="flex-start">
-            <Box
-              sx={{
-                width: "3rem",
-                height: "3rem",
-                borderRadius: "50%",
-                bgcolor: "action.selected",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <MdMenuBook size={"2rem"} />
-            </Box>
-            <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
-              {book.description?.replace(/<[^>]*>?/gm, "") || "No description available."}
-            </Typography>
-          </Stack>
-          <Divider />
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2.5, md: 3 },
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 3,
+            bgcolor: "background.paper",
+          }}
+        >
           <Box
             display="grid"
-            gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
-            gap="1.5rem"
+            gridTemplateColumns={{ xs: "1fr", md: "minmax(0, 1fr) 18rem" }}
+            gap={{ xs: 3, md: 4 }}
+            alignItems="start"
           >
-            <InfoRow icon={<FaUserPen />} label="Author" value={displayAuthors} />
-            <InfoRow icon={<MdNumbers />} label="Pages" value={book.pageCount || "N/A"} />
-            <InfoRow
-              icon={<FaTheaterMasks />}
-              label="Genres"
-              value={displayGenres}
-            />
-            <InfoRow
-              icon={<GrLanguage />}
-              label="Published"
-              value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"}
-            />
-          </Box>
-        </Stack>
-        <Box display="flex" justifyContent="center">
-          <Box
-            sx={{
-              width: "18rem",
-              borderRadius: "1rem",
-              overflow: "hidden",
-              boxShadow: 4,
-            }}
-          >
-            {book.thumbnail && (
+            <Stack spacing={3}>
+              <Stack direction="row" spacing={2} alignItems="flex-start">
+                <Box
+                  sx={{
+                    width: "3rem",
+                    height: "3rem",
+                    borderRadius: "50%",
+                    bgcolor: "rgba(91, 111, 106, 0.12)",
+                    color: "primary.main",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <MdMenuBook size="1.7rem" />
+                </Box>
+                <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
+                  {book.description?.replace(/<[^>]*>?/gm, "") || "No description available."}
+                </Typography>
+              </Stack>
+              <Divider />
               <Box
-                component="img"
-                src={book.thumbnail}
-                alt={book.title}
+                display="grid"
+                gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
+                gap="1.5rem"
+              >
+                <InfoRow icon={<FaUserPen />} label="Author" value={displayAuthors} />
+                <InfoRow icon={<MdNumbers />} label="Pages" value={book.pageCount || "N/A"} />
+                <InfoRow
+                  icon={<FaTheaterMasks />}
+                  label="Genres"
+                  value={displayGenres}
+                />
+                <InfoRow
+                  icon={<GrLanguage />}
+                  label="Published"
+                  value={book.publishedDate ? formatDate(book.publishedDate) : "N/A"}
+                />
+              </Box>
+            </Stack>
+            <Box display="flex" justifyContent={{ xs: "flex-start", md: "center" }}>
+              <Box
                 sx={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
+                  width: { xs: "12rem", md: "18rem" },
+                  borderRadius: "1rem",
+                  overflow: "hidden",
+                  boxShadow: "0 14px 34px rgba(31, 41, 51, 0.16)",
+                  bgcolor: "grey.100",
                 }}
-              />
-            )}
+              >
+                {book.thumbnail && (
+                  <Box
+                    component="img"
+                    src={book.thumbnail}
+                    alt={book.title}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                )}
+              </Box>
+            </Box>
           </Box>
-        </Box>
-      </Box>
+        </Paper>
+      </Stack>
     </Box>
   );
 };

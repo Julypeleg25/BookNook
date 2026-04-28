@@ -61,25 +61,34 @@ const BookPost = () => {
 
 
   return (
-    <Box sx={{ m: { xs: "1rem", md: "3rem" } }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}
-      >
-        <BookPostHeader bookPost={bookPost} />
-        <PostActionsMenu post={bookPost} />
-      </Box>
-      <Box
-        display="grid"
-        gap="2rem"
-        gridTemplateColumns={{ xs: "1fr", md: "minmax(0, 1.2fr) minmax(20rem, 0.8fr)" }}
-        width="100%"
-        alignItems="stretch"
-        mt="2rem"
-      >
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 4.5rem)",
+        bgcolor: "background.default",
+        px: { xs: 2, md: 4 },
+        py: { xs: 2.5, md: 4 },
+      }}
+    >
+      <Box sx={{ maxWidth: "76rem", mx: "auto" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 2,
+          }}
+        >
+          <BookPostHeader bookPost={bookPost} />
+          <PostActionsMenu post={bookPost} />
+        </Box>
+        <Box
+          display="grid"
+          gap="2rem"
+          gridTemplateColumns={{ xs: "1fr", md: "minmax(0, 1.2fr) minmax(20rem, 0.8fr)" }}
+          width="100%"
+          alignItems="stretch"
+          mt="2rem"
+        >
         <Box
           sx={{
             p: { xs: 2, md: 3 },
@@ -138,13 +147,14 @@ const BookPost = () => {
             </Box>
           ) : null;
         })()}
+        </Box>
+        <Box mt="2rem">
+          <BookInfoSection book={bookPost.book} />
+        </Box>
+        <div id="comments-section">
+          <CommentsSection ref={commentsRef} bookPost={bookPost} />
+        </div>
       </Box>
-      <Box mt="2rem">
-        <BookInfoSection book={bookPost.book} />
-      </Box>
-      <div id="comments-section">
-        <CommentsSection ref={commentsRef} bookPost={bookPost} />
-      </div>
     </Box>
   );
 };
