@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 
 const SENSITIVE_KEYWORDS = [
-  "password", "email", "login", "credentials", "token", "api key", "session",
+  "password", "email", "login", "credentials", "token", "api key", "session", "access",
   "private data", "reset", "auth", "סיסמה", "אימייל", "פרטי חשבון", "התחברות",
   "סודי", "מפתח", "גישה"
 ];

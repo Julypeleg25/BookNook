@@ -2,13 +2,12 @@ import { Box, AppBar as MuiAppBar, Toolbar } from "@mui/material";
 import bookNookLogo from "@assets/booknook.png";
 import { Navigate, Outlet } from "react-router-dom";
 import useUserStore from "@/state/useUserStore";
-import { DEFAULT_AUTH_REDIRECT } from "@/utils/redirects";
 
 const PublicLayout = () => {
   const { isAuthenticated } = useUserStore();
 
   if (isAuthenticated) {
-    return <Navigate to={DEFAULT_AUTH_REDIRECT} replace />;
+    return <Navigate to="/posts" replace />;
   }
 
   return (
