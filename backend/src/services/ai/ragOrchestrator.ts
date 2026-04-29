@@ -91,6 +91,8 @@ const normalizeText = (value: string): string =>
         .replace(/\s+/g, " ")
         .trim();
 
+const sanitizeUserQuery = (query: string): string => normalizeText(query);
+
 const sanitizeMetadata = (metadata: Record<string, unknown> | null): Record<string, unknown> => {
     if (!metadata) return {};
 
@@ -182,9 +184,10 @@ const buildCandidateSnippet = (chunk: SearchResult, index: number): string => {
 const buildPromptContext = (
     chunks: SearchResult[],
     opts: { personalized: boolean; userTasteChunks: SearchResult[] }
-): string => {
+): { context: string; usedCandidateChunks: SearchResult[] } => {
     let context = "";
     const sections: string[] = [];
+    const usedCandidateChunks: SearchResult[] = [];
 
     if (opts.personalized && opts.userTasteChunks.length > 0) {
         sections.push([
@@ -196,10 +199,15 @@ const buildPromptContext = (
 
     const candidateSnippets: string[] = [];
     for (const [index, chunk] of chunks.entries()) {
-        candidateSnippets.push(buildCandidateSnippet(chunk, index));
-        if (candidateSnippets.join(SECTION_SEPARATOR).length > MAX_CONTEXT_CHARS) {
+        const nextSnippet = buildCandidateSnippet(chunk, index);
+        const nextSectionText = [...candidateSnippets, nextSnippet].join(SECTION_SEPARATOR);
+
+        if (nextSectionText.length > MAX_CONTEXT_CHARS) {
             break;
         }
+
+        candidateSnippets.push(nextSnippet);
+        usedCandidateChunks.push(chunk);
     }
 
     sections.push([
@@ -215,7 +223,7 @@ const buildPromptContext = (
         context = context ? `${context}${SECTION_SEPARATOR}${section}` : section;
     }
 
-    return context;
+    return { context, usedCandidateChunks };
 };
 
 export const processQuery = async (
@@ -224,8 +232,9 @@ export const processQuery = async (
 ): Promise<RAGResult> => {
     try {
         const { query: validatedQuery } = RagQueryRequestSchema.parse({ query });
-        const personalized = Boolean(opts.userId && isPersonalizedRecommendationQuery(validatedQuery));
-        const { candidateChunks, userTasteChunks } = await performSearch(validatedQuery, {
+        const safeQuery = sanitizeUserQuery(validatedQuery);
+        const personalized = Boolean(opts.userId && isPersonalizedRecommendationQuery(safeQuery));
+        const { candidateChunks, userTasteChunks } = await performSearch(safeQuery, {
             topK: RAG_SEARCH_TOP_K,
             userId: opts.userId,
             personalized,
@@ -241,7 +250,7 @@ export const processQuery = async (
             };
         }
 
-        const context = buildPromptContext(safeChunks, {
+        const { context, usedCandidateChunks } = buildPromptContext(safeChunks, {
             personalized,
             userTasteChunks: safeUserTasteChunks,
         });
@@ -254,12 +263,12 @@ export const processQuery = async (
             };
         }
 
-        const answer = await generateAnswer(validatedQuery, context, { personalized });
+        const answer = await generateAnswer(safeQuery, context);
 
         return {
             answer,
-            sourceCount: safeChunks.length,
-            sources: safeChunks.map((c) => ({
+            sourceCount: usedCandidateChunks.length,
+            sources: usedCandidateChunks.map((c) => ({
                 id: c.id,
                 bookId: c.bookId,
                 type: c.type,

@@ -18,7 +18,6 @@ export interface SearchOptions {
     topK?: number;
     typeFilter?: ChunkType | null;
     minRating?: number | null;
-    userId?: string | null;
     excludeExternalIds?: string[] | null;
 }
 
@@ -33,6 +32,35 @@ export interface SearchResult {
 }
 
 let pool: Pool | null = null;
+const UPSERT_CHUNK_SQL = `INSERT INTO vector_search
+         (source_id, book_id, type, text, embedding, rating, metadata, updated_at)
+       VALUES ($1, $2, $3, $4, $5::vector, $6, $7, NOW())
+       ON CONFLICT (source_id) DO UPDATE SET
+         book_id    = EXCLUDED.book_id,
+         type       = EXCLUDED.type,
+         text       = EXCLUDED.text,
+         embedding  = EXCLUDED.embedding,
+         rating     = EXCLUDED.rating,
+         metadata   = EXCLUDED.metadata,
+         updated_at = NOW();`;
+
+const mapSearchResultRow = (row: {
+    id: string;
+    book_id: string;
+    type: ChunkType;
+    text: string;
+    rating: string | null;
+    metadata: Record<string, unknown> | null;
+    score: string | number;
+}): SearchResult => ({
+    id: row.id,
+    bookId: row.book_id,
+    type: row.type,
+    text: row.text,
+    rating: row.rating !== null ? parseFloat(row.rating) : null,
+    metadata: row.metadata ?? null,
+    score: typeof row.score === "number" ? row.score : parseFloat(row.score),
+});
 
 export const getPool = (): Pool => {
     if (!pool) {
@@ -96,28 +124,15 @@ export const ensureSchema = async (): Promise<void> => {
 export const upsertChunk = async (chunk: VectorChunk): Promise<void> => {
     const client = await getPool().connect();
     try {
-        await client.query(
-            `INSERT INTO vector_search
-         (source_id, book_id, type, text, embedding, rating, metadata, updated_at)
-       VALUES ($1, $2, $3, $4, $5::vector, $6, $7, NOW())
-       ON CONFLICT (source_id) DO UPDATE SET
-         book_id    = EXCLUDED.book_id,
-         type       = EXCLUDED.type,
-         text       = EXCLUDED.text,
-         embedding  = EXCLUDED.embedding,
-         rating     = EXCLUDED.rating,
-         metadata   = EXCLUDED.metadata,
-         updated_at = NOW();`,
-            [
-                chunk.sourceId,
-                chunk.bookId,
-                chunk.type,
-                chunk.text,
-                JSON.stringify(chunk.embedding),
-                chunk.rating ?? null,
-                chunk.metadata ? JSON.stringify(chunk.metadata) : null,
-            ]
-        );
+        await client.query(UPSERT_CHUNK_SQL, [
+            chunk.sourceId,
+            chunk.bookId,
+            chunk.type,
+            chunk.text,
+            JSON.stringify(chunk.embedding),
+            chunk.rating ?? null,
+            chunk.metadata ? JSON.stringify(chunk.metadata) : null,
+        ]);
     } finally {
         client.release();
     }
@@ -138,28 +153,15 @@ export const upsertChunksBatch = async (
             await client.query("BEGIN");
 
             for (const chunk of batch) {
-                await client.query(
-                    `INSERT INTO vector_search
-             (source_id, book_id, type, text, embedding, rating, metadata, updated_at)
-           VALUES ($1, $2, $3, $4, $5::vector, $6, $7, NOW())
-           ON CONFLICT (source_id) DO UPDATE SET
-             book_id    = EXCLUDED.book_id,
-             type       = EXCLUDED.type,
-             text       = EXCLUDED.text,
-             embedding  = EXCLUDED.embedding,
-             rating     = EXCLUDED.rating,
-             metadata   = EXCLUDED.metadata,
-             updated_at = NOW();`,
-                    [
-                        chunk.sourceId,
-                        chunk.bookId,
-                        chunk.type,
-                        chunk.text,
-                        JSON.stringify(chunk.embedding),
-                        chunk.rating ?? null,
-                        chunk.metadata ? JSON.stringify(chunk.metadata) : null,
-                    ]
-                );
+                await client.query(UPSERT_CHUNK_SQL, [
+                    chunk.sourceId,
+                    chunk.bookId,
+                    chunk.type,
+                    chunk.text,
+                    JSON.stringify(chunk.embedding),
+                    chunk.rating ?? null,
+                    chunk.metadata ? JSON.stringify(chunk.metadata) : null,
+                ]);
             }
 
             await client.query("COMMIT");
@@ -195,15 +197,7 @@ export const fetchChunksByMetadata = async (
         }
 
         const result = await client.query(query, values);
-        return result.rows.map(row => ({
-            id: row.id,
-            bookId: row.book_id,
-            type: row.type,
-            text: row.text,
-            rating: row.rating !== null ? parseFloat(row.rating) : null,
-            metadata: row.metadata,
-            score: 1.0
-        }));
+        return result.rows.map((row) => mapSearchResultRow({ ...row, score: 1 }));
     } finally {
         client.release();
     }
@@ -213,7 +207,7 @@ export const similaritySearch = async (
     embedding: number[],
     opts: SearchOptions = {}
 ): Promise<SearchResult[]> => {
-    const { topK = 8, typeFilter = null, minRating = null, userId = null, excludeExternalIds = null } = opts;
+    const { topK = 8, typeFilter = null, minRating = null, excludeExternalIds = null } = opts;
 
     const client = await getPool().connect();
     try {
@@ -228,10 +222,6 @@ export const similaritySearch = async (
         if (minRating !== null) {
             whereClause += ` AND rating >= $${pIdx++}`;
             params.push(minRating);
-        }
-        if (userId) {
-            whereClause += ` AND metadata->>'userId' = $${pIdx++}`;
-            params.push(userId);
         }
         if (excludeExternalIds && excludeExternalIds.length > 0) {
             whereClause += ` AND (metadata->>'externalId' IS NULL OR NOT (metadata->>'externalId' = ANY($${pIdx++})))`;
@@ -261,15 +251,7 @@ export const similaritySearch = async (
             [...params, topK]
         );
 
-        return result.rows.map((row) => ({
-            id: row.id,
-            bookId: row.book_id,
-            type: row.type,
-            text: row.text,
-            rating: row.rating !== null ? parseFloat(row.rating) : null,
-            metadata: row.metadata ?? null,
-            score: parseFloat(row.score),
-        }));
+        return result.rows.map(mapSearchResultRow);
     } finally {
         client.release();
     }

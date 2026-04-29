@@ -13,7 +13,7 @@ dotenv.config();
 
 const BATCH_SIZE = 32;
 
-async function getTypicalTasteMap(): Promise<Map<string, string[]>> {
+const getTypicalTasteMap = async (): Promise<Map<string, string[]>> => {
   const reviews = await UserReviewModel.find({});
   const allBooks = await BookModel.find({}, { _id: 1, categories: 1 });
 
@@ -53,9 +53,9 @@ async function getTypicalTasteMap(): Promise<Map<string, string[]>> {
   }
 
   return tasteMap;
-}
+};
 
-async function indexBooks(): Promise<void> {
+const indexBooks = async (): Promise<void> => {
   const books = await BookModel.find({});
   logger.info(`[IndexData] Indexing ${books.length} books...`);
 
@@ -90,12 +90,12 @@ async function indexBooks(): Promise<void> {
   }
 
   await upsertChunksBatch(chunks, BATCH_SIZE);
-}
+};
 
-async function indexUsers(
+const indexUsers = async (
   tasteMap: Map<string, string[]>,
   allBooks: IBook[]
-): Promise<void> {
+): Promise<void> => {
   const users = await User.find({});
   logger.info(`[IndexData] Indexing ${users.length} users...`);
 
@@ -142,13 +142,13 @@ async function indexUsers(
   }
 
   await upsertChunksBatch(chunks, BATCH_SIZE);
-}
+};
 
-async function indexReviews(
+const indexReviews = async (
   tasteMap: Map<string, string[]>,
   allBooks: IBook[],
   allUsers: IUser[]
-): Promise<void> {
+): Promise<void> => {
   const reviews = await UserReviewModel.find({});
 
   const bookTitlesMap = new Map(
@@ -205,9 +205,9 @@ async function indexReviews(
   }
 
   await upsertChunksBatch(chunks, BATCH_SIZE);
-}
+};
 
-async function run(): Promise<void> {
+const run = async (): Promise<void> => {
   try {
     await mongoose.connect(ENV.MONGODB_URL);
     logger.info("[IndexData] Connected to MongoDB.");
@@ -230,6 +230,6 @@ async function run(): Promise<void> {
     await mongoose.disconnect();
     process.exit(0);
   }
-}
+};
 
 run();
