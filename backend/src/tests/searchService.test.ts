@@ -4,9 +4,6 @@ import { SearchResult } from "@services/ai/vectorRepository";
 const mockFetchChunksByMetadata = jest.fn<(filters: Record<string, string>) => Promise<SearchResult[]>>();
 const mockSimilaritySearch = jest.fn<() => Promise<SearchResult[]>>();
 const mockGenerateEmbedding = jest.fn<() => Promise<number[]>>();
-const mockLean = jest.fn<() => Promise<{ readlist: string[]; wishlist: string[] }>>();
-const mockSelect = jest.fn(() => ({ lean: mockLean }));
-const mockFindById = jest.fn(() => ({ select: mockSelect }));
 
 jest.unstable_mockModule("@services/ai/vectorRepository", () => ({
     fetchChunksByMetadata: mockFetchChunksByMetadata,
@@ -17,19 +14,15 @@ jest.unstable_mockModule("@services/ai/embeddingService", () => ({
     generateEmbedding: mockGenerateEmbedding,
 }));
 
-jest.unstable_mockModule("@models/User", () => ({
-    default: {
-        findById: mockFindById,
-    },
-}));
-
-const { performSearch } = await import("@services/ai/searchService");
+let performSearch: typeof import("@services/ai/searchService").performSearch;
 
 describe("AI search service personalization", () => {
+    beforeAll(async () => {
+        ({ performSearch } = await import("@services/ai/searchService"));
+    });
+
     beforeEach(() => {
         jest.clearAllMocks();
-        mockFindById.mockReturnValue({ select: mockSelect });
-        mockSelect.mockReturnValue({ lean: mockLean });
         mockGenerateEmbedding.mockResolvedValue([0.1, 0.2, 0.3]);
         mockFetchChunksByMetadata.mockImplementation((filters: Record<string, string>) => {
             if (filters.type === "profile") {
@@ -67,7 +60,6 @@ describe("AI search service personalization", () => {
                 },
             ]);
         });
-        mockLean.mockResolvedValue({ readlist: ["read-ext"], wishlist: ["wish-ext"] });
         mockSimilaritySearch.mockResolvedValue([
             {
                 id: "candidate-1",
@@ -81,7 +73,7 @@ describe("AI search service personalization", () => {
         ]);
     });
 
-    it("uses only current user data for taste and excludes known read books from candidates", async () => {
+    it("uses only current user data for taste and excludes books the user already reviewed from candidates", async () => {
         const result = await performSearch("What should I read?", {
             userId: "user-123",
             personalized: true,
@@ -93,7 +85,7 @@ describe("AI search service personalization", () => {
         expect(mockSimilaritySearch).toHaveBeenCalledWith([0.1, 0.2, 0.3], {
             topK: 6,
             typeFilter: null,
-            excludeExternalIds: ["reviewed-ext", "read-ext"],
+            excludeExternalIds: ["reviewed-ext"],
         });
         expect(result.userTasteChunks.map((chunk) => chunk.id)).toEqual(["profile-1", "own-review-1"]);
         expect(result.candidateChunks.map((chunk) => chunk.id)).toEqual(["candidate-1"]);

@@ -73,8 +73,6 @@ interface RatingFieldProps {
 }
 
 const RatingField = ({ value, error, onBlur, onChange }: RatingFieldProps) => {
-  const hasRating = value >= MIN_SELECTABLE_RATING;
-
   return (
     <Stack
       spacing={0.75}
@@ -103,10 +101,10 @@ const RatingField = ({ value, error, onBlur, onChange }: RatingFieldProps) => {
             fontSize: { xs: "1.6rem", sm: "1.75rem" },
           },
           "& .MuiRating-iconFilled": {
-            color: "primary.main",
+            color: "#F5B301",
           },
           "& .MuiRating-iconHover": {
-            color: "primary.dark",
+            color: "#E6A700",
           },
         }}
       />
@@ -347,9 +345,6 @@ const NewPost = () => {
                 <Typography variant="h6" fontWeight={800} gutterBottom>
                   Post Setup
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Add the image and rating for this review.
-                </Typography>
               </Box>
             </Stack>
 
@@ -428,7 +423,7 @@ const NewPost = () => {
                   Write Review
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Share what did you think, what stood out, and who might enjoy it.
+                  Share what you thought, what stood out, and who might enjoy it.
                 </Typography>
               </Box>
               <Chip

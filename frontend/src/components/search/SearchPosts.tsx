@@ -72,6 +72,7 @@ const SearchPosts = () => {
         selectedGenre={filters.genre}
         setIsFiltersModalOpen={setIsFiltersModalOpen}
         hasActiveFilters={hasActiveFilters}
+        mode="posts"
       />
       <Box
         display="grid"

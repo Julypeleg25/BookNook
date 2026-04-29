@@ -1,4 +1,8 @@
 export type SearchMode = "books" | "posts";
+export type SearchTermChangeHandler = (value: string) => void;
+export type SearchSubmitHandler = (searchTerm: string) => void;
+export type FilterModalOpenHandler = (open: boolean) => void;
+export type GenreToggleHandler = (genre: string) => void;
 
 export interface ISearchFiltersForm {
   genre: string;

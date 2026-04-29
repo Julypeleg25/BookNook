@@ -45,7 +45,7 @@ const theme = createTheme({
   },
 
   typography: {
-    fontFamily: `"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif`,
+    fontFamily: `"Nunito Sans", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif`,
 
     h1: { fontWeight: 700 },
     h2: { fontWeight: 600 },
@@ -125,6 +125,17 @@ const theme = createTheme({
     MuiTextField: {
       defaultProps: {
         variant: "outlined",
+      },
+    },
+
+    MuiRating: {
+      styleOverrides: {
+        iconFilled: {
+          color: "#F5B301",
+        },
+        iconHover: {
+          color: "#E6A700",
+        },
       },
     },
 

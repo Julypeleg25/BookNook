@@ -25,17 +25,15 @@ export const buildReviewChunk = (
 
 export const buildProfileChunk = (
     username: string,
-    readList: string[],
     wishList: string[],
     inferredInterests: string[],
     dislikes: string[],
     topThemes: string[]
 ): string => {
-    const reads = readList.length > 0 ? readList.join(", ") : "None yet";
     const wishes = wishList.length > 0 ? wishList.join(", ") : "Empty";
     const interests = inferredInterests.length > 0 ? inferredInterests.join(", ") : "None detected yet";
     const avoid = dislikes.length > 0 ? dislikes.join(", ") : "None detected yet";
     const themes = topThemes.length > 0 ? topThemes.join(", ") : "Eclectic";
 
-    return `User ${username} Profile. Explicit History: [Read List: ${reads}], [Wishlist: ${wishes}]. Inferred Interests (from Liked Reviews): [${interests}]. Dislikes: [${avoid}]. Top Themes: [${themes}].`.trim();
+    return `User ${username} Profile. Explicit Wishlist: [${wishes}]. Inferred Interests (from Liked Reviews): [${interests}]. Dislikes: [${avoid}]. Top Themes: [${themes}].`.trim();
 };

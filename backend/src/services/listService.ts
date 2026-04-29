@@ -1,83 +1,86 @@
 import { Types } from "mongoose";
 import { userRepository } from "@repositories/userRepository";
-import { ValidationError } from "@utils/errors";
 import {
   getBookByGoogleIdFromGoogle,
   getLocalBookByGoogleId,
+  getLocalBookByLocalId,
   normalizeLocalBookSummary,
   normalizeBookSummary,
 } from "./bookService";
 import { BookSummary } from "@models/ApiBook";
 import { logger } from "@utils/logger";
+import type { IBook } from "@models/Book";
 
-type ListType = "wish" | "read";
-
-const isValidListType = (listType: string): listType is ListType =>
-  listType === "wish" || listType === "read";
-
-function assertValidListType(listType: string): asserts listType is ListType {
-  if (!isValidListType(listType)) {
-    throw new ValidationError("Invalid list type");
+const findLocalWishlistBook = async (bookId: string): Promise<IBook | null> => {
+  const localBookByExternalId = await getLocalBookByGoogleId(bookId);
+  if (localBookByExternalId) {
+    return localBookByExternalId;
   }
-}
 
-const resolveBookSummary = async (googleId: string): Promise<BookSummary | null> => {
+  if (!Types.ObjectId.isValid(bookId)) {
+    return null;
+  }
+
+  return await getLocalBookByLocalId(bookId);
+};
+
+const getWishlistStorageIds = async (bookId: string): Promise<string[]> => {
+  const localBook = await findLocalWishlistBook(bookId);
+  if (!localBook) {
+    return [bookId];
+  }
+
+  return Array.from(new Set([bookId, localBook.externalId, localBook._id.toString()]));
+};
+
+const resolveBookSummary = async (bookId: string): Promise<BookSummary | null> => {
   try {
-    const googleBook = await getBookByGoogleIdFromGoogle(googleId);
+    const localBook = await findLocalWishlistBook(bookId);
+    if (localBook) {
+      return normalizeLocalBookSummary(localBook);
+    }
+  } catch (localLookupError) {
+    logger.warn(
+      `Failed to resolve local book data for wishlist item ${bookId}.`,
+      localLookupError,
+    );
+  }
+
+  try {
+    const googleBook = await getBookByGoogleIdFromGoogle(bookId);
     return normalizeBookSummary(googleBook);
   } catch (googleLookupError) {
     logger.warn(
-      `Falling back to local book data for list item ${googleId} after Google Books lookup failed.`,
+      `Skipping wishlist item ${bookId} because it is unavailable in both local storage and Google Books.`,
       googleLookupError,
     );
-  }
 
-  try {
-    const localBook = await getLocalBookByGoogleId(googleId);
-    if (!localBook) {
-      logger.warn(
-        `Skipping list item ${googleId} because it is unavailable in both Google Books and local storage.`,
-      );
-      return null;
-    }
-
-    return normalizeLocalBookSummary(localBook);
-  } catch (localLookupError) {
-    logger.warn(
-      `Failed to resolve fallback book data for list item ${googleId}.`,
-      localLookupError,
-    );
     return null;
   }
 };
 
-export const addBookToUserList = async (
+export const addBookToUserWishlist = async (
   userId: Types.ObjectId | string,
   bookId: string,
-  listType: ListType,
 ): Promise<BookSummary[]> => {
-  assertValidListType(listType);
-  await userRepository.addBookToList(userId, bookId, listType);
-  return await getUserWishOrReadlist(userId, listType);
+  await userRepository.addBookToWishlist(userId, bookId);
+  return await getUserWishlist(userId);
 };
 
-export const getUserWishOrReadlist = async (
+export const getUserWishlist = async (
   userId: Types.ObjectId | string,
-  listType: ListType,
 ): Promise<BookSummary[]> => {
-  assertValidListType(listType);
-  const googleIds = await userRepository.getList(userId, listType);
+  const googleIds = await userRepository.getWishlist(userId);
   const books = await Promise.all(googleIds.map(resolveBookSummary));
 
   return books.filter((book): book is BookSummary => book !== null);
 };
 
-export const removeBookFromUserList = async (
+export const removeBookFromUserWishlist = async (
   userId: Types.ObjectId | string,
   bookId: string,
-  listType: ListType,
 ): Promise<BookSummary[]> => {
-  assertValidListType(listType);
-  await userRepository.removeBookFromList(userId, bookId, listType);
-  return await getUserWishOrReadlist(userId, listType);
+  const bookIds = await getWishlistStorageIds(bookId);
+  await userRepository.removeBookFromWishlist(userId, bookIds);
+  return await getUserWishlist(userId);
 };

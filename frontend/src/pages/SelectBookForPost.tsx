@@ -14,10 +14,7 @@ const SelectBookForPost = () => {
         <Box>
             <Box sx={{ p: 3, pb: 0 }}>
                 <Typography variant="h5" fontWeight={600} gutterBottom>
-                    Select a Book to Review
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Search for the book you want to review, then click Write Review.
+                    Select a Book to Review!
                 </Typography>
             </Box>
             <ExploreBooks

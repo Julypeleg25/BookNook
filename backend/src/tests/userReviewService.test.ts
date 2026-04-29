@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import * as userReviewService from "../services/userReviewService";
 import { userReviewRepository } from "../repositories/userReviewRepository";
+import { buildUploadUrl } from "../config/multerConfig";
 
 describe("UserReviewService", () => {
   beforeEach(() => {
@@ -32,13 +33,14 @@ describe("UserReviewService", () => {
     jest
       .spyOn(userReviewService.userReviewServiceDeps, "findUserById")
       .mockResolvedValue({ _id: userId } as any);
+    const picturePath = buildUploadUrl("post-image.jpg");
 
     const result = await userReviewService.createReview(
       userId,
       "id",
       5,
       "text",
-      "/uploads/post-image.jpg",
+      picturePath,
     );
 
     expect(result).toEqual(review);
@@ -48,7 +50,7 @@ describe("UserReviewService", () => {
       book: bookId,
       rating: 5,
       review: "text",
-      picturePath: "/uploads/post-image.jpg",
+      picturePath,
     });
     expect(recomputeSpy).toHaveBeenCalledWith(bookId.toString());
     expect(syncReviewSpy).toHaveBeenCalledWith(

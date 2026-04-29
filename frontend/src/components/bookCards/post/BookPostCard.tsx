@@ -14,12 +14,13 @@ import { useEffect, useMemo, useState } from "react";
 import { FaHeart, FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import env from "@/config/env";
 import { RATING_STEP } from "@shared/constants/validation";
 import { formatDate } from "@/utils/dateUtils";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
+import { resolveMediaUrl } from "@/utils/mediaUtils";
 import { useReviewLikeToggle } from "@/hooks/useReviewLikeToggle";
-import PostActionsMenu from "./PostActionsMenu";
+import PostActionsMenu, { PostActionsMenuOverlay } from "./PostActionsMenu";
+import { POST_CARD_IMAGE_BACKGROUND, POST_CARD_IMAGE_SX } from "./postImageStyles";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -31,9 +32,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
   const navigate = useNavigate();
   const imageUrl = useMemo(() => {
     if (!post.imageUrl) return post.book.thumbnail;
-    return post.imageUrl.startsWith("http")
-      ? post.imageUrl
-      : `${env.API_BASE_URL}${post.imageUrl}`;
+    return resolveMediaUrl(post.imageUrl);
   }, [post.book.thumbnail, post.imageUrl]);
   const [imgSrc, setImgSrc] = useState<string | undefined>(imageUrl);
 
@@ -77,7 +76,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
       sx={{
         width: "100%",
         maxWidth: "26rem",
-        borderRadius: 4,
+        borderRadius: 2,
         border: "1px solid",
         borderColor: "divider",
         bgcolor: "background.paper",
@@ -91,9 +90,6 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
           borderColor: "primary.main",
           boxShadow: "0 22px 48px -12px rgba(31, 41, 51, 0.15)",
           transform: "translateY(-6px)",
-          "& .card-image": {
-            transform: "scale(1.06)",
-          },
           "& .read-more-btn": {
             color: "primary.main",
             gap: "6px",
@@ -105,7 +101,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         sx={{
           position: "relative",
           aspectRatio: "16 / 10",
-          bgcolor: "grey.100",
+          bgcolor: POST_CARD_IMAGE_BACKGROUND,
           overflow: "hidden",
         }}
       >
@@ -116,13 +112,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
             src={imgSrc}
             alt={post.book.title}
             onError={() => setImgSrc(post.book.thumbnail)}
-            sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-              transition: "transform 0.5s ease",
-            }}
+            sx={POST_CARD_IMAGE_SX}
           />
         )}
         <Box
@@ -133,18 +123,9 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
           }}
         />
 
-        {/* Action Menu - Internalized Glass Style */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: 14,
-            right: 30,
-            zIndex: 2,
-          }}
-          onClick={(event) => event.stopPropagation()}
-        >
-          <PostActionsMenu post={post} variant="glass" />
-        </Box>
+        <PostActionsMenuOverlay>
+          <PostActionsMenu post={post} />
+        </PostActionsMenuOverlay>
 
         <Stack
           spacing={1}

@@ -1,20 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import {
-  addBookToUserList,
-  getUserWishOrReadlist,
-  removeBookFromUserList,
+  addBookToUserWishlist,
+  getUserWishlist,
+  removeBookFromUserWishlist,
 } from "@services/listService";
 import { getUserById } from "@services/userService";
 import { logger } from "@utils/logger";
 import { ValidationError } from "@utils/errors";
 
-type ListType = "wish" | "read";
-
-const isValidListType = (value: unknown): value is ListType => {
-  return value === "wish" || value === "read";
-};
-
-export const addBookToList = async (
+export const addBookToWishlist = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -22,25 +16,20 @@ export const addBookToList = async (
   try {
     const userId = req.authenticatedUser!.id;
     const { bookId } = req.params;
-    const { listType } = req.body;
-
-    if (!isValidListType(listType)) {
-      throw new ValidationError("Invalid list type. Must be 'wish' or 'read'");
-    }
 
     if (!bookId) {
       throw new ValidationError("Book ID is required");
     }
 
-    const updatedList = await addBookToUserList(userId, bookId as string, listType);
-    res.json(updatedList);
+    const updatedWishlist = await addBookToUserWishlist(userId, bookId as string);
+    res.json(updatedWishlist);
   } catch (error) {
-    logger.error("Error adding book to list:", error);
+    logger.error("Error adding book to wishlist:", error);
     next(error);
   }
 };
 
-export const removeBookFromList = async (
+export const removeBookFromWishlist = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -48,16 +37,15 @@ export const removeBookFromList = async (
   try {
     const userId = req.authenticatedUser!.id;
     const { bookId } = req.params;
-    const { listType } = req.body;
 
-    if (!isValidListType(listType)) {
-      throw new ValidationError("Invalid list type. Must be 'wish' or 'read'");
+    if (!bookId) {
+      throw new ValidationError("Book ID is required");
     }
 
-    const updatedList = await removeBookFromUserList(userId, bookId as string, listType);
-    res.json(updatedList);
+    const updatedWishlist = await removeBookFromUserWishlist(userId, bookId as string);
+    res.json(updatedWishlist);
   } catch (error) {
-    logger.error("Error removing book from list:", error);
+    logger.error("Error removing book from wishlist:", error);
     next(error);
   }
 };
@@ -71,7 +59,7 @@ export const getWishlist = async (
     const userId = req.authenticatedUser!.id;
     await getUserById(userId);
 
-    const fullBooksOfWishlist = await getUserWishOrReadlist(userId, "wish");
+    const fullBooksOfWishlist = await getUserWishlist(userId);
 
     res.json(fullBooksOfWishlist.filter(Boolean));
   } catch (error) {
@@ -80,20 +68,3 @@ export const getWishlist = async (
   }
 };
 
-export const getReadlist = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  try {
-    const userId = req.authenticatedUser!.id;
-    await getUserById(userId);
-
-    const fullBooksOfReadlist = await getUserWishOrReadlist(userId, "read");
-
-    res.json(fullBooksOfReadlist.filter(Boolean));
-  } catch (error) {
-    logger.error("Error fetching readlist:", error);
-    next(error);
-  }
-};

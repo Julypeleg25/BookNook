@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { FiImage, FiUploadCloud } from "react-icons/fi";
+import { resolveMediaUrl } from "@/utils/mediaUtils";
 
 interface PostImageUploadProps {
   value: File | string | null;
@@ -26,7 +27,7 @@ const PostImageUpload = ({
   const [isDragging, setIsDragging] = useState(false);
 
   const preview = useMemo(
-    () => (value instanceof File ? URL.createObjectURL(value) : value || ""),
+    () => (value instanceof File ? URL.createObjectURL(value) : resolveMediaUrl(value) || ""),
     [value],
   );
 
@@ -94,32 +95,67 @@ const PostImageUpload = ({
         onClick={() => !preview && fileInputRef.current?.click()}
         sx={{
           width: "100%",
-          maxWidth: "32rem",
-          aspectRatio: { xs: "16 / 10", sm: "16 / 9" },
-          bgcolor: preview ? "grey.50" : "rgba(91, 111, 106, 0.04)",
-          borderRadius: "12px",
+          maxWidth: { xs: "100%", sm: "44rem", md: "52rem" },
+          height: { xs: "17rem", sm: "23rem", md: "30rem" },
+          mx: "auto",
+          bgcolor: preview ? "#101418" : "rgba(91, 111, 106, 0.04)",
+          borderRadius: "16px",
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           border: "2px dashed",
-          borderColor: error ? "error.main" : isDragging ? "primary.main" : "divider",
+          borderColor: error ? "error.main" : isDragging ? "primary.main" : preview ? "divider" : "divider",
           cursor: preview ? "default" : "pointer",
-          transition: "border-color 0.2s ease, background-color 0.2s ease",
+          position: "relative",
+          boxShadow: preview ? "0 18px 40px rgba(31, 41, 51, 0.14)" : "none",
+          transition: "border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease",
         }}
       >
         {preview ? (
-          <Box
-            component="img"
-            src={preview}
-            alt="Post preview"
-            sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
+          <>
+            <Box
+              component="img"
+              src={preview}
+              alt=""
+              aria-hidden="true"
+              decoding="async"
+              draggable={false}
+              sx={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "blur(22px)",
+                transform: "scale(1.08)",
+                opacity: 0.42,
+              }}
+            />
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                bgcolor: "rgba(11, 17, 20, 0.34)",
+              }}
+            />
+            <Box
+              component="img"
+              src={preview}
+              alt="Post preview"
+              decoding="async"
+              draggable={false}
+              sx={{
+                position: "relative",
+                zIndex: 1,
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                display: "block",
+                imageRendering: "auto",
+              }}
+            />
+          </>
         ) : (
           <Stack spacing={1.25} alignItems="center" sx={{ px: 3, textAlign: "center" }}>
             <Box

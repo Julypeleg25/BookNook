@@ -3,9 +3,10 @@ import type { BookPost } from "@models/Book";
 import { Link as RouterLink } from "react-router-dom";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { formatDate } from "@/utils/dateUtils";
-import env from "@/config/env";
+import { resolveMediaUrl } from "@/utils/mediaUtils";
 import { useState } from "react";
-import PostActionsMenu from "./PostActionsMenu";
+import PostActionsMenu, { PostActionsMenuOverlay } from "./PostActionsMenu";
+import { POST_CARD_IMAGE_BACKGROUND, POST_CARD_IMAGE_SX } from "./postImageStyles";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -14,8 +15,7 @@ interface BookPostCardProps {
 const BookPostCardHeader = ({ post }: BookPostCardProps) => {
   const [imgSrc, setImgSrc] = useState<string | undefined>(() => {
     if (!post.imageUrl) return post.book.thumbnail;
-    if (post.imageUrl.startsWith("http")) return post.imageUrl;
-    return `${env.API_BASE_URL}${post.imageUrl}`;
+    return resolveMediaUrl(post.imageUrl);
   });
   const [isImageLoading, setIsImageLoading] = useState(true);
 
@@ -39,7 +39,6 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             alt={post.user.username}
           />
         }
-        action={<PostActionsMenu post={post} />}
         title={
           <Typography
             sx={{
@@ -73,7 +72,7 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
           display: "block",
           width: "100%",
           aspectRatio: "4 / 3",
-          backgroundColor: "grey.100",
+          backgroundColor: POST_CARD_IMAGE_BACKGROUND,
           overflow: "hidden",
         }}
       >
@@ -87,13 +86,14 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             onError={handleImageError}
             onLoad={handleImageLoad}
             sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
+              ...POST_CARD_IMAGE_SX,
               display: isImageLoading ? "none" : "block",
             }}
           />
         )}
+        <PostActionsMenuOverlay>
+          <PostActionsMenu post={post} />
+        </PostActionsMenuOverlay>
       </Box>
     </>
   );

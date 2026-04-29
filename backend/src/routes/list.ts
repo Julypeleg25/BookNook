@@ -1,9 +1,8 @@
 import express from "express";
 import {
-  addBookToList,
+  addBookToWishlist,
   getWishlist,
-  getReadlist,
-  removeBookFromList,
+  removeBookFromWishlist,
 } from "@controllers/listController";
 import { authenticate } from "@middlewares/authMiddleware";
 
@@ -13,7 +12,7 @@ const router = express.Router();
  * @swagger
  * /api/lists/{bookId}:
  *   post:
- *     summary: Add a book to a list
+ *     summary: Add a book to the wishlist
  *     tags: [Lists]
  *     security:
  *       - bearerAuth: []
@@ -23,22 +22,12 @@ const router = express.Router();
  *         required: true
  *         schema:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               listType:
- *                 type: string
- *                 enum: [wish, read]
  *     responses:
  *       200:
- *         description: Book removed from list
+ *         description: Updated wishlist
  */
-router.post("/:bookId", authenticate, addBookToList);
-router.delete("/:bookId", authenticate, removeBookFromList);
+router.post("/:bookId", authenticate, addBookToWishlist);
+router.delete("/:bookId", authenticate, removeBookFromWishlist);
 
 /**
  * @swagger
@@ -53,19 +42,5 @@ router.delete("/:bookId", authenticate, removeBookFromList);
  *         description: User's wishlist
  */
 router.get("/wishlist", authenticate, getWishlist);
-
-/**
- * @swagger
- * /api/lists/readlist:
- *   get:
- *     summary: Get user's readlist
- *     tags: [Lists]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: User's readlist
- */
-router.get("/readlist", authenticate, getReadlist);
 
 export default router;

@@ -30,21 +30,11 @@ const BookReferenceCard = ({ book }: BookReferenceCardProps) => {
           sx={{
             width: { xs: "100%", sm: "9rem", md: "10rem" },
             maxWidth: { xs: "14rem", sm: "9rem", md: "10rem" },
-            minHeight: { sm: "13.5rem", md: "15rem" },
-            borderRadius: 2,
             flexShrink: 0,
-            overflow: "hidden",
-            bgcolor: "grey.100",
-            boxShadow: "0 16px 36px rgba(31, 41, 51, 0.16)",
-            alignSelf: { xs: "center", sm: "stretch" },
-            position: "relative",
-            "&::after": {
-              content: '""',
-              position: "absolute",
-              inset: 0,
-              boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.35)",
-              pointerEvents: "none",
-            },
+            alignSelf: { xs: "center", sm: "center" },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <Box
@@ -55,11 +45,14 @@ const BookReferenceCard = ({ book }: BookReferenceCardProps) => {
             }}
             alt={book.title}
             sx={{
-              width: "100%",
-              height: "100%",
-              minHeight: { xs: "18rem", sm: "100%" },
-              objectFit: "cover",
+              width: "auto",
+              maxWidth: "100%",
+              height: "auto",
+              maxHeight: { xs: "18rem", sm: "15rem", md: "17rem" },
+              objectFit: "contain",
               display: "block",
+              borderRadius: 1.5,
+              boxShadow: "0 16px 36px rgba(31, 41, 51, 0.18)",
             }}
           />
         </Box>

@@ -18,12 +18,11 @@ import { useSnackbar } from "notistack";
 import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
 import { getBookId } from "@/utils/bookUtils";
 import {
-    invalidateBookListCache,
-    removeBookFromListCache,
-    setBookListCache,
+    invalidateWishlistCache,
+    removeBookFromWishlistCache,
+    setWishlistCache,
 } from "@/api/queryCache";
 import { queryKeys } from "@/api/queryKeys";
-import type { BookListType } from "@/models/List";
 
 interface RemoveBookContext {
     previousBooks?: Book[];
@@ -32,11 +31,11 @@ interface RemoveBookContext {
 
 interface BookActionsMenuProps {
     book: Book;
-    listType?: BookListType;
+    showWishlistRemove?: boolean;
     edge?: "start" | "end" | false;
 }
 
-const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps) => {
+const BookActionsMenu = ({ book, showWishlistRemove, edge = "end" }: BookActionsMenuProps) => {
     const { user } = useUserStore();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -50,32 +49,32 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
         void,
         RemoveBookContext
     >({
-        mutationFn: () => ListsService.removeBookFromList(getBookId(book), listType!),
+        mutationFn: () => ListsService.removeBookFromWishlist(getBookId(book)),
         onMutate: async () => {
-            if (!listType) return { hadPreviousBooks: false };
-            const queryKey = queryKeys.listByType(user.username, listType);
+            if (!showWishlistRemove) return { hadPreviousBooks: false };
+            const queryKey = queryKeys.wishlist(user.username);
             await queryClient.cancelQueries({ queryKey });
             const previousBooks = queryClient.getQueryData<Book[]>(queryKey);
             const hadPreviousBooks = previousBooks !== undefined;
-            removeBookFromListCache(queryClient, user.username, listType, book);
+            removeBookFromWishlistCache(queryClient, user.username, book);
 
             return { previousBooks, hadPreviousBooks };
         },
         onSuccess: (updatedBooks) => {
-            setBookListCache(queryClient, user.username, listType!, updatedBooks);
-            invalidateBookListCache(queryClient, user.username, listType!);
-            enqueueSnackbar("Book removed from list", { variant: "success" });
+            setWishlistCache(queryClient, user.username, updatedBooks);
+            invalidateWishlistCache(queryClient, user.username);
+            enqueueSnackbar("Book removed from wishlist", { variant: "success" });
             handleClose();
         },
         onError: (_error, _variables, context) => {
-            if (listType && context?.hadPreviousBooks) {
-                setBookListCache(queryClient, user.username, listType, context.previousBooks ?? []);
+            if (showWishlistRemove && context?.hadPreviousBooks) {
+                setWishlistCache(queryClient, user.username, context.previousBooks ?? []);
             }
-            enqueueSnackbar("Failed to remove book from list", { variant: "error" });
+            enqueueSnackbar("Failed to remove book from wishlist", { variant: "error" });
         },
         onSettled: () => {
-            if (listType) {
-                invalidateBookListCache(queryClient, user.username, listType);
+            if (showWishlistRemove) {
+                invalidateWishlistCache(queryClient, user.username);
             }
         },
     });
@@ -91,7 +90,7 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
 
     const handleRemove = (event: React.MouseEvent) => {
         event.stopPropagation();
-        if (listType) {
+        if (showWishlistRemove) {
             removeFromList();
         }
     };
@@ -119,11 +118,24 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
                 onClick={handleOpen}
                 edge={edge}
                 sx={{
-                    color: "text.secondary",
-                    "&:hover": { color: "primary.main" },
+                    width: 36,
+                    height: 36,
+                    p: 0.75,
+                    color: "#fff",
+                    bgcolor: "rgba(31, 41, 51, 0.55)",
+                    backdropFilter: "blur(12px)",
+                    border: "1px solid rgba(255, 255, 255, 0.28)",
+                    borderRadius: "12px",
+                    boxShadow: "0 10px 24px rgba(0, 0, 0, 0.18)",
+                    transition: "background-color 0.2s ease, transform 0.2s ease",
+                    "&:hover": {
+                        bgcolor: "rgba(31, 41, 51, 0.72)",
+                        color: "#fff",
+                        transform: "scale(1.04)",
+                    },
                 }}
             >
-                <FiMoreVertical />
+                <FiMoreVertical size={20} />
             </IconButton>
             <Menu
                 anchorEl={anchorEl}
@@ -133,6 +145,34 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                 onClick={(e) => e.stopPropagation()}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: "12px",
+                            minWidth: 190,
+                            boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
+                            border: "1px solid",
+                            borderColor: "divider",
+                            "& .MuiMenuItem-root": {
+                                minHeight: 48,
+                                py: 1.25,
+                                px: 2,
+                                gap: 1,
+                            },
+                            "& .MuiListItemIcon-root": {
+                                minWidth: 34,
+                                "& svg": {
+                                    width: 22,
+                                    height: 22,
+                                },
+                            },
+                            "& .MuiListItemText-primary": {
+                                fontSize: "0.98rem",
+                                fontWeight: 600,
+                            },
+                        },
+                    },
+                }}
             >
                 <MenuItem onClick={handleViewDetails}>
                     <ListItemIcon>
@@ -148,7 +188,7 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
                     <ListItemText>Write a review</ListItemText>
                 </MenuItem>
 
-                {listType && (
+                {showWishlistRemove && (
                     <MenuItem onClick={handleRemove} disabled={isPending} sx={{ color: "error.main" }}>
                         <ListItemIcon>
                             {isPending ? (
@@ -157,7 +197,7 @@ const BookActionsMenu = ({ book, listType, edge = "end" }: BookActionsMenuProps)
                                 <FiTrash2 fontSize="small" color="inherit" />
                             )}
                         </ListItemIcon>
-                        <ListItemText>Remove from list</ListItemText>
+                        <ListItemText>Remove from wishlist</ListItemText>
                     </MenuItem>
                 )}
             </Menu>

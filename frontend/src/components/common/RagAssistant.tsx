@@ -16,24 +16,22 @@ import {
   AutoAwesome as AiIcon,
   Clear as ClearIcon,
   Send as SendIcon,
-  StopCircleOutlined as StopIcon,
 } from "@mui/icons-material";
 import { FiBookOpen, FiRefreshCw } from "react-icons/fi";
 import { useRag, type RagConversationItem } from "@hooks/useRag";
-import type { RagSource } from "@models/Rag";
 import { MarkdownMessage } from "./MarkdownMessage";
 
 const QUERY_MAX_LENGTH = 500;
 
 const EXAMPLE_PROMPTS = [
-  "Recommend thoughtful fantasy books with strong character arcs",
-  "What are good romance books for someone who likes emotional slow burns?",
-  "Find books similar to mystery reviews people liked",
+  "Recommend a teen book with a good story about friendship",
+  "Find me a slow-burn romance that's rated well",
+  "Suggest a good mystery book for an adult",
 ];
 
 export const RagAssistant: React.FC = () => {
   const [query, setQuery] = useState("");
-  const { cancel, clearHistory, fetchAiResponse, history, loading } = useRag();
+  const { clearHistory, fetchAiResponse, history, loading } = useRag();
   const trimmedQuery = query.trim();
   const isTooLong = query.length > QUERY_MAX_LENGTH;
   const canSubmit = Boolean(trimmedQuery) && !loading && !isTooLong;
@@ -96,10 +94,10 @@ export const RagAssistant: React.FC = () => {
                 </Box>
                 <Box>
                   <Typography variant="h4" fontWeight={800}>
-                    BookNook AI
+                    AI Assistant
                   </Typography>
                   <Typography color="text.secondary">
-                    Ask for book ideas, patterns, and next-read guidance.
+                    Ask for book recommendations and start reading!
                   </Typography>
                 </Box>
               </Stack>
@@ -135,22 +133,16 @@ export const RagAssistant: React.FC = () => {
                   >
                     {loading ? "Thinking..." : "Ask"}
                   </Button>
-                  {loading ? (
-                    <Button variant="outlined" size="large" onClick={cancel} startIcon={<StopIcon />} fullWidth>
-                      Stop
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      size="large"
-                      onClick={clearHistory}
-                      disabled={history.length === 0}
-                      startIcon={<ClearIcon />}
-                      fullWidth
-                    >
-                      Clear
-                    </Button>
-                  )}
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={clearHistory}
+                    disabled={history.length === 0 || loading}
+                    startIcon={<ClearIcon />}
+                    fullWidth
+                  >
+                    Clear
+                  </Button>
                 </Stack>
               </Stack>
             </form>
@@ -228,7 +220,7 @@ export const RagAssistant: React.FC = () => {
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <CircularProgress size={22} />
                 <Typography color="text.secondary">
-                  Finding a good answer...
+                  Thinking...
                 </Typography>
               </Stack>
             </Paper>
@@ -261,9 +253,6 @@ const ConversationCard = ({ item, loading, onRetry }: ConversationCardProps) => 
         <Box>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
             <Chip size="small" label="BookNook AI" color="primary" />
-            <Typography variant="caption" color="text.secondary">
-              {item.createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-            </Typography>
           </Stack>
           <Typography variant="h6" fontWeight={800}>
             {item.query}
@@ -296,64 +285,8 @@ const ConversationCard = ({ item, loading, onRetry }: ConversationCardProps) => 
           >
             <MarkdownMessage content={item.response.answer} />
           </Box>
-          <SourcesList sources={item.response.sources} />
         </>
       ) : null}
     </Stack>
   </Paper>
 );
-
-const SourcesList = ({ sources }: { sources: RagSource[] }) => {
-  if (sources.length === 0) return null;
-
-  return (
-    <Box>
-      <Typography fontWeight={800} sx={{ mb: 1 }}>
-        Sources used
-      </Typography>
-      <Box
-        display="grid"
-        gridTemplateColumns={{ xs: "1fr", md: "1fr 1fr" }}
-        gap={1.25}
-      >
-        {sources.slice(0, 4).map((source) => {
-          const title =
-            typeof source.metadata.title === "string"
-              ? source.metadata.title
-              : source.type === "review"
-                ? "Reader review"
-                : "Book result";
-          const subtitle =
-            Array.isArray(source.metadata.authors) && source.metadata.authors.length > 0
-              ? source.metadata.authors.join(", ")
-              : source.metadata.username
-                ? `@${source.metadata.username}`
-                : source.type;
-
-          return (
-            <Box
-              key={source.id}
-              sx={{
-                p: 1.5,
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 2,
-              }}
-            >
-              <Typography fontWeight={800} noWrap title={title}>
-                {title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap title={String(subtitle)}>
-                {subtitle}
-              </Typography>
-              <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                <Chip size="small" label={source.type} variant="outlined" />
-                <Chip size="small" label={`${Math.round(source.score * 100)}% match`} variant="outlined" />
-              </Stack>
-            </Box>
-          );
-        })}
-      </Box>
-    </Box>
-  );
-};

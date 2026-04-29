@@ -24,6 +24,7 @@ import {
   validateReviewText,
   type ReviewUpdateInput,
 } from "../validators/userReview.validators";
+import { buildUploadUrl } from "@config/multerConfig";
 
 export const createReviewHandler = async (
   req: Request,
@@ -50,7 +51,7 @@ export const createReviewHandler = async (
 
     const parsedRating = parseRating(rating);
 
-    const picturePath = `/uploads/${req.file.filename}`;
+    const picturePath = buildUploadUrl(req.file.filename);
 
     const newReview = await createReview(
       new Types.ObjectId(req.authenticatedUser!.id),
@@ -180,7 +181,7 @@ export const updateReviewHandler = async (
         await deleteFile(req.file.path);
         throw new ValidationError("Picture must be an image file");
       }
-      updateData.picturePath = `/uploads/${req.file.filename}`;
+      updateData.picturePath = buildUploadUrl(req.file.filename);
     }
 
     const updatedReview = await updateReview(id as string, updateData);

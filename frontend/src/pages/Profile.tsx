@@ -16,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { BsBookmark } from "react-icons/bs";
 import { FiHeart, FiMail, FiMessageCircle, FiPlus } from "react-icons/fi";
-import { LuBookCheck } from "react-icons/lu";
 import { MdEdit, MdPostAdd } from "react-icons/md";
 import ProfileForm from "@components/profile/ProfileForm";
 import MyPosts from "./MyPosts";
@@ -26,6 +25,7 @@ import { userReviewService } from "@/api/services/userReviewService";
 import { ListsService } from "@/api/services/ListsService";
 import { queryKeys } from "@/api/queryKeys";
 import { RATING_STEP } from "@shared/constants/validation";
+import { getCommentUser } from "@/utils/reviewUtils";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -38,10 +38,10 @@ const Profile = () => {
     enabled: !!user.id,
   });
 
-  const { data: readlistBooks = [], isLoading: isReadlistLoading } = useQuery({
-    queryKey: queryKeys.readlist(user.username),
-    queryFn: ListsService.getReadlistBooks,
-    enabled: !!user.username,
+  const { data: allReviews = [], isLoading: isAllReviewsLoading } = useQuery({
+    queryKey: queryKeys.allReviews,
+    queryFn: () => userReviewService.getAllReviews(),
+    enabled: !!user.id,
   });
 
   const { data: wishlistBooks = [], isLoading: isWishlistLoading } = useQuery({
@@ -53,6 +53,15 @@ const Profile = () => {
   const profileStats = useMemo(() => {
     const totalLikes = reviews.reduce((sum, review) => sum + review.likes.length, 0);
     const totalComments = reviews.reduce((sum, review) => sum + review.comments.length, 0);
+    const totalLikesGiven = allReviews.reduce(
+      (sum, review) => sum + (review.likes.includes(user.id) ? 1 : 0),
+      0,
+    );
+    const totalCommentsGiven = allReviews.reduce(
+      (sum, review) =>
+        sum + review.comments.filter((comment) => getCommentUser(comment.user).id === user.id).length,
+      0,
+    );
     const averageRating = reviews.length
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : 0;
@@ -60,9 +69,11 @@ const Profile = () => {
     return {
       averageRating,
       totalComments,
+      totalCommentsGiven,
       totalLikes,
+      totalLikesGiven,
     };
-  }, [reviews]);
+  }, [allReviews, reviews, user.id]);
 
   return (
     <Box
@@ -153,13 +164,14 @@ const Profile = () => {
                   gridTemplateColumns={{
                     xs: "1fr",
                     sm: "repeat(2, minmax(0, 1fr))",
-                    lg: "repeat(3, minmax(0, 1fr))",
+                    lg: "repeat(4, minmax(0, 1fr))",
                   }}
                   gap={1.5}
                 >
                   <StatTile icon={<MdPostAdd />} label="Posts" value={reviews.length} loading={isReviewsLoading} />
-                  <StatTile icon={<LuBookCheck />} label="Readlist" value={readlistBooks.length} loading={isReadlistLoading} />
                   <StatTile icon={<BsBookmark />} label="Wishlist" value={wishlistBooks.length} loading={isWishlistLoading} />
+                  <StatTile icon={<FiMessageCircle />} label="Comments given" value={profileStats.totalCommentsGiven} loading={isAllReviewsLoading} />
+                  <StatTile icon={<FiHeart />} label="Likes given" value={profileStats.totalLikesGiven} loading={isAllReviewsLoading} />
                 </Box>
 
                 <Paper
@@ -198,7 +210,7 @@ const Profile = () => {
                             </Typography>
                           </Stack>
                         </ActivityMetric>
-                        <ActivityMetric label="Comments">
+                        <ActivityMetric label="Comments to me">
                           <Stack direction="row" spacing={1} alignItems="center" color="text.secondary">
                             <FiMessageCircle />
                             <Typography variant="h6" color="text.primary" fontWeight={800}>
@@ -206,7 +218,7 @@ const Profile = () => {
                             </Typography>
                           </Stack>
                         </ActivityMetric>
-                        <ActivityMetric label="Likes received">
+                        <ActivityMetric label="Likes to me">
                           <Stack direction="row" spacing={1} alignItems="center" color="text.secondary">
                             <FiHeart />
                             <Typography variant="h6" color="text.primary" fontWeight={800}>
@@ -227,8 +239,8 @@ const Profile = () => {
                   <Button startIcon={<FiPlus />} onClick={() => navigate("/books/select")}>
                     Create Post
                   </Button>
-                  <Button variant="outlined" startIcon={<LuBookCheck />} onClick={() => navigate("/lists")}>
-                    View Lists
+                  <Button variant="outlined" startIcon={<BsBookmark />} onClick={() => navigate("/lists")}>
+                    View Wishlist
                   </Button>
                 </Stack>
               </>

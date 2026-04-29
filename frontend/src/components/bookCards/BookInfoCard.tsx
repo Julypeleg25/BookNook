@@ -7,15 +7,17 @@ import React from "react";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { getBookId } from "@/utils/bookUtils";
 
+const BOOK_COVER_FALLBACK_URL = "https://via.placeholder.com/150x200?text=No+Cover";
+
 interface BookInfoCardProps {
   book: Book;
   isOnlyInfo?: boolean;
   onSelect?: (book: Book) => void;
-  listType?: "wish" | "read";
+  showWishlistRemove?: boolean;
   hideMenu?: boolean;
 }
 
-const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType, hideMenu }: BookInfoCardProps) => {
+const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu }: BookInfoCardProps) => {
   const displayAuthor = book.authors?.length > 0 ? book.authors.join(", ") : "Unknown Author";
   const navigate = useNavigate();
   const bookId = getBookId(book);
@@ -36,23 +38,14 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType, hideMenu }: BookIn
 
   return (
     <Stack alignItems="center" spacing="0.6rem" position="relative">
-      {!isSelectMode && !hideMenu && (
-        <Box sx={{ position: "absolute", top: 4, right: 4, zIndex: 1 }}>
-          <BookActionsMenu book={book} listType={listType} />
-        </Box>
-      )}
       <Box
-        {...(!isSelectMode && {
-          component: RouterLink,
-          to: `/books/${bookId}`,
-        })}
         sx={{
           width: "15rem",
           height: "18rem",
           borderRadius: "1rem",
           overflow: "hidden",
-          textDecoration: "none",
           boxShadow: 1,
+          position: "relative",
           transition: "box-shadow 0.2s ease, transform 0.2s ease",
           ...(!isSelectMode && {
             "&:hover": {
@@ -63,19 +56,46 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, listType, hideMenu }: BookIn
         }}
       >
         <Box
-          component="img"
-          src={getAvatarSrcUrl(book.thumbnail)}
-          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-            e.currentTarget.src = "https://via.placeholder.com/150x200?text=No+Cover";
-          }}
-          alt={book.title}
-          loading="lazy"
+          {...(!isSelectMode && {
+            component: RouterLink,
+            to: `/books/${bookId}`,
+          })}
           sx={{
+            display: "block",
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            textDecoration: "none",
           }}
-        />
+        >
+          <Box
+            component="img"
+            src={getAvatarSrcUrl(book.thumbnail)}
+            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+              e.currentTarget.src = BOOK_COVER_FALLBACK_URL;
+            }}
+            alt={book.title}
+            loading="lazy"
+            sx={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+        </Box>
+        {!isSelectMode && !hideMenu && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 12,
+              right: 18,
+              zIndex: 1,
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <BookActionsMenu book={book} showWishlistRemove={showWishlistRemove} />
+          </Box>
+        )}
       </Box>
 
       <Stack spacing="0.2rem" width="15rem">

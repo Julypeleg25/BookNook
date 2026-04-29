@@ -3,7 +3,6 @@ import BooksList from "@components/lists/BooksList";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { BsBookmark } from "react-icons/bs";
-import { LuBookCheck } from "react-icons/lu";
 import { ListsService } from "@/api/services/ListsService";
 import { queryKeys } from "@/api/queryKeys";
 
@@ -16,10 +15,6 @@ const MyLists = () => {
     queryFn: ListsService.getWishlistBooks,
   });
 
-  const { data: readlistBooks = [], isLoading: isReadlistLoading } = useQuery({
-    queryKey: queryKeys.readlist(username),
-    queryFn: ListsService.getReadlistBooks,
-  });
   return (
     <Box
       sx={{
@@ -41,34 +36,23 @@ const MyLists = () => {
           }}
         >
           <Typography variant="h4" fontWeight={800}>
-            My Lists
+            My Wishlist
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 0.75 }}>
-            Keep track of what you have read and what you want to pick up next.
+            Keep track of the books you want to pick up next.
           </Typography>
         </Paper>
 
         <BooksList
           title={
             <Stack direction="row" alignItems="center" spacing={1}>
-              <LuBookCheck size="1.3rem" />
-              <Typography variant="h6" fontWeight={800}>My read list</Typography>
-            </Stack>
-          }
-          booksList={readlistBooks}
-          loading={isReadlistLoading}
-          listType="read"
-        />
-        <BooksList
-          title={
-            <Stack direction="row" alignItems="center" spacing={1}>
               <BsBookmark size="1.3rem" />
-              <Typography variant="h6" fontWeight={800}>My wish list</Typography>
+              <Typography variant="h6" fontWeight={800}>My wishlist</Typography>
             </Stack>
           }
           booksList={wishlistBooks}
           loading={isWishlistLoading}
-          listType="wish"
+          showWishlistRemove
         />
       </Stack>
     </Box>

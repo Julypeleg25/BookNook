@@ -9,7 +9,7 @@ import booksRouter from "@routes/books";
 import userReviewsRouter from "@routes/userReview";
 import userRouter from "@routes/user";
 import { swaggerSpec } from "../swagger";
-import { UPLOADS_FOLDER } from "@config/multerConfig";
+import { UPLOADS_FOLDER, UPLOADS_ROUTE } from "@config/multerConfig";
 import cookieParser from "cookie-parser";
 import { authenticate } from "@middlewares/authMiddleware";
 import { errorHandler } from "@middlewares/errorHandler";
@@ -46,7 +46,7 @@ const initApp = async () => {
   app.use("/api/users", userRouter);
   app.use("/api/rag", ragRoutes);
 
-  app.use("/uploads", express.static(UPLOADS_FOLDER));
+  app.use(UPLOADS_ROUTE, express.static(UPLOADS_FOLDER));
 
   app.use(errorHandler);
 
