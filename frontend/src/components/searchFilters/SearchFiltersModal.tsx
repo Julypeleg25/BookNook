@@ -153,7 +153,7 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters, mode }: Se
                           onChange={(_, value) => field.onChange(value)}
                           min={0}
                           max={100}
-                          step={5}
+                          step={1}
                           valueLabelDisplay="auto"
                           marks={[
                             { value: 0, label: "0" },

@@ -6,7 +6,6 @@ import {
   IconButton,
   Stack,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import { FiTrash2, FiUploadCloud } from "react-icons/fi";
 
@@ -52,10 +51,6 @@ const ImageUpload = ({
     <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ xs: "flex-start", sm: "center" }}>
       <Avatar src={preview} sx={{ width: "6rem", height: "6rem" }} />
       <Box>
-        <Typography fontWeight={800}>Profile Photo</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          Upload an image from your device.
-        </Typography>
         <Stack direction="row" spacing={1}>
           {compactActions ? (
             <>
