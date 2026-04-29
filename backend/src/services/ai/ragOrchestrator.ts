@@ -233,6 +233,15 @@ export const processQuery = async (
         const safeChunks = sanitizeAndDeduplicateChunks(candidateChunks);
         const safeUserTasteChunks = sanitizeAndDeduplicateChunks(userTasteChunks);
 
+        logger.info("[RAGOrchestrator] Search summary", {
+            query: validatedQuery,
+            personalized,
+            candidateChunks: candidateChunks.length,
+            userTasteChunks: userTasteChunks.length,
+            safeChunks: safeChunks.length,
+            safeUserTasteChunks: safeUserTasteChunks.length,
+        });
+
         if (safeChunks.length === 0) {
             return {
                 answer: FALLBACK_ANSWER,
