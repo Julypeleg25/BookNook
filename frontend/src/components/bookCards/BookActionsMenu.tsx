@@ -118,11 +118,25 @@ const BookActionsMenu = ({ book, showWishlistRemove, edge = "end" }: BookActions
                 onClick={handleOpen}
                 edge={edge}
                 sx={{
-                    color: "text.secondary",
-                    "&:hover": { color: "primary.main" },
+                    width: 36,
+                    height: 36,
+                    p: 0.75,
+                    color: "text.primary",
+                    bgcolor: "rgba(255, 255, 255, 0.88)",
+                    backdropFilter: "blur(12px)",
+                    border: "1px solid rgba(255, 255, 255, 0.72)",
+                    borderRadius: "12px",
+                    boxShadow: "0 8px 22px rgba(0, 0, 0, 0.18)",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                        bgcolor: "background.paper",
+                        color: "primary.main",
+                        transform: "scale(1.04)",
+                        boxShadow: "0 12px 28px rgba(0, 0, 0, 0.22)",
+                    },
                 }}
             >
-                <FiMoreVertical />
+                <FiMoreVertical size={20} />
             </IconButton>
             <Menu
                 anchorEl={anchorEl}
@@ -132,6 +146,17 @@ const BookActionsMenu = ({ book, showWishlistRemove, edge = "end" }: BookActions
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                 onClick={(e) => e.stopPropagation()}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: "12px",
+                            minWidth: 190,
+                            boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
+                            border: "1px solid",
+                            borderColor: "divider",
+                        },
+                    },
+                }}
             >
                 <MenuItem onClick={handleViewDetails}>
                     <ListItemIcon>

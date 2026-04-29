@@ -94,8 +94,9 @@ const PostImageUpload = ({
         onClick={() => !preview && fileInputRef.current?.click()}
         sx={{
           width: "100%",
-          aspectRatio: { xs: "4 / 3", sm: "16 / 9" },
-          minHeight: { xs: "12rem", md: "20rem" },
+          maxWidth: { xs: "100%", sm: "34rem", md: "40rem" },
+          height: { xs: "11rem", sm: "13rem", md: "15rem" },
+          mx: "auto",
           bgcolor: preview ? "grey.50" : "rgba(91, 111, 106, 0.04)",
           borderRadius: "12px",
           overflow: "hidden",
