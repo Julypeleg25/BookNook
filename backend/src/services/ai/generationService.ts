@@ -112,7 +112,6 @@ export const generateAnswer = async (
             model: GEMINI_MODEL_NAME,
             generationConfig: {
                 temperature: GENERATION_TEMPERATURE,
-                maxOutputTokens: 500,
             }
         });
 
