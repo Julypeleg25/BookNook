@@ -196,10 +196,16 @@ const buildPromptContext = (
 
     const candidateSnippets: string[] = [];
     for (const [index, chunk] of chunks.entries()) {
-        candidateSnippets.push(buildCandidateSnippet(chunk, index));
-        if (candidateSnippets.join(SECTION_SEPARATOR).length > MAX_CONTEXT_CHARS) {
+        const nextSnippet = buildCandidateSnippet(chunk, index);
+        const nextCandidateBlock = candidateSnippets.length > 0
+            ? `${candidateSnippets.join(SECTION_SEPARATOR)}${SECTION_SEPARATOR}${nextSnippet}`
+            : nextSnippet;
+
+        if (nextCandidateBlock.length > MAX_CONTEXT_CHARS) {
             break;
         }
+
+        candidateSnippets.push(nextSnippet);
     }
 
     sections.push([
@@ -209,10 +215,16 @@ const buildPromptContext = (
     ].join(LINE_SEPARATOR));
 
     for (const section of sections) {
-        if ((context + SECTION_SEPARATOR + section).length > MAX_CONTEXT_CHARS) {
+        const nextContext = context ? `${context}${SECTION_SEPARATOR}${section}` : section;
+
+        if (nextContext.length > MAX_CONTEXT_CHARS) {
+            if (!context) {
+                context = section.slice(0, MAX_CONTEXT_CHARS).trim();
+            }
             break;
         }
-        context = context ? `${context}${SECTION_SEPARATOR}${section}` : section;
+
+        context = nextContext;
     }
 
     return context;
