@@ -1,21 +1,20 @@
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import type { Book } from "@models/Book";
-import { useState, useMemo, type ReactNode } from "react";
+import { useState, useMemo } from "react";
+import { BsBookmark } from "react-icons/bs";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa6";
 import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
 import BookCardSkeleton from "../bookCards/BookCardSkeleton";
 import BookInfoCard from "../bookCards/BookInfoCard";
-
 interface WishlistBooksGridProps {
   books: Book[];
-  title?: ReactNode;
   loading?: boolean;
   showWishlistRemove?: boolean;
 }
 
 const BATCH_SIZE = 4;
 
-const WishlistBooksGrid = ({ books, title, loading, showWishlistRemove }: WishlistBooksGridProps) => {
+const WishlistBooksGrid = ({ books, loading, showWishlistRemove }: WishlistBooksGridProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const canExpand = books.length > BATCH_SIZE;
 
@@ -48,7 +47,6 @@ const WishlistBooksGrid = ({ books, title, loading, showWishlistRemove }: Wishli
         borderRadius: 3,
       }}
     >
-      {title && (
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -57,7 +55,10 @@ const WishlistBooksGrid = ({ books, title, loading, showWishlistRemove }: Wishli
           gap={2}
           flexWrap="wrap"
         >
-          {title}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <BsBookmark size="1.3rem" />
+              <Typography variant="h6" fontWeight={800}>Wishlist</Typography>
+            </Stack>
 
           {canExpand && (
             <Button variant="outlined" onClick={toggleExpand}>
@@ -70,7 +71,6 @@ const WishlistBooksGrid = ({ books, title, loading, showWishlistRemove }: Wishli
             </Button>
           )}
         </Stack>
-      )}
 
       {!loading && books.length === 0 ? (
         <Typography color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
@@ -88,9 +88,16 @@ const WishlistBooksGrid = ({ books, title, loading, showWishlistRemove }: Wishli
           justifyItems="center"
         >
           {loading
-            ? [...Array(BATCH_SIZE)].map((_, i) => <BookCardSkeleton key={i} />)
+            ? [...Array(BATCH_SIZE)].map((_, i) => (
+              <BookCardSkeleton key={i} coverDisplay="plain" />
+            ))
             : visibleBooks.map((book) => (
-              <BookInfoCard book={book} key={book.id || book._id} showWishlistRemove={showWishlistRemove} />
+              <BookInfoCard
+                book={book}
+                coverDisplay="plain"
+                key={book.id || book._id}
+                showWishlistRemove={showWishlistRemove}
+              />
             ))}
         </Box>
       )}

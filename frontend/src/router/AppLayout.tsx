@@ -1,16 +1,17 @@
+import { Box } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import AppBar from "@/components/AppBar";
 import FloatingAddButton from "@/components/common/FloatingAddButton";
 
 const AppLayout = () => {
   return (
-    <div className="app-layout flex min-h-screen">
+    <Box className="app-layout flex min-h-screen">
       <AppBar />
-      <div>
+      <Box>
         <Outlet />
-      </div>
+      </Box>
       <FloatingAddButton />
-    </div>
+    </Box>
   );
 };
 
