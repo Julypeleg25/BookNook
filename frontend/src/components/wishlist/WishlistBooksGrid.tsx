@@ -89,12 +89,11 @@ const WishlistBooksGrid = ({ books, loading, showWishlistRemove }: WishlistBooks
         >
           {loading
             ? [...Array(BATCH_SIZE)].map((_, i) => (
-              <BookCardSkeleton key={i} coverDisplay="plain" />
+              <BookCardSkeleton key={i} />
             ))
             : visibleBooks.map((book) => (
               <BookInfoCard
                 book={book}
-                coverDisplay="plain"
                 key={book.id || book._id}
                 showWishlistRemove={showWishlistRemove}
               />
