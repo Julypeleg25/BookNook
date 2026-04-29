@@ -37,11 +37,15 @@ export const RagAssistant: React.FC = () => {
   const canSubmit = Boolean(trimmedQuery) && !loading && !isTooLong;
   const currentItem = history[0];
 
+  const submitQuery = (nextQuery: string) => {
+    void fetchAiResponse(nextQuery);
+    setQuery("");
+  };
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!canSubmit) return;
-    void fetchAiResponse(trimmedQuery);
-    setQuery("");
+    submitQuery(trimmedQuery);
   };
 
   const handleQueryKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -50,8 +54,7 @@ export const RagAssistant: React.FC = () => {
     event.preventDefault();
     if (!canSubmit) return;
 
-    void fetchAiResponse(trimmedQuery);
-    setQuery("");
+    submitQuery(trimmedQuery);
   };
 
   return (
@@ -200,8 +203,7 @@ export const RagAssistant: React.FC = () => {
               loading={loading}
               onRetry={() => {
                 if (loading) return;
-                setQuery(currentItem.query);
-                void fetchAiResponse(currentItem.query);
+                submitQuery(currentItem.query);
               }}
             />
           )}
