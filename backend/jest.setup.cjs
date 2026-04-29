@@ -1,7 +1,6 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '.env.test') });
-console.log('Jest Setup: Loading .env.test from', path.resolve(__dirname, '.env.test'));
-console.log('MONGODB_URL:', process.env.MONGODB_URL);
+process.env.NODE_ENV = 'test';
+require('dotenv').config({ path: path.resolve(__dirname, '.env.test'), quiet: true });
 
 jest.mock('@config/config', () => ({
     ENV: {
