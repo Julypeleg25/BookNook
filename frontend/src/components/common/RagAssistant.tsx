@@ -190,7 +190,7 @@ export const RagAssistant: React.FC = () => {
                   Your reading assistant is ready
                 </Typography>
                 <Typography color="text.secondary">
-                  Ask for recommendations, compare genres, or explore what BookNook readers are saying.
+                  Ask for recommendations
                 </Typography>
               </Stack>
             </Paper>
