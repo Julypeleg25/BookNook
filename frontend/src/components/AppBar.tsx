@@ -48,10 +48,11 @@ const AppBar = () => {
     <MuiAppBar position="sticky" sx={{ top: 0, width: "100%" }}>
       <Toolbar sx={{ height: "4.5rem", display: "flex", width: "100%" }}>
         <Box display="flex" alignItems="center" flexGrow={1}>
-          <img
+          <Box
+            component="img"
             src={bookNookLogo}
             alt="BookNook"
-            style={{ height: "2.5rem" }}
+            sx={{ height: "2.5rem" }}
           />
           <Box
             sx={{

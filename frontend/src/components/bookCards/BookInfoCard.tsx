@@ -7,7 +7,7 @@ import React from "react";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { getBookId } from "@/utils/bookUtils";
 
-const BOOK_COVER_FALLBACK_URL = "https://via.placeholder.com/150x200?text=No+Cover";
+export const BOOK_COVER_FALLBACK_URL = "https://via.placeholder.com/150x200?text=No+Cover";
 
 interface BookInfoCardProps {
   book: Book;

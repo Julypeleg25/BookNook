@@ -59,16 +59,16 @@ const NewComment = forwardRef(
 
     return (
       <Box
-        style={{
+        sx={{
           display: "flex",
           alignSelf: "center",
           gap: "1rem",
-          padding: "1rem",
+          p: "1rem",
           position: "sticky",
           top: 0,
-          backgroundColor: "white",
+          bgcolor: "background.paper",
           zIndex: 1000,
-          alignItems: "center"
+          alignItems: "center",
         }}
       >
         <Avatar src={getAvatarSrcUrl(avatarUrl)} alt="User Avatar" />

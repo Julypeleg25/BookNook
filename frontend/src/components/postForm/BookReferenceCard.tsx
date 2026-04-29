@@ -2,6 +2,7 @@ import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import type { SyntheticEvent } from "react";
 import type { Book } from "@/models/Book";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
+import { BOOK_COVER_FALLBACK_URL } from "../bookCards/BookInfoCard";
 
 interface BookReferenceCardProps {
   book: Book;
@@ -41,7 +42,7 @@ const BookReferenceCard = ({ book }: BookReferenceCardProps) => {
             component="img"
             src={getAvatarSrcUrl(book.thumbnail)}
             onError={(event: SyntheticEvent<HTMLImageElement, Event>) => {
-              event.currentTarget.src = "https://via.placeholder.com/300x450?text=No+Cover";
+              event.currentTarget.src = BOOK_COVER_FALLBACK_URL;
             }}
             alt={book.title}
             sx={{

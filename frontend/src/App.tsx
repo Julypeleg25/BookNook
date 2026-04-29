@@ -4,10 +4,11 @@ import "./App.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import env from "./config/env";
 import { AuthInitializer } from "./components/auth/AuthInitializer";
+import { Box } from "@mui/material";
 
 const App = () => {
   if (!env.GOOGLE_CLIENT_ID) {
-    return <div>Google OAuth is not configured. Please set VITE_GOOGLE_CLIENT_ID.</div>;
+    return <Box>Google OAuth is not configured. Please set VITE_GOOGLE_CLIENT_ID.</Box>;
   }
 
   return (

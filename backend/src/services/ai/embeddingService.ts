@@ -37,7 +37,6 @@ export const generateEmbeddingsBatch = async (
 
     for (const text of texts) {
         if (!text || text.trim().length === 0) {
-            // pad with zeros instead of crashing the whole batch
             logger.warn("[EmbeddingService] Skipped empty text in batch — using zero vector.");
             results.push(new Array(EMBEDDING_DIMENSIONS).fill(0));
             continue;
