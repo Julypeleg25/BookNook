@@ -3,16 +3,16 @@ import BooksList from "@components/lists/BooksList";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { BsBookmark } from "react-icons/bs";
-import { ListsService } from "@/api/services/ListsService";
+import { WishlistService } from "@/api/services/WishlistService";
 import { queryKeys } from "@/api/queryKeys";
 
-const MyLists = () => {
+const Wishlist = () => {
   const {
     user: { username },
   } = useUserStore();
   const { data: wishlistBooks = [], isLoading: isWishlistLoading } = useQuery({
     queryKey: queryKeys.wishlist(username),
-    queryFn: ListsService.getWishlistBooks,
+    queryFn: WishlistService.getWishlistBooks,
   });
 
   return (
@@ -36,7 +36,7 @@ const MyLists = () => {
           }}
         >
           <Typography variant="h4" fontWeight={800}>
-            My Wishlist
+            Wishlist
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 0.75 }}>
             Keep track of the books you want to pick up next.
@@ -47,7 +47,7 @@ const MyLists = () => {
           title={
             <Stack direction="row" alignItems="center" spacing={1}>
               <BsBookmark size="1.3rem" />
-              <Typography variant="h6" fontWeight={800}>My wishlist</Typography>
+              <Typography variant="h6" fontWeight={800}>Wishlist</Typography>
             </Stack>
           }
           booksList={wishlistBooks}
@@ -59,4 +59,4 @@ const MyLists = () => {
   );
 };
 
-export default MyLists;
+export default Wishlist;

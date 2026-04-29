@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import { ListsService } from "@/api/services/ListsService";
+import { WishlistService } from "@/api/services/WishlistService";
 import {
   addBookToWishlistCache,
   invalidateWishlistCache,
@@ -35,7 +35,7 @@ export const useBookListToggle = ({
 
   const { data: books = [], isLoading: isListLoading } = useQuery({
     queryKey: wishlistQueryKey,
-    queryFn: ListsService.getWishlistBooks,
+    queryFn: WishlistService.getWishlistBooks,
     enabled: enabled && Boolean(username),
   });
 
@@ -49,8 +49,8 @@ export const useBookListToggle = ({
   >({
     mutationFn: (shouldRemove) =>
       shouldRemove
-        ? ListsService.removeBookFromWishlist(bookId)
-        : ListsService.addBookToWishlist(bookId),
+        ? WishlistService.removeBookFromWishlist(bookId)
+        : WishlistService.addBookToWishlist(bookId),
     onMutate: async (shouldRemove) => {
       await queryClient.cancelQueries({ queryKey: wishlistQueryKey });
       const previousBooks = queryClient.getQueryData<Book[]>(wishlistQueryKey);

@@ -74,7 +74,7 @@ const BooksList = ({ booksList, title, loading, showWishlistRemove }: BooksListP
 
       {!loading && booksList.length === 0 ? (
         <Typography color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
-          No books in this list yet.
+          No books in your wishlist yet.
         </Typography>
       ) : (
         <Box

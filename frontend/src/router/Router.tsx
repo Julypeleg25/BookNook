@@ -7,7 +7,7 @@ import ExplorePosts from "@pages/ExplorePosts";
 import BookPost from "@pages/BookPost";
 import MyPosts from "@pages/MyPosts";
 import NewPost from "@pages/NewPost";
-import MyLists from "@pages/MyLists";
+import Wishlist from "@pages/Wishlist";
 import Profile from "@pages/Profile";
 import AiAssistant from "@pages/AiAssistant";
 import NotFound from "@pages/NotFound";
@@ -43,7 +43,7 @@ const Router = () => {
             <Route path="edit/:id" element={<NewPost />} />
           </Route>
           <Route path="/myPosts" element={<MyPosts />} />
-          <Route path="/lists" element={<MyLists />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/ai-assistant" element={<AiAssistant />} />
         </Route>

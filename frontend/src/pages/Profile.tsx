@@ -22,7 +22,7 @@ import MyPosts from "./MyPosts";
 import useUserStore from "@/state/useUserStore";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { userReviewService } from "@/api/services/userReviewService";
-import { ListsService } from "@/api/services/ListsService";
+import { WishlistService } from "@/api/services/WishlistService";
 import { queryKeys } from "@/api/queryKeys";
 import { RATING_STEP } from "@shared/constants/validation";
 import { getCommentUser } from "@/utils/reviewUtils";
@@ -46,7 +46,7 @@ const Profile = () => {
 
   const { data: wishlistBooks = [], isLoading: isWishlistLoading } = useQuery({
     queryKey: queryKeys.wishlist(user.username),
-    queryFn: ListsService.getWishlistBooks,
+    queryFn: WishlistService.getWishlistBooks,
     enabled: !!user.username,
   });
 
@@ -114,9 +114,6 @@ const Profile = () => {
                   }}
                 />
                 <Box minWidth={0}>
-                  <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 0, fontWeight: 800 }}>
-                    Reader Profile
-                  </Typography>
                   <Typography variant="h4" fontWeight={800} sx={{ overflowWrap: "anywhere" }}>
                     {user.username || "BookNook reader"}
                   </Typography>
@@ -239,7 +236,7 @@ const Profile = () => {
                   <Button startIcon={<FiPlus />} onClick={() => navigate("/books/select")}>
                     Create Post
                   </Button>
-                  <Button variant="outlined" startIcon={<BsBookmark />} onClick={() => navigate("/lists")}>
+                  <Button variant="outlined" startIcon={<BsBookmark />} onClick={() => navigate("/wishlist")}>
                     View Wishlist
                   </Button>
                 </Stack>

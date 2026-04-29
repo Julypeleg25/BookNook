@@ -18,7 +18,7 @@ export const endpoints = {
     byId: (externalBookId: string) => `/api/books/${externalBookId}`,
   },
 
-  lists: {
+  wishlist: {
     addToWishlist: (bookId: string) => `/api/lists/${bookId}`,
     wishlist: "/api/lists/wishlist",
     removeFromWishlist: (bookId: string) => `/api/lists/${bookId}`,

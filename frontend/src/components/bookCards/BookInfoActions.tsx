@@ -21,7 +21,7 @@ const BookInfoActions = ({ book }: BookInfoActionsProps) => {
 
   return (
     <div style={{ display: "flex", gap: "1.6rem" }}>
-      <Tooltip title={wishlist.isAdded ? "remove from wish list" : "add to wish list"}>
+      <Tooltip title={wishlist.isAdded ? "remove from wishlist" : "add to wishlist"}>
         <IconButton
           color={wishlist.isAdded ? "primary" : "default"}
           disabled={wishlist.isLoading}

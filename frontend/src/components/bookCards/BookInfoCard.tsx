@@ -46,6 +46,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
           overflow: "hidden",
           boxShadow: 1,
           position: "relative",
+          bgcolor: "rgba(31, 41, 51, 0.06)",
           transition: "box-shadow 0.2s ease, transform 0.2s ease",
           ...(!isSelectMode && {
             "&:hover": {
@@ -61,9 +62,12 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
             to: `/books/${bookId}`,
           })}
           sx={{
-            display: "block",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             width: "100%",
             height: "100%",
+            p: 1.25,
             textDecoration: "none",
           }}
         >
@@ -76,10 +80,14 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
             alt={book.title}
             loading="lazy"
             sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
+              width: "auto",
+              height: "auto",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              objectFit: "contain",
               display: "block",
+              borderRadius: "0.45rem",
+              boxShadow: "0 10px 24px rgba(31, 41, 51, 0.18)",
             }}
           />
         </Box>
