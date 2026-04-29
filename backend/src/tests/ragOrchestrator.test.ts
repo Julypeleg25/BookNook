@@ -4,7 +4,7 @@ import { SearchResult } from "@services/ai/vectorRepository";
 type SearchResponse = {
     candidateChunks: SearchResult[];
     userTasteChunks: SearchResult[];
-    readExternalIds: string[];
+    excludedExternalIds: string[];
 };
 
 const mockPerformSearch = jest.fn<() => Promise<SearchResponse>>();
@@ -24,7 +24,8 @@ jest.unstable_mockModule("@utils/logger", () => ({
     },
 }));
 
-const { processQuery, isPersonalizedRecommendationQuery } = await import("@services/ai/ragOrchestrator");
+let processQuery: typeof import("@services/ai/ragOrchestrator").processQuery;
+let isPersonalizedRecommendationQuery: typeof import("@services/ai/ragOrchestrator").isPersonalizedRecommendationQuery;
 
 const createSearchResult = (
     overrides: Partial<SearchResult>
@@ -44,6 +45,10 @@ const createSearchResult = (
 });
 
 describe("RAG orchestrator personalization", () => {
+    beforeAll(async () => {
+        ({ processQuery, isPersonalizedRecommendationQuery } = await import("@services/ai/ragOrchestrator"));
+    });
+
     beforeEach(() => {
         jest.clearAllMocks();
         mockGenerateAnswer.mockResolvedValue("Try Candidate Mystery by A. Writer. It fits your taste for tense, layered stories.");
@@ -72,11 +77,11 @@ describe("RAG orchestrator personalization", () => {
                         bookTitle: "Shadow House",
                         rating: 5,
                         userId: "user-123",
-                        externalId: "read-ext",
+                        externalId: "reviewed-ext",
                     },
                 }),
             ],
-            readExternalIds: ["read-ext"],
+            excludedExternalIds: ["reviewed-ext"],
         });
 
         await processQuery("What should I read next?", { userId: "user-123" });
@@ -102,7 +107,7 @@ describe("RAG orchestrator personalization", () => {
         mockPerformSearch.mockResolvedValue({
             candidateChunks: [createSearchResult({})],
             userTasteChunks: [],
-            readExternalIds: [],
+            excludedExternalIds: [],
         });
 
         await processQuery("Recommend a mystery novel", { userId: "user-123" });

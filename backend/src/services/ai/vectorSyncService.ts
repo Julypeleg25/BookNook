@@ -166,14 +166,10 @@ export const syncUserProfileToVector = async (user: IUser): Promise<void> => {
             return results.filter((id): id is string => id !== null);
         };
 
-        const [readIdentifiers, wishIdentifiers] = await Promise.all([
-            resolveIdentifiers(user.readlist || []),
-            resolveIdentifiers(user.wishlist || [])
-        ]);
+        const wishIdentifiers = await resolveIdentifiers(user.wishlist || []);
 
         const text = buildProfileChunk(
             user.username,
-            readIdentifiers,
             wishIdentifiers,
             Array.from(inferredInterests).slice(0, 10),
             Array.from(dislikes).slice(0, 5),

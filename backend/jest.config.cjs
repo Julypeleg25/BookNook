@@ -15,7 +15,13 @@ module.exports = {
   extensionsToTreatAsEsm: [".ts"],
 
   transform: {
-    "^.+\\.(ts|tsx)$": ["ts-jest", { useESM: true }],
+    "^.+\\.(ts|tsx)$": [
+      "ts-jest",
+      {
+        tsconfig: "<rootDir>/tsconfig.json",
+        useESM: true,
+      },
+    ],
   },
 
   moduleNameMapper: {
@@ -28,6 +34,8 @@ module.exports = {
   },
 
   moduleFileExtensions: ["ts", "js", "json", "node"],
+
+  roots: ["<rootDir>/src"],
 
   testMatch: ["**/?(*.)+(test).[tj]s"],
   testPathIgnorePatterns: ["<rootDir>/dist/", "<rootDir>/node_modules/"],

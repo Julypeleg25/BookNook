@@ -13,7 +13,6 @@ export interface IUser extends Document {
   bio?: string;
   providerId?: string;
   wishlist: string[];
-  readlist: string[];
   refreshToken?: string;
   accessToken?: string;
   googleId?: string;
@@ -72,11 +71,6 @@ const userSchema = new Schema<IUser>(
       },
     ],
 
-    readlist: [
-      {
-        type: String,
-      },
-    ],
   },
   { timestamps: true },
 );

@@ -1,6 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { Book } from "@/models/Book";
-import type { BookListType } from "@/models/List";
 import type { ReviewComment, UserReview } from "@/models/UserReview";
 import type { UserDto } from "@shared/dtos/user.dto";
 import { queryKeys, authScopedQueryKeys } from "./queryKeys";
@@ -104,23 +103,21 @@ export const syncUpdatedUserInReviewCaches = (
   invalidateAuthReviewState(queryClient);
 };
 
-export const setBookListCache = (
+export const setWishlistCache = (
   queryClient: QueryClient,
   username: string,
-  listType: BookListType,
   books: Book[],
 ) => {
-  queryClient.setQueryData(queryKeys.listByType(username, listType), books);
+  queryClient.setQueryData(queryKeys.wishlist(username), books);
 };
 
-export const addBookToListCache = (
+export const addBookToWishlistCache = (
   queryClient: QueryClient,
   username: string,
-  listType: BookListType,
   book: Book,
 ) => {
   queryClient.setQueryData<Book[]>(
-    queryKeys.listByType(username, listType),
+    queryKeys.wishlist(username),
     (currentBooks) => {
       const books = currentBooks ?? [];
       const bookId = getBookId(book);
@@ -133,14 +130,13 @@ export const addBookToListCache = (
   );
 };
 
-export const removeBookFromListCache = (
+export const removeBookFromWishlistCache = (
   queryClient: QueryClient,
   username: string,
-  listType: BookListType,
   book: Book,
 ) => {
   queryClient.setQueryData<Book[]>(
-    queryKeys.listByType(username, listType),
+    queryKeys.wishlist(username),
     (currentBooks) =>
       currentBooks?.filter(
         (currentBook) => getBookId(currentBook) !== getBookId(book),
@@ -148,12 +144,11 @@ export const removeBookFromListCache = (
   );
 };
 
-export const invalidateBookListCache = (
+export const invalidateWishlistCache = (
   queryClient: QueryClient,
   username: string,
-  listType: BookListType,
 ) => {
   queryClient.invalidateQueries({
-    queryKey: queryKeys.listByType(username, listType),
+    queryKey: queryKeys.wishlist(username),
   });
 };

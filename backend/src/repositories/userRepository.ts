@@ -112,64 +112,58 @@ export class UserRepository {
     }
   }
 
-  async addBookToList(
+  async addBookToWishlist(
     userId: Types.ObjectId | string,
     bookId: string,
-    listType: "wish" | "read"
   ): Promise<string[]> {
     try {
-      const field = listType === "wish" ? "wishlist" : "readlist";
       const updatedUser = await User.findByIdAndUpdate(
         userId,
-        { $addToSet: { [field]: bookId } },
+        { $addToSet: { wishlist: bookId } },
         { new: true }
       );
       if (updatedUser) {
         await syncUserProfileToVector(updatedUser);
       }
-      return updatedUser?.[field] ?? [];
+      return updatedUser?.wishlist ?? [];
     } catch (error) {
       logger.error(
-        `Error adding book to ${listType}list for user ${userId}:`,
+        `Error adding book to wishlist for user ${userId}:`,
         error
       );
       throw error;
     }
   }
 
-  async getList(
+  async getWishlist(
     userId: Types.ObjectId | string,
-    listType: "wish" | "read"
   ): Promise<string[]> {
     try {
       const user = await User.findById(userId);
-      const field = listType === "wish" ? "wishlist" : "readlist";
-      return user?.[field] ?? [];
+      return user?.wishlist ?? [];
     } catch (error) {
-      logger.error(`Error getting ${listType}list for user ${userId}:`, error);
+      logger.error(`Error getting wishlist for user ${userId}:`, error);
       throw error;
     }
   }
 
-  async removeBookFromList(
+  async removeBookFromWishlist(
     userId: Types.ObjectId | string,
     bookId: string,
-    listType: "wish" | "read"
   ): Promise<string[]> {
     try {
-      const field = listType === "wish" ? "wishlist" : "readlist";
       const updatedUser = await User.findByIdAndUpdate(
         userId,
-        { $pull: { [field]: bookId } },
+        { $pull: { wishlist: bookId } },
         { new: true }
       );
       if (updatedUser) {
         await syncUserProfileToVector(updatedUser);
       }
-      return updatedUser?.[field] ?? [];
+      return updatedUser?.wishlist ?? [];
     } catch (error) {
       logger.error(
-        `Error removing book from ${listType}list for user ${userId}:`,
+        `Error removing book from wishlist for user ${userId}:`,
         error
       );
       throw error;

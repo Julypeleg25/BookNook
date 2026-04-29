@@ -19,10 +19,9 @@ export const endpoints = {
   },
 
   lists: {
-    addBook: (bookId: string) => `/api/lists/${bookId}`,
+    addToWishlist: (bookId: string) => `/api/lists/${bookId}`,
     wishlist: "/api/lists/wishlist",
-    readlist: "/api/lists/readlist",
-    removeBook: (bookId: string) => `/api/lists/${bookId}`,
+    removeFromWishlist: (bookId: string) => `/api/lists/${bookId}`,
   },
 
   userReviews: {

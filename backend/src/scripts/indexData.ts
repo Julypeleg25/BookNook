@@ -112,7 +112,6 @@ async function indexUsers(
 
       return buildProfileChunk(
         user.username,
-        resolveTitles(user.readlist || []),
         resolveTitles(user.wishlist || []),
         [],
         [],

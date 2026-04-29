@@ -10,12 +10,12 @@ interface BooksListProps {
   booksList: Book[];
   title?: ReactNode;
   loading?: boolean;
-  listType?: "wish" | "read";
+  showWishlistRemove?: boolean;
 }
 
 const BATCH_SIZE = 4;
 
-const BooksList = ({ booksList, title, loading, listType }: BooksListProps) => {
+const BooksList = ({ booksList, title, loading, showWishlistRemove }: BooksListProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const canExpand = booksList.length > BATCH_SIZE;
 
@@ -90,7 +90,7 @@ const BooksList = ({ booksList, title, loading, listType }: BooksListProps) => {
           {loading
             ? [...Array(BATCH_SIZE)].map((_, i) => <BookCardSkeleton key={i} />)
             : visibleBooks.map((book) => (
-              <BookInfoCard book={book} key={book.id || book._id} listType={listType} />
+              <BookInfoCard book={book} key={book.id || book._id} showWishlistRemove={showWishlistRemove} />
             ))}
         </Box>
       )}

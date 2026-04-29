@@ -16,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { BsBookmark } from "react-icons/bs";
 import { FiHeart, FiMail, FiMessageCircle, FiPlus } from "react-icons/fi";
-import { LuBookCheck } from "react-icons/lu";
 import { MdEdit, MdPostAdd } from "react-icons/md";
 import ProfileForm from "@components/profile/ProfileForm";
 import MyPosts from "./MyPosts";
@@ -36,12 +35,6 @@ const Profile = () => {
     queryKey: queryKeys.allReviewsByUserId(user.id),
     queryFn: () => userReviewService.getReviewsByUserId(user.id),
     enabled: !!user.id,
-  });
-
-  const { data: readlistBooks = [], isLoading: isReadlistLoading } = useQuery({
-    queryKey: queryKeys.readlist(user.username),
-    queryFn: ListsService.getReadlistBooks,
-    enabled: !!user.username,
   });
 
   const { data: wishlistBooks = [], isLoading: isWishlistLoading } = useQuery({
@@ -158,7 +151,6 @@ const Profile = () => {
                   gap={1.5}
                 >
                   <StatTile icon={<MdPostAdd />} label="Posts" value={reviews.length} loading={isReviewsLoading} />
-                  <StatTile icon={<LuBookCheck />} label="Readlist" value={readlistBooks.length} loading={isReadlistLoading} />
                   <StatTile icon={<BsBookmark />} label="Wishlist" value={wishlistBooks.length} loading={isWishlistLoading} />
                 </Box>
 
@@ -227,8 +219,8 @@ const Profile = () => {
                   <Button startIcon={<FiPlus />} onClick={() => navigate("/books/select")}>
                     Create Post
                   </Button>
-                  <Button variant="outlined" startIcon={<LuBookCheck />} onClick={() => navigate("/lists")}>
-                    View Lists
+                  <Button variant="outlined" startIcon={<BsBookmark />} onClick={() => navigate("/lists")}>
+                    View Wishlist
                   </Button>
                 </Stack>
               </>

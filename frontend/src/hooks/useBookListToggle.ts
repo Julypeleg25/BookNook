@@ -2,23 +2,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { ListsService } from "@/api/services/ListsService";
 import {
-  addBookToListCache,
-  invalidateBookListCache,
-  removeBookFromListCache,
-  setBookListCache,
+  addBookToWishlistCache,
+  invalidateWishlistCache,
+  removeBookFromWishlistCache,
+  setWishlistCache,
 } from "@/api/queryCache";
 import { queryKeys } from "@/api/queryKeys";
 import type { Book } from "@/models/Book";
-import {
-  BOOK_LIST_LABELS,
-  type BookListType,
-} from "@/models/List";
 import useUserStore from "@/state/useUserStore";
 import { getBookId } from "@/utils/bookUtils";
 
 interface UseBookListToggleOptions {
   book: Book;
-  listType: BookListType;
   enabled: boolean;
 }
 
@@ -29,22 +24,18 @@ interface BookListMutationContext {
 
 export const useBookListToggle = ({
   book,
-  listType,
   enabled,
 }: UseBookListToggleOptions) => {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useUserStore();
   const username = user.username;
-  const listQueryKey = queryKeys.listByType(username, listType);
+  const wishlistQueryKey = queryKeys.wishlist(username);
   const bookId = getBookId(book);
 
   const { data: books = [], isLoading: isListLoading } = useQuery({
-    queryKey: listQueryKey,
-    queryFn: () =>
-      listType === "wish"
-        ? ListsService.getWishlistBooks()
-        : ListsService.getReadlistBooks(),
+    queryKey: wishlistQueryKey,
+    queryFn: ListsService.getWishlistBooks,
     enabled: enabled && Boolean(username),
   });
 
@@ -58,37 +49,37 @@ export const useBookListToggle = ({
   >({
     mutationFn: (shouldRemove) =>
       shouldRemove
-        ? ListsService.removeBookFromList(bookId, listType)
-        : ListsService.addBookToList(bookId, listType),
+        ? ListsService.removeBookFromWishlist(bookId)
+        : ListsService.addBookToWishlist(bookId),
     onMutate: async (shouldRemove) => {
-      await queryClient.cancelQueries({ queryKey: listQueryKey });
-      const previousBooks = queryClient.getQueryData<Book[]>(listQueryKey);
+      await queryClient.cancelQueries({ queryKey: wishlistQueryKey });
+      const previousBooks = queryClient.getQueryData<Book[]>(wishlistQueryKey);
       const hadPreviousBooks = previousBooks !== undefined;
 
       if (shouldRemove) {
-        removeBookFromListCache(queryClient, username, listType, book);
+        removeBookFromWishlistCache(queryClient, username, book);
       } else {
-        addBookToListCache(queryClient, username, listType, book);
+        addBookToWishlistCache(queryClient, username, book);
       }
 
       return { previousBooks, hadPreviousBooks };
     },
     onSuccess: (updatedBooks) => {
-      setBookListCache(queryClient, username, listType, updatedBooks);
+      setWishlistCache(queryClient, username, updatedBooks);
     },
     onError: (_error, _shouldRemove, context) => {
       if (context?.hadPreviousBooks) {
-        setBookListCache(queryClient, username, listType, context.previousBooks ?? []);
+        setWishlistCache(queryClient, username, context.previousBooks ?? []);
       } else {
-        queryClient.removeQueries({ queryKey: listQueryKey });
+        queryClient.removeQueries({ queryKey: wishlistQueryKey });
       }
 
-      enqueueSnackbar(`Could not update ${BOOK_LIST_LABELS[listType]}`, {
+      enqueueSnackbar("Could not update Wishlist", {
         variant: "error",
       });
     },
     onSettled: () => {
-      invalidateBookListCache(queryClient, username, listType);
+      invalidateWishlistCache(queryClient, username);
     },
   });
 

@@ -2,7 +2,6 @@ import { Button, Stack } from "@mui/material";
 import { BiBookAdd } from "react-icons/bi";
 import { BsBook } from "react-icons/bs";
 import { LiaBookmark } from "react-icons/lia";
-import { LuBookCheck } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
 import type { Book } from "@/models/Book";
@@ -20,12 +19,6 @@ const BookHeader = ({ book, isBookPost }: BookHeaderProps) => {
   const bookId = getBookId(book);
   const wishlist = useBookListToggle({
     book,
-    listType: "wish",
-    enabled: isAuthenticated,
-  });
-  const readlist = useBookListToggle({
-    book,
-    listType: "read",
     enabled: isAuthenticated,
   });
 
@@ -35,14 +28,6 @@ const BookHeader = ({ book, isBookPost }: BookHeaderProps) => {
       return;
     }
     wishlist.toggle();
-  };
-
-  const handleAddToReadlist = () => {
-    if (!isAuthenticated) {
-      redirectToLogin();
-      return;
-    }
-    readlist.toggle();
   };
 
   const handleProtectedReviewNavigation = () => {
@@ -96,23 +81,6 @@ const BookHeader = ({ book, isBookPost }: BookHeaderProps) => {
         }}
       >
         {wishlist.isAdded ? "In Wishlist" : "Add to Wishlist"}
-      </Button>
-      <Button
-        variant="outlined"
-        onClick={handleAddToReadlist}
-        startIcon={<LuBookCheck />}
-        disabled={readlist.isLoading}
-        color={readlist.isAdded ? "primary" : "inherit"}
-        sx={{
-          borderRadius: "2rem",
-          px: 3,
-          minWidth: { xs: "100%", sm: "11.5rem" },
-          height: "2.75rem",
-          borderColor: readlist.isAdded ? "primary.main" : "divider",
-          bgcolor: readlist.isAdded ? "action.selected" : "transparent",
-        }}
-      >
-        {readlist.isAdded ? "In Read List" : "Add to Read List"}
       </Button>
     </Stack>
   );
