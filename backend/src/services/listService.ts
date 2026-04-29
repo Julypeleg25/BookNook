@@ -3,38 +3,58 @@ import { userRepository } from "@repositories/userRepository";
 import {
   getBookByGoogleIdFromGoogle,
   getLocalBookByGoogleId,
+  getLocalBookByLocalId,
   normalizeLocalBookSummary,
   normalizeBookSummary,
 } from "./bookService";
 import { BookSummary } from "@models/ApiBook";
 import { logger } from "@utils/logger";
+import type { IBook } from "@models/Book";
 
-const resolveBookSummary = async (googleId: string): Promise<BookSummary | null> => {
+const findLocalWishlistBook = async (bookId: string): Promise<IBook | null> => {
+  const localBookByExternalId = await getLocalBookByGoogleId(bookId);
+  if (localBookByExternalId) {
+    return localBookByExternalId;
+  }
+
+  if (!Types.ObjectId.isValid(bookId)) {
+    return null;
+  }
+
+  return await getLocalBookByLocalId(bookId);
+};
+
+const getWishlistStorageIds = async (bookId: string): Promise<string[]> => {
+  const localBook = await findLocalWishlistBook(bookId);
+  if (!localBook) {
+    return [bookId];
+  }
+
+  return Array.from(new Set([bookId, localBook.externalId, localBook._id.toString()]));
+};
+
+const resolveBookSummary = async (bookId: string): Promise<BookSummary | null> => {
   try {
-    const googleBook = await getBookByGoogleIdFromGoogle(googleId);
-    return normalizeBookSummary(googleBook);
-  } catch (googleLookupError) {
+    const localBook = await findLocalWishlistBook(bookId);
+    if (localBook) {
+      return normalizeLocalBookSummary(localBook);
+    }
+  } catch (localLookupError) {
     logger.warn(
-      `Falling back to local book data for list item ${googleId} after Google Books lookup failed.`,
-      googleLookupError,
+      `Failed to resolve local book data for wishlist item ${bookId}.`,
+      localLookupError,
     );
   }
 
   try {
-    const localBook = await getLocalBookByGoogleId(googleId);
-    if (!localBook) {
-      logger.warn(
-        `Skipping list item ${googleId} because it is unavailable in both Google Books and local storage.`,
-      );
-      return null;
-    }
-
-    return normalizeLocalBookSummary(localBook);
-  } catch (localLookupError) {
+    const googleBook = await getBookByGoogleIdFromGoogle(bookId);
+    return normalizeBookSummary(googleBook);
+  } catch (googleLookupError) {
     logger.warn(
-      `Failed to resolve fallback book data for list item ${googleId}.`,
-      localLookupError,
+      `Skipping wishlist item ${bookId} because it is unavailable in both local storage and Google Books.`,
+      googleLookupError,
     );
+
     return null;
   }
 };
@@ -60,6 +80,7 @@ export const removeBookFromUserWishlist = async (
   userId: Types.ObjectId | string,
   bookId: string,
 ): Promise<BookSummary[]> => {
-  await userRepository.removeBookFromWishlist(userId, bookId);
+  const bookIds = await getWishlistStorageIds(bookId);
+  await userRepository.removeBookFromWishlist(userId, bookIds);
   return await getUserWishlist(userId);
 };

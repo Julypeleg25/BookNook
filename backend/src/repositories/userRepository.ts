@@ -149,12 +149,13 @@ export class UserRepository {
 
   async removeBookFromWishlist(
     userId: Types.ObjectId | string,
-    bookId: string,
+    bookId: string | string[],
   ): Promise<string[]> {
     try {
+      const bookIds = Array.isArray(bookId) ? bookId : [bookId];
       const updatedUser = await User.findByIdAndUpdate(
         userId,
-        { $pull: { wishlist: bookId } },
+        { $pull: { wishlist: { $in: bookIds } } },
         { new: true }
       );
       if (updatedUser) {

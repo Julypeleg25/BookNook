@@ -23,6 +23,10 @@ interface AggregatedRating {
   count: number;
 }
 
+interface ReviewPicturePath {
+  picturePath?: string;
+}
+
 export class UserReviewRepository {
   async create(reviewData: CreateReviewData): Promise<IUserReview> {
     try {
@@ -171,6 +175,31 @@ export class UserReviewRepository {
       return await UserReviewModel.findByIdAndDelete(reviewId);
     } catch (error) {
       logger.error(`Error deleting review ${reviewId}:`, error);
+      throw error;
+    }
+  }
+
+  async findAllPicturePaths(): Promise<string[]> {
+    try {
+      const reviews = await UserReviewModel.find({}, { picturePath: 1 })
+        .lean<ReviewPicturePath[]>();
+
+      return reviews
+        .map((review) => review.picturePath)
+        .filter((picturePath): picturePath is string => Boolean(picturePath));
+    } catch (error) {
+      logger.error("Error finding review picture paths:", error);
+      throw error;
+    }
+  }
+
+  async deleteAll(): Promise<number> {
+    try {
+      const result = await UserReviewModel.deleteMany({});
+
+      return result.deletedCount;
+    } catch (error) {
+      logger.error("Error deleting all reviews:", error);
       throw error;
     }
   }

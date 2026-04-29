@@ -105,6 +105,20 @@ export class BookRepository {
     }
   }
 
+  async resetAllRatings(): Promise<number> {
+    try {
+      const result = await BookModel.updateMany(
+        {},
+        { $set: { avgRating: 0, ratingCount: 0, ratingSum: 0 } }
+      );
+
+      return result.modifiedCount;
+    } catch (error) {
+      logger.error("Error resetting all book ratings:", error);
+      throw error;
+    }
+  }
+
   async findByMinRatingAndReviews(
     minRating: number,
     minReviews: number,

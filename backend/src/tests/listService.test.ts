@@ -5,6 +5,7 @@ const mockGetWishlist = jest.fn() as any;
 const mockRemoveBookFromWishlist = jest.fn() as any;
 const mockGetBook = jest.fn() as any;
 const mockGetLocalBook = jest.fn() as any;
+const mockGetLocalBookByLocalId = jest.fn() as any;
 const mockNormalize = jest.fn() as any;
 const mockNormalizeLocal = jest.fn() as any;
 
@@ -19,6 +20,7 @@ jest.unstable_mockModule("@repositories/userRepository", () => ({
 jest.unstable_mockModule("../services/bookService", () => ({
   getBookByGoogleIdFromGoogle: mockGetBook,
   getLocalBookByGoogleId: mockGetLocalBook,
+  getLocalBookByLocalId: mockGetLocalBookByLocalId,
   normalizeBookSummary: mockNormalize,
   normalizeLocalBookSummary: mockNormalizeLocal,
 }));
@@ -47,6 +49,8 @@ describe("ListService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetLocalBook.mockResolvedValue(null);
+    mockGetLocalBookByLocalId.mockResolvedValue(null);
   });
 
   describe("addBookToUserWishlist", () => {
@@ -80,9 +84,8 @@ describe("ListService", () => {
       );
     });
 
-    it("falls back to local book data when Google Books lookup fails", async () => {
+    it("uses local book data by Google ID before calling Google Books", async () => {
       mockGetWishlist.mockResolvedValue(["id1"]);
-      mockGetBook.mockRejectedValue(new Error("google failed"));
       mockGetLocalBook.mockResolvedValue({
         externalId: "id1",
         title: "Local Book",
@@ -93,9 +96,31 @@ describe("ListService", () => {
 
       expect(result).toEqual([{ id: "id1", title: "Local Book" }]);
       expect(mockGetLocalBook).toHaveBeenCalledWith("id1");
+      expect(mockGetBook).not.toHaveBeenCalled();
       expect(mockNormalizeLocal).toHaveBeenCalledWith(
         expect.objectContaining({ externalId: "id1" }),
       );
+    });
+
+    it("resolves old wishlist entries saved as local Mongo book IDs", async () => {
+      const localBookId = "507f191e810c19729de860ea";
+      mockGetWishlist.mockResolvedValue([localBookId]);
+      mockGetLocalBookByLocalId.mockResolvedValue({
+        _id: localBookId,
+        externalId: "google-book-id",
+        title: "Local Book",
+      });
+      mockNormalizeLocal.mockReturnValue({
+        id: "google-book-id",
+        title: "Local Book",
+      });
+
+      const result = await listService.getUserWishlist(userId);
+
+      expect(result).toEqual([{ id: "google-book-id", title: "Local Book" }]);
+      expect(mockGetLocalBook).toHaveBeenCalledWith(localBookId);
+      expect(mockGetLocalBookByLocalId).toHaveBeenCalledWith(localBookId);
+      expect(mockGetBook).not.toHaveBeenCalled();
     });
   });
 
@@ -112,11 +137,30 @@ describe("ListService", () => {
       );
 
       expect(result).toEqual([{ id: "book2", title: "Book 2" }]);
-      expect(mockRemoveBookFromWishlist).toHaveBeenCalledWith(
+      expect(mockRemoveBookFromWishlist).toHaveBeenCalledWith(userId, [bookId]);
+      expect(mockGetWishlist).toHaveBeenCalledWith(userId);
+    });
+
+    it("removes both Google and local IDs so legacy wishlist entries do not come back", async () => {
+      const localBookId = "507f191e810c19729de860ea";
+      mockGetLocalBook.mockResolvedValue({
+        _id: localBookId,
+        externalId: bookId,
+        title: "Local Book",
+      });
+      mockRemoveBookFromWishlist.mockResolvedValue([]);
+      mockGetWishlist.mockResolvedValue([]);
+
+      const result = await listService.removeBookFromUserWishlist(
         userId,
         bookId,
       );
-      expect(mockGetWishlist).toHaveBeenCalledWith(userId);
+
+      expect(result).toEqual([]);
+      expect(mockRemoveBookFromWishlist).toHaveBeenCalledWith(
+        userId,
+        [bookId, localBookId],
+      );
     });
   });
 });

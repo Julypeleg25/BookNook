@@ -7,6 +7,7 @@ import {
   getReviewByIdHandler as getReviewById,
   updateReviewHandler,
   deleteReviewHandler,
+  deleteAllReviewsForTestingHandler,
 } from "@controllers/userReviewController";
 import { likeReviewHandler, unlikeReviewHandler } from "@controllers/likeController";
 import { addCommentHandler, deleteCommentHandler } from "@controllers/commentController";
@@ -55,6 +56,7 @@ const router = Router();
  */
 router.post("/", authenticate, upload.single("picture"), createReviewHandler);
 router.get("/", getAllReviewsHandler);
+router.delete("/testing/all", authenticate, deleteAllReviewsForTestingHandler);
 
 /**
  * @swagger

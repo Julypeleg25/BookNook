@@ -1,14 +1,24 @@
 import { Button, Modal } from "@mui/material";
 
+interface DeleteModalProps {
+  confirmDisabled?: boolean;
+  confirmLabel?: string;
+  isOpen: boolean;
+  message?: string;
+  onClose: () => void;
+  onConfirm: () => void;
+  title?: string;
+}
+
 const DeleteModal = ({
   isOpen,
   onClose,
   onConfirm,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-}) => {
+  title = "Confirm Deletion",
+  message = "Are you sure you want to delete this post?",
+  confirmLabel = "Delete",
+  confirmDisabled = false,
+}: DeleteModalProps) => {
   return (
     <Modal open={isOpen} onClose={onClose}>
       <div
@@ -24,8 +34,8 @@ const DeleteModal = ({
           display: "grid",
         }}
       >
-        <h2>Confirm Deletion</h2>
-        <p>Are you sure you want to delete this post?</p>
+        <h2>{title}</h2>
+        <p>{message}</p>
         <div
           style={{
             display: "flex",
@@ -37,8 +47,13 @@ const DeleteModal = ({
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="contained" color="error" onClick={onConfirm}>
-            Delete
+          <Button
+            color="error"
+            disabled={confirmDisabled}
+            variant="contained"
+            onClick={onConfirm}
+          >
+            {confirmLabel}
           </Button>
         </div>
       </div>

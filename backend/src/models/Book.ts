@@ -1,6 +1,7 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IBook extends Document {
+  _id: Types.ObjectId;
   externalId: string;
   categories: string[];
   title: string;
@@ -30,7 +31,7 @@ const BookSchema = new Schema(
 
     avgRating: { type: Number, default: 0, index: true },
     ratingCount: { type: Number, default: 0, index: true },
-    ratingSum: { type: Number, default: 0 },
+    ratingSum: { type: Number, default: 1 },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
