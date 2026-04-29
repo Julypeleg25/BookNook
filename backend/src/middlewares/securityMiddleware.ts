@@ -48,7 +48,7 @@ export const ragRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
   message: {
-    answer: "Too many requests. Please try again later.",
+    answer: "The AI assistant is busy right now. Please try again later.",
     sources: []
   },
   standardHeaders: true,
