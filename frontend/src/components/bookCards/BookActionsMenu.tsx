@@ -11,7 +11,7 @@ import { FiMoreVertical, FiBookOpen, FiTrash2 } from "react-icons/fi";
 import { TbPencilPlus } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import type { Book } from "@models/Book";
-import { ListsService } from "@/api/services/ListsService";
+import { WishlistService } from "@/api/services/WishlistService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useUserStore from "@/state/useUserStore";
 import { useSnackbar } from "notistack";
@@ -43,13 +43,13 @@ const BookActionsMenu = ({ book, showWishlistRemove, edge = "end" }: BookActions
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const { navigateProtected } = useProtectedNavigation();
 
-    const { mutate: removeFromList, isPending } = useMutation<
+    const { mutate: removeFromWishlist, isPending } = useMutation<
         Book[],
         Error,
         void,
         RemoveBookContext
     >({
-        mutationFn: () => ListsService.removeBookFromWishlist(getBookId(book)),
+        mutationFn: () => WishlistService.removeBookFromWishlist(getBookId(book)),
         onMutate: async () => {
             if (!showWishlistRemove) return { hadPreviousBooks: false };
             const queryKey = queryKeys.wishlist(user.username);
@@ -91,7 +91,7 @@ const BookActionsMenu = ({ book, showWishlistRemove, edge = "end" }: BookActions
     const handleRemove = (event: React.MouseEvent) => {
         event.stopPropagation();
         if (showWishlistRemove) {
-            removeFromList();
+            removeFromWishlist();
         }
     };
 

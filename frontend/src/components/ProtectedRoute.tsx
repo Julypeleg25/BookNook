@@ -1,7 +1,6 @@
 import useUserStore from "@/state/useUserStore";
 import type { ReactNode } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { buildRedirectTarget } from "@/utils/redirects";
+import { Navigate, Outlet } from "react-router-dom";
 
 interface ProtectedRouteProps {
   children?: ReactNode;
@@ -9,16 +8,9 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated } = useUserStore();
-  const location = useLocation();
 
   if (!isAuthenticated) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: buildRedirectTarget(location) }}
-      />
-    );
+    return <Navigate to="/login" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

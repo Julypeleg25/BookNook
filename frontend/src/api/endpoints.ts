@@ -18,10 +18,10 @@ export const endpoints = {
     byId: (externalBookId: string) => `/api/books/${externalBookId}`,
   },
 
-  lists: {
-    addToWishlist: (bookId: string) => `/api/lists/${bookId}`,
-    wishlist: "/api/lists/wishlist",
-    removeFromWishlist: (bookId: string) => `/api/lists/${bookId}`,
+  wishlist: {
+    addToWishlist: (bookId: string) => `/api/wishlist/${bookId}`,
+    wishlist: "/api/wishlist",
+    removeFromWishlist: (bookId: string) => `/api/wishlist/${bookId}`,
   },
 
   userReviews: {

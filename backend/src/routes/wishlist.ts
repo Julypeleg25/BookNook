@@ -3,17 +3,17 @@ import {
   addBookToWishlist,
   getWishlist,
   removeBookFromWishlist,
-} from "@controllers/listController";
+} from "@controllers/wishlistController";
 import { authenticate } from "@middlewares/authMiddleware";
 
 const router = express.Router();
 
 /**
  * @swagger
- * /api/lists/{bookId}:
+ * /api/wishlist/{bookId}:
  *   post:
  *     summary: Add a book to the wishlist
- *     tags: [Lists]
+ *     tags: [Wishlist]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -31,16 +31,16 @@ router.delete("/:bookId", authenticate, removeBookFromWishlist);
 
 /**
  * @swagger
- * /api/lists/wishlist:
+ * /api/wishlist:
  *   get:
  *     summary: Get user's wishlist
- *     tags: [Lists]
+ *     tags: [Wishlist]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User's wishlist
  */
-router.get("/wishlist", authenticate, getWishlist);
+router.get("/", authenticate, getWishlist);
 
 export default router;

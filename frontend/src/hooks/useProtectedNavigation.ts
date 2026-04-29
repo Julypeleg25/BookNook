@@ -1,17 +1,12 @@
-import { useLocation, useNavigate, type NavigateOptions } from "react-router-dom";
+import { useNavigate, type NavigateOptions } from "react-router-dom";
 import useUserStore from "@/state/useUserStore";
-import { buildRedirectTarget } from "@/utils/redirects";
 
 export const useProtectedNavigation = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { isAuthenticated } = useUserStore();
 
   const redirectToLogin = () => {
-    navigate("/login", {
-      replace: true,
-      state: { from: buildRedirectTarget(location) },
-    });
+    navigate("/login", { replace: true });
   };
 
   const navigateProtected = (

@@ -6,8 +6,8 @@ import { useInfiniteLoader } from "@hooks/useInfiniteLoader";
 import BookCardSkeleton from "../bookCards/BookCardSkeleton";
 import BookInfoCard from "../bookCards/BookInfoCard";
 
-interface BooksListProps {
-  booksList: Book[];
+interface WishlistBooksGridProps {
+  books: Book[];
   title?: ReactNode;
   loading?: boolean;
   showWishlistRemove?: boolean;
@@ -15,19 +15,19 @@ interface BooksListProps {
 
 const BATCH_SIZE = 4;
 
-const BooksList = ({ booksList, title, loading, showWishlistRemove }: BooksListProps) => {
+const WishlistBooksGrid = ({ books, title, loading, showWishlistRemove }: WishlistBooksGridProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const canExpand = booksList.length > BATCH_SIZE;
+  const canExpand = books.length > BATCH_SIZE;
 
   const { visibleItems, loaderRef, reset } = useInfiniteLoader({
-    items: booksList,
+    items: books,
     batchSize: BATCH_SIZE,
     rootMargin: "150px",
   });
 
   const visibleBooks = useMemo(
-    () => (isExpanded ? booksList : visibleItems),
-    [isExpanded, booksList, visibleItems],
+    () => (isExpanded ? books : visibleItems),
+    [isExpanded, books, visibleItems],
   );
 
   const toggleExpand = () => {
@@ -63,7 +63,7 @@ const BooksList = ({ booksList, title, loading, showWishlistRemove }: BooksListP
             <Button variant="outlined" onClick={toggleExpand}>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <span>
-                  {isExpanded ? "view less" : `view all ${booksList.length}`}
+                  {isExpanded ? "view less" : `view all ${books.length}`}
                 </span>
                 {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
               </Stack>
@@ -72,9 +72,9 @@ const BooksList = ({ booksList, title, loading, showWishlistRemove }: BooksListP
         </Stack>
       )}
 
-      {!loading && booksList.length === 0 ? (
+      {!loading && books.length === 0 ? (
         <Typography color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
-          No books in this list yet.
+          No books in your wishlist yet.
         </Typography>
       ) : (
         <Box
@@ -100,4 +100,4 @@ const BooksList = ({ booksList, title, loading, showWishlistRemove }: BooksListP
   );
 };
 
-export default BooksList;
+export default WishlistBooksGrid;

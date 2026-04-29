@@ -27,7 +27,7 @@ const PostImageUpload = ({
   const [isDragging, setIsDragging] = useState(false);
 
   const preview = useMemo(
-    () => (value instanceof File ? URL.createObjectURL(value) : resolveMediaUrl(value) || ""),
+    () => (value instanceof File ? URL.createObjectURL(value) : resolveMediaUrl(value ?? undefined) || ""),
     [value],
   );
 

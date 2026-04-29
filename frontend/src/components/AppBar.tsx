@@ -69,8 +69,8 @@ const AppBar = () => {
             </Typography>
             {isAuthenticated && (
               <>
-                <Typography component={NavLink} to="/lists" sx={navItemSx}>
-                  My Lists
+                <Typography component={NavLink} to="/wishlist" sx={navItemSx}>
+                  Wishlist
                 </Typography>
                 <Typography component={NavLink} to="/myPosts" sx={navItemSx}>
                   My Posts

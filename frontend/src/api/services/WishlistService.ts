@@ -2,9 +2,9 @@ import { axiosClient } from "../axios/axiosClient";
 import { endpoints } from "../endpoints";
 import type { Book } from "@/models/Book";
 
-export const ListsService = {
+export const WishlistService = {
   async getWishlistBooks(): Promise<Book[]> {
-    const res = await axiosClient.get<Book[]>(endpoints.lists.wishlist);
+    const res = await axiosClient.get<Book[]>(endpoints.wishlist.wishlist);
 
     return res.data;
   },
@@ -13,7 +13,7 @@ export const ListsService = {
     bookId: string,
   ): Promise<Book[]> {
     const res = await axiosClient.post<Book[]>(
-      endpoints.lists.addToWishlist(bookId),
+      endpoints.wishlist.addToWishlist(bookId),
     );
 
     return res.data;
@@ -23,7 +23,7 @@ export const ListsService = {
     bookId: string,
   ): Promise<Book[]> {
     const res = await axiosClient.delete<Book[]>(
-      endpoints.lists.removeFromWishlist(bookId),
+      endpoints.wishlist.removeFromWishlist(bookId),
     );
 
     return res.data;

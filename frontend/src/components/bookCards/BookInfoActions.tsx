@@ -4,7 +4,7 @@ import { BiBookmark } from "react-icons/bi";
 import { TbPencilPlus } from "react-icons/tb";
 import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
 import type { Book } from "@/models/Book";
-import { useBookListToggle } from "@/hooks/useBookListToggle";
+import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 import { getBookId } from "@/utils/bookUtils";
 
 interface BookInfoActionsProps {
@@ -14,14 +14,14 @@ interface BookInfoActionsProps {
 const BookInfoActions = ({ book }: BookInfoActionsProps) => {
   const { isAuthenticated, navigateProtected, redirectToLogin } = useProtectedNavigation();
   const bookId = getBookId(book);
-  const wishlist = useBookListToggle({
+  const wishlist = useWishlistToggle({
     book,
     enabled: isAuthenticated,
   });
 
   return (
     <div style={{ display: "flex", gap: "1.6rem" }}>
-      <Tooltip title={wishlist.isAdded ? "remove from wish list" : "add to wish list"}>
+      <Tooltip title={wishlist.isAdded ? "remove from wishlist" : "add to wishlist"}>
         <IconButton
           color={wishlist.isAdded ? "primary" : "default"}
           disabled={wishlist.isLoading}

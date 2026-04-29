@@ -10,7 +10,7 @@ export const queryKeys = {
   reviews: ["reviews"] as const,
   reviewsByBook: (bookId: string) => ["reviews", bookId] as const,
   wishlistPrefix: ["wishlist"] as const,
-  wishlist: (username: string) => ["wishlist", "lists", username] as const,
+  wishlist: (username: string) => ["wishlist", username] as const,
   booksSearchPrefix: ["booksSearch"] as const,
   booksSearch: (searchQuery: string, filters: ISearchFiltersForm) =>
     ["booksSearch", searchQuery, filters] as const,

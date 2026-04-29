@@ -3,7 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import authRoutes from "@routes/auth";
-import listRouter from "@routes/list";
+import wishlistRouter from "@routes/wishlist";
 import swaggerUi from "swagger-ui-express";
 import booksRouter from "@routes/books";
 import userReviewsRouter from "@routes/userReview";
@@ -42,7 +42,7 @@ const initApp = async () => {
   app.use("/api/books", booksRouter);
   app.use("/userReviews", userReviewsRouter);
   app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  app.use("/api/lists", authenticate, listRouter);
+  app.use("/api/wishlist", authenticate, wishlistRouter);
   app.use("/api/users", userRouter);
   app.use("/api/rag", ragRoutes);
 

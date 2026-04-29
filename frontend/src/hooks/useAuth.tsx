@@ -1,30 +1,21 @@
 import { useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useUserStore from "@/state/useUserStore";
 import { AuthService } from "@/api/services/authService";
 import { RegisterRequestDTO, LoginRequestDTO } from "@shared/dtos/auth.dto";
 import { tokenService } from "@/api/services/tokenService";
-import { DEFAULT_AUTH_REDIRECT, normalizeRedirectTarget } from "@/utils/redirects";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   clearAuthScopedQueries,
   invalidateAuthReviewState,
 } from "@/api/queryCache";
 
-interface AuthLocationState {
-  from?: string;
-}
+const AUTH_SUCCESS_ROUTE = "/posts";
 
 export const useAuth = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { setUser, resetUser } = useUserStore();
   const queryClient = useQueryClient();
-  const locationState = location.state as AuthLocationState | null;
-  const redirectTarget = normalizeRedirectTarget(
-    locationState?.from,
-    DEFAULT_AUTH_REDIRECT
-  );
 
   const login = async (payload: LoginRequestDTO) => {
     const data = await AuthService.login(payload);
@@ -32,7 +23,7 @@ export const useAuth = () => {
     tokenService.setAccess(data.accessToken);
     setUser(data.user);
     invalidateAuthReviewState(queryClient);
-    navigate(redirectTarget, { replace: true });
+    navigate(AUTH_SUCCESS_ROUTE, { replace: true });
   };
 
   const register = async (payload: RegisterRequestDTO | FormData) => {
@@ -41,7 +32,7 @@ export const useAuth = () => {
     tokenService.setAccess(data.accessToken);
     setUser(data.user);
     invalidateAuthReviewState(queryClient);
-    navigate(redirectTarget, { replace: true });
+    navigate(AUTH_SUCCESS_ROUTE, { replace: true });
   };
 
   const logout = async () => {

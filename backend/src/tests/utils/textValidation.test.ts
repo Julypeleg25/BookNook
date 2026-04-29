@@ -12,7 +12,7 @@ import {
 import {
   validateOptionalTextInput,
   validateTextInput,
-} from "../utils/textValidation";
+} from "../../utils/textValidation";
 
 describe("shared validation limits", () => {
   it("accepts comments up to the shared maximum length", () => {
@@ -82,6 +82,59 @@ describe("shared validation limits", () => {
 });
 
 describe("text validation helpers", () => {
+  it("rejects non-string values with a field-specific message", () => {
+    expect(() =>
+      validateTextInput(123, {
+        fieldLabel: "Search query",
+      })
+    ).toThrow("Search query must be a string");
+  });
+
+  it("trims and returns normalized text", () => {
+    expect(
+      validateTextInput("  hello  ", {
+        fieldLabel: "Field",
+      })
+    ).toBe("hello");
+  });
+
+  it("rejects required empty values unless empty text is explicitly allowed", () => {
+    expect(() =>
+      validateTextInput("   ", {
+        fieldLabel: "Field",
+      })
+    ).toThrow("Field is required");
+
+    expect(
+      validateTextInput("   ", {
+        fieldLabel: "Field",
+        allowEmpty: true,
+      })
+    ).toBe("");
+  });
+
+  it("allows optional null and undefined values", () => {
+    expect(
+      validateOptionalTextInput(undefined, {
+        fieldLabel: "Optional field",
+      })
+    ).toBeUndefined();
+    expect(
+      validateOptionalTextInput(null, {
+        fieldLabel: "Optional field",
+      })
+    ).toBeUndefined();
+  });
+
+  it("applies minimum length only after trimming non-empty values", () => {
+    expect(() =>
+      validateTextInput(" ab ", {
+        fieldLabel: "Field",
+        minLength: 3,
+      })
+    ).toThrow("Field must be at least 3 characters long");
+  });
+
   it("trims and accepts search queries within the shared maximum length", () => {
     const result = validateOptionalTextInput(
       `  ${"a".repeat(SEARCH_QUERY_MAX_LENGTH)}  `,
