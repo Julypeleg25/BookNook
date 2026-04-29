@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 import { logger } from "./logger";
-import { UPLOADS_FOLDER } from "@config/multerConfig";
+import { UPLOADS_FOLDER, UPLOADS_URL_PREFIX } from "@config/multerConfig";
 import { IMAGE_EXTENSIONS } from "@config/constants";
 
 export const getFileExtension = (filename: string): string => {
@@ -39,7 +39,7 @@ export const deleteFile = async (filePath: string): Promise<void> => {
 export const deleteOldAvatar = async (
   avatarUrl: string | undefined
 ): Promise<void> => {
-  if (!avatarUrl || !avatarUrl.startsWith("/uploads/")) return;
+  if (!avatarUrl || !avatarUrl.startsWith(UPLOADS_URL_PREFIX)) return;
 
   const fileName = path.basename(avatarUrl);
   const fullPath = path.join(UPLOADS_FOLDER, fileName);

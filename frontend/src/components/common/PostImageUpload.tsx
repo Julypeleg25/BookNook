@@ -15,6 +15,13 @@ interface PostImageUploadProps {
   helperText?: string;
 }
 
+const DROP_ZONE_MAX_WIDTH = { xs: "100%", sm: "44rem", md: "52rem" } as const;
+const DROP_ZONE_HEIGHT = { xs: "16rem", sm: "22rem", md: "28rem" } as const;
+const DROP_ZONE_BORDER_RADIUS = "12px";
+const DROP_ZONE_EMPTY_BACKGROUND = "rgba(91, 111, 106, 0.04)";
+const DROP_ZONE_ICON_BACKGROUND = "rgba(91, 111, 106, 0.12)";
+const DROP_ZONE_TRANSITION = "border-color 0.2s ease, background-color 0.2s ease";
+
 const PostImageUpload = ({
   value,
   onChange,
@@ -94,11 +101,11 @@ const PostImageUpload = ({
         onClick={() => !preview && fileInputRef.current?.click()}
         sx={{
           width: "100%",
-          maxWidth: { xs: "100%", sm: "40rem", md: "48rem" },
-          height: { xs: "14rem", sm: "18rem", md: "22rem" },
+          maxWidth: DROP_ZONE_MAX_WIDTH,
+          height: DROP_ZONE_HEIGHT,
           mx: "auto",
-          bgcolor: preview ? "grey.50" : "rgba(91, 111, 106, 0.04)",
-          borderRadius: "12px",
+          bgcolor: preview ? "grey.50" : DROP_ZONE_EMPTY_BACKGROUND,
+          borderRadius: DROP_ZONE_BORDER_RADIUS,
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
@@ -106,7 +113,7 @@ const PostImageUpload = ({
           border: "2px dashed",
           borderColor: error ? "error.main" : isDragging ? "primary.main" : "divider",
           cursor: preview ? "default" : "pointer",
-          transition: "border-color 0.2s ease, background-color 0.2s ease",
+          transition: DROP_ZONE_TRANSITION,
         }}
       >
         {preview ? (
@@ -130,7 +137,7 @@ const PostImageUpload = ({
                 borderRadius: "50%",
                 display: "grid",
                 placeItems: "center",
-                bgcolor: "rgba(91, 111, 106, 0.12)",
+                bgcolor: DROP_ZONE_ICON_BACKGROUND,
                 color: "primary.main",
               }}
             >

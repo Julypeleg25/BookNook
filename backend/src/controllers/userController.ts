@@ -5,6 +5,7 @@ import { isImageFile, deleteFile, deleteOldAvatar } from "@utils/fileUtils";
 import { HttpStatusCode } from "axios";
 import { sanitizeUser } from "@utils/userUtils";
 import { UpdateUserRequestDTO } from "@shared/dtos/user.dto";
+import { buildUploadUrl } from "@config/multerConfig";
 
 export const getCurrentUser = (req: Request, res: Response): void => {
   res.json(req.authenticatedUser);
@@ -30,7 +31,7 @@ export const updateUserHandler = async (
       }
 
       await deleteOldAvatar(req.authenticatedUser!.avatar);
-      updateData.avatar = `/uploads/${req.file.filename}`;
+      updateData.avatar = buildUploadUrl(req.file.filename);
     } else if ("avatar" in req.body && req.body.avatar === "") {
       await deleteOldAvatar(req.authenticatedUser!.avatar);
       updateData.avatar = "";

@@ -10,8 +10,8 @@ import NotFound from "./NotFound";
 import { useQuery } from "@tanstack/react-query";
 import { userReviewService } from "@/api/services/userReviewService";
 import type { BookPost } from "@models/Book";
-import env from "@/config/env";
 import { mapReviewToBookPost } from "@/utils/reviewUtils";
+import { resolveMediaUrl } from "@/utils/mediaUtils";
 import { queryKeys } from "@/api/queryKeys";
 
 const BookPost = () => {
@@ -113,9 +113,7 @@ const BookPost = () => {
         {(() => {
           const rawUrl = bookPost.imageUrl;
           const resolvedUrl = rawUrl
-            ? rawUrl.startsWith("http")
-              ? rawUrl
-              : `${env.API_BASE_URL}${rawUrl}`
+            ? resolveMediaUrl(rawUrl)
             : (bookPost.book.thumbnail ?? null);
           return resolvedUrl ? (
             <Box

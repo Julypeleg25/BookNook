@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
+  Box,
   IconButton,
   Menu,
   MenuItem,
@@ -22,10 +23,58 @@ interface PostActionsMenuProps {
   post: BookPost;
   edge?: "start" | "end" | false;
   sx?: SxProps<Theme>;
-  variant?: "glass" | "standard";
 }
 
-const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostActionsMenuProps) => {
+const ACTION_BUTTON_SIZE = 36;
+const ACTION_ICON_SIZE = 20;
+const ACTION_MENU_BORDER_RADIUS = "12px";
+const MENU_ITEM_ICON_SIZE = 18;
+const DELETE_ICON_SIZE = 20;
+
+const ACTION_BUTTON_SX = {
+  width: ACTION_BUTTON_SIZE,
+  height: ACTION_BUTTON_SIZE,
+  p: 0.75,
+  color: "#fff",
+  bgcolor: "rgba(31, 41, 51, 0.55)",
+  backdropFilter: "blur(12px)",
+  border: "1px solid rgba(255, 255, 255, 0.28)",
+  borderRadius: ACTION_MENU_BORDER_RADIUS,
+  boxShadow: "0 10px 24px rgba(0, 0, 0, 0.18)",
+  transition: "background-color 0.2s ease, transform 0.2s ease",
+  "&:hover": {
+    bgcolor: "rgba(31, 41, 51, 0.72)",
+    color: "#fff",
+    transform: "scale(1.04)",
+  },
+} satisfies SxProps<Theme>;
+
+const MENU_PAPER_SX = {
+  borderRadius: ACTION_MENU_BORDER_RADIUS,
+  minWidth: 180,
+  boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
+  border: "1px solid",
+  borderColor: "divider",
+} satisfies SxProps<Theme>;
+
+const MENU_OVERLAY_SX = {
+  position: "absolute",
+  top: 14,
+  right: 14,
+  zIndex: 2,
+} satisfies SxProps<Theme>;
+
+export const PostActionsMenuOverlay = ({
+  children,
+}: {
+  children: ReactNode;
+}) => (
+  <Box sx={MENU_OVERLAY_SX} onClick={(event) => event.stopPropagation()}>
+    {children}
+  </Box>
+);
+
+const PostActionsMenu = ({ post, edge = "end", sx }: PostActionsMenuProps) => {
   const { user } = useUserStore();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -51,8 +100,6 @@ const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostA
     handleClose();
   };
 
-  const isGlass = variant === "glass";
-
   return (
     <>
       <IconButton
@@ -60,29 +107,11 @@ const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostA
         onClick={handleOpen}
         edge={edge}
         sx={{
-          color: isGlass ? "#fff" : "text.secondary",
-          p: 0.75,
-          transition: "all 0.2s ease",
-          width: 36,
-          height: 36,
-          ...(isGlass && {
-            bgcolor: "rgba(255, 255, 255, 0.15)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            borderRadius: "12px",
-            "&:hover": {
-              bgcolor: "rgba(255, 255, 255, 0.25)",
-              transform: "scale(1.04)",
-              color: "#fff",
-            },
-          }),
-          ...(!isGlass && {
-            "&:hover": { color: "primary.main", transform: "scale(1.1)" },
-          }),
+          ...ACTION_BUTTON_SX,
           ...sx,
         }}
       >
-        <FiMoreVertical size={20} />
+        <FiMoreVertical size={ACTION_ICON_SIZE} />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -94,13 +123,7 @@ const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostA
         onClick={(e) => e.stopPropagation()}
         slotProps={{
           paper: {
-            sx: {
-              borderRadius: "12px",
-              minWidth: 180,
-              boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
-              border: "1px solid",
-              borderColor: "divider",
-            }
+            sx: MENU_PAPER_SX,
           }
         }}
       >
@@ -111,7 +134,7 @@ const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostA
           onClick={handleClose}
         >
           <ListItemIcon>
-            <BsEye size={18} />
+            <BsEye size={MENU_ITEM_ICON_SIZE} />
           </ListItemIcon>
           <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>View Post</ListItemText>
         </MenuItem>
@@ -122,13 +145,13 @@ const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostA
           onClick={handleClose}
         >
           <ListItemIcon>
-            <FiEdit size={18} />
+            <FiEdit size={MENU_ITEM_ICON_SIZE} />
           </ListItemIcon>
           <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>Edit</ListItemText>
         </MenuItem>
         <MenuItem onClick={onDeleteClick} sx={{ color: "error.main" }}>
           <ListItemIcon>
-            <MdDelete size={20} color="inherit" />
+            <MdDelete size={DELETE_ICON_SIZE} color="inherit" />
           </ListItemIcon>
           <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>Delete</ListItemText>
         </MenuItem>
@@ -139,7 +162,7 @@ const PostActionsMenu = ({ post, edge = "end", sx, variant = "standard" }: PostA
           state={{ from: location }}
         >
           <ListItemIcon>
-            <FiBookOpen size={18} color="inherit" />
+            <FiBookOpen size={MENU_ITEM_ICON_SIZE} color="inherit" />
           </ListItemIcon>
           <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>View Book Details</ListItemText>
         </MenuItem>

@@ -14,12 +14,12 @@ import { useEffect, useMemo, useState } from "react";
 import { FaHeart, FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import env from "@/config/env";
 import { RATING_STEP } from "@shared/constants/validation";
 import { formatDate } from "@/utils/dateUtils";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
+import { resolveMediaUrl } from "@/utils/mediaUtils";
 import { useReviewLikeToggle } from "@/hooks/useReviewLikeToggle";
-import PostActionsMenu from "./PostActionsMenu";
+import PostActionsMenu, { PostActionsMenuOverlay } from "./PostActionsMenu";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -31,9 +31,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
   const navigate = useNavigate();
   const imageUrl = useMemo(() => {
     if (!post.imageUrl) return post.book.thumbnail;
-    return post.imageUrl.startsWith("http")
-      ? post.imageUrl
-      : `${env.API_BASE_URL}${post.imageUrl}`;
+    return resolveMediaUrl(post.imageUrl);
   }, [post.book.thumbnail, post.imageUrl]);
   const [imgSrc, setImgSrc] = useState<string | undefined>(imageUrl);
 
@@ -129,18 +127,9 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
           }}
         />
 
-        {/* Action Menu - Internalized Glass Style */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: 14,
-            right: 30,
-            zIndex: 2,
-          }}
-          onClick={(event) => event.stopPropagation()}
-        >
-          <PostActionsMenu post={post} variant="glass" />
-        </Box>
+        <PostActionsMenuOverlay>
+          <PostActionsMenu post={post} />
+        </PostActionsMenuOverlay>
 
         <Stack
           spacing={1}

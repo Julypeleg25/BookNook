@@ -9,8 +9,9 @@ import {
 import type { BookPost } from "@models/Book";
 import { FaRegComment } from "react-icons/fa6";
 import { FiHeart } from "react-icons/fi";
-import PostActionsMenu from "./post/PostActionsMenu";
+import PostActionsMenu, { PostActionsMenuOverlay } from "./post/PostActionsMenu";
 import { RATING_STEP } from "@shared/constants/validation";
+import { resolveMediaUrl } from "@/utils/mediaUtils";
 
 interface FullBookPostCardProps {
   post: BookPost;
@@ -24,17 +25,30 @@ const FullBookPostCard = ({ post }: FullBookPostCardProps) => {
       <CardContent sx={{ padding: 0 }}>
         <Stack direction="row" spacing="1.5rem">
           <Box
-            component="img"
-            src={post.imageUrl}
-            alt={post.book.title}
             sx={{
               width: "11rem",
               aspectRatio: "4 / 5",
               borderRadius: "0.5rem",
-              objectFit: "contain",
               bgcolor: "grey.50",
+              overflow: "hidden",
+              position: "relative",
             }}
-          />
+          >
+            <Box
+              component="img"
+              src={resolveMediaUrl(post.imageUrl)}
+              alt={post.book.title}
+              sx={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+            <PostActionsMenuOverlay>
+              <PostActionsMenu post={post} />
+            </PostActionsMenuOverlay>
+          </Box>
 
           <Stack spacing="1rem" flex={1} minWidth={0}>
             <Stack
@@ -55,7 +69,6 @@ const FullBookPostCard = ({ post }: FullBookPostCardProps) => {
               >
                 {post.book.title}
               </Typography>
-              <PostActionsMenu post={post} />
             </Stack>
             <Rating value={post.rating} precision={RATING_STEP} readOnly size="small" />
             <Typography color="text.secondary">

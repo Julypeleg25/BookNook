@@ -4,10 +4,15 @@ import fs from "fs";
 import { Request } from "express";
 import { IMAGE_EXTENSIONS, MAX_FILE_SIZE_BYTES } from "./constants";
 
+export const UPLOADS_ROUTE = "/uploads";
+export const UPLOADS_URL_PREFIX = `${UPLOADS_ROUTE}/`;
 export const UPLOADS_FOLDER = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(UPLOADS_FOLDER)) {
   fs.mkdirSync(UPLOADS_FOLDER, { recursive: true });
 }
+
+export const buildUploadUrl = (filename: string): string =>
+  `${UPLOADS_URL_PREFIX}${filename}`;
 
 const storage = multer.diskStorage({
   destination: (_req: Request, _file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
