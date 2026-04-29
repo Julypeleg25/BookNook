@@ -31,7 +31,7 @@ const BookSchema = new Schema(
 
     avgRating: { type: Number, default: 0, index: true },
     ratingCount: { type: Number, default: 0, index: true },
-    ratingSum: { type: Number, default: 1 },
+    ratingSum: { type: Number, default: 0 },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
