@@ -21,6 +21,10 @@ import path from "path";
 const app = express();
 
 const initApp = async () => {
+  if (ENV.NODE_ENV === "production") {
+    app.set("trust proxy", 1);
+  }
+
   app.use(cookieParser());
 
   app.use(
