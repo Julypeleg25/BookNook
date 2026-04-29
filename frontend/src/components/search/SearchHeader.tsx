@@ -1,17 +1,25 @@
 import { Box, Paper } from "@mui/material";
 import SearchBar from "@/components/searchFilters/SearchBar";
 import GenreChips from "./GenreChips";
+import type {
+  FilterModalOpenHandler,
+  GenreToggleHandler,
+  SearchMode,
+  SearchSubmitHandler,
+  SearchTermChangeHandler,
+} from "@/components/searchFilters/models/SearchFiltersOptions";
 
 interface SearchHeaderProps {
   searchTerm: string;
-  setSearchTerm: (val: string) => void;
-  onSearch: (searchTerm: string) => void;
+  setSearchTerm: SearchTermChangeHandler;
+  onSearch: SearchSubmitHandler;
   onClearSearch: () => void;
   onClearFilters: () => void;
-  onToggleGenre: (genre: string) => void;
+  onToggleGenre: GenreToggleHandler;
   selectedGenre: string;
-  setIsFiltersModalOpen: (open: boolean) => void;
+  setIsFiltersModalOpen: FilterModalOpenHandler;
   hasActiveFilters: boolean;
+  mode?: SearchMode;
 }
 
 const SearchHeader = ({
@@ -24,6 +32,7 @@ const SearchHeader = ({
   selectedGenre,
   setIsFiltersModalOpen,
   hasActiveFilters,
+  mode = "posts",
 }: SearchHeaderProps) => {
   return (
     <Paper
@@ -44,6 +53,7 @@ const SearchHeader = ({
         onClearFilters={onClearFilters}
         setIsFiltersModalOpen={setIsFiltersModalOpen}
         hasActiveFilters={hasActiveFilters}
+        mode={mode}
       />
       <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
         <GenreChips selectedGenre={selectedGenre} onToggleGenre={onToggleGenre} />

@@ -27,7 +27,7 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => {
         sx={{
           width: "15rem",
           height: "18rem",
-          borderRadius: "1rem",
+          borderRadius: "0.5rem",
           boxShadow: 1,
           overflow: "hidden",
           userSelect: "none",
@@ -41,7 +41,8 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => {
           sx={{
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            objectFit: "contain",
+            bgcolor: "grey.50",
           }}
           draggable={false}
         />

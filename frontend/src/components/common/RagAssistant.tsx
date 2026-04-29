@@ -24,9 +24,9 @@ import { MarkdownMessage } from "./MarkdownMessage";
 const QUERY_MAX_LENGTH = 500;
 
 const EXAMPLE_PROMPTS = [
-  "Recommend thoughtful fantasy books with strong character arcs",
-  "What are good romance books for someone who likes emotional slow burns?",
-  "Find books similar to mystery reviews people liked",
+  "Recommend a teen book with a good story about friendship",
+  "Find me a slow-burn romance that's rated well",
+  "Suggest a good mystery book for an adult",
 ];
 
 export const RagAssistant: React.FC = () => {

@@ -77,7 +77,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
       sx={{
         width: "100%",
         maxWidth: "26rem",
-        borderRadius: 4,
+        borderRadius: 2,
         border: "1px solid",
         borderColor: "divider",
         bgcolor: "background.paper",
@@ -91,9 +91,6 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
           borderColor: "primary.main",
           boxShadow: "0 22px 48px -12px rgba(31, 41, 51, 0.15)",
           transform: "translateY(-6px)",
-          "& .card-image": {
-            transform: "scale(1.06)",
-          },
           "& .read-more-btn": {
             color: "primary.main",
             gap: "6px",
@@ -105,7 +102,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         sx={{
           position: "relative",
           aspectRatio: "16 / 10",
-          bgcolor: "grey.100",
+          bgcolor: "grey.50",
           overflow: "hidden",
         }}
       >
@@ -119,9 +116,8 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
             sx={{
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
               display: "block",
-              transition: "transform 0.5s ease",
             }}
           />
         )}

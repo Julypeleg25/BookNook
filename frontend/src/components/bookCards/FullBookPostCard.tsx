@@ -20,7 +20,7 @@ const DESCRIPTION_PREVIEW_LENGTH = 260;
 
 const FullBookPostCard = ({ post }: FullBookPostCardProps) => {
   return (
-    <Card elevation={2} sx={{ borderRadius: "1.2rem", padding: "1.2rem" }}>
+    <Card elevation={2} sx={{ borderRadius: "0.6rem", padding: "1.2rem" }}>
       <CardContent sx={{ padding: 0 }}>
         <Stack direction="row" spacing="1.5rem">
           <Box
@@ -30,8 +30,9 @@ const FullBookPostCard = ({ post }: FullBookPostCardProps) => {
             sx={{
               width: "11rem",
               aspectRatio: "4 / 5",
-              borderRadius: "1rem",
-              objectFit: "cover",
+              borderRadius: "0.5rem",
+              objectFit: "contain",
+              bgcolor: "grey.50",
             }}
           />
 

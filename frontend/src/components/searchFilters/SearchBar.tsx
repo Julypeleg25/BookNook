@@ -4,20 +4,29 @@ import { MdClear } from "react-icons/md";
 import { FiSearch } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import { SEARCH_QUERY_MAX_LENGTH } from "@shared/constants/validation";
+import type {
+  FilterModalOpenHandler,
+  SearchMode,
+  SearchSubmitHandler,
+  SearchTermChangeHandler,
+} from "./models/SearchFiltersOptions";
+
+type SearchBarKeyEvent = React.KeyboardEvent<HTMLDivElement>;
 
 interface SearchBarProps {
-  onSearch: (searchTerm: string) => void;
+  onSearch: SearchSubmitHandler;
   onClearSearch: () => void;
   onClearFilters: () => void;
   searchTerm: string;
-  setSearchTerm: (val: string) => void;
-  setIsFiltersModalOpen: (open: boolean) => void;
+  setSearchTerm: SearchTermChangeHandler;
+  setIsFiltersModalOpen: FilterModalOpenHandler;
   hasActiveFilters?: boolean;
+  mode?: SearchMode;
 }
 
-const SearchBar = ({ onSearch, onClearSearch, onClearFilters, searchTerm, setSearchTerm, setIsFiltersModalOpen, hasActiveFilters }: SearchBarProps) => {
+const SearchBar = ({ onSearch, onClearSearch, onClearFilters, searchTerm, setSearchTerm, setIsFiltersModalOpen, hasActiveFilters, mode = "posts" }: SearchBarProps) => {
   const [placeholder, setPlaceholder] = useState("");
-  const fullPlaceholder = "Search books or review text...";
+  const fullPlaceholder = mode === "books" ? "Search books..." : "Search books or review text...";
 
   useEffect(() => {
     let i = 0;
@@ -28,13 +37,13 @@ const SearchBar = ({ onSearch, onClearSearch, onClearFilters, searchTerm, setSea
       if (i > fullPlaceholder.length) clearInterval(interval);
     }, 100);
     return () => clearInterval(interval);
-  }, []);
+  }, [fullPlaceholder]);
 
   const handleSearch = () => {
     onSearch(searchTerm);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: SearchBarKeyEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }

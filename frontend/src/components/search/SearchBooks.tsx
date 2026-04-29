@@ -85,6 +85,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                 selectedGenre={filters.genre}
                 setIsFiltersModalOpen={setIsFiltersModalOpen}
                 hasActiveFilters={hasActiveFilters}
+                mode="books"
             />
 
             {isLoading && !isFetchingNextPage && (

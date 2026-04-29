@@ -95,7 +95,7 @@ const PostImageUpload = ({
         sx={{
           width: "100%",
           aspectRatio: { xs: "4 / 3", sm: "16 / 9" },
-          minHeight: { xs: "16rem", md: "28rem" },
+          minHeight: { xs: "12rem", md: "20rem" },
           bgcolor: preview ? "grey.50" : "rgba(91, 111, 106, 0.04)",
           borderRadius: "12px",
           overflow: "hidden",

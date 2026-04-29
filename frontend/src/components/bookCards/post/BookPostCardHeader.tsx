@@ -89,7 +89,7 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             sx={{
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
               display: isImageLoading ? "none" : "block",
             }}
           />
