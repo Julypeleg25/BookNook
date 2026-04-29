@@ -11,16 +11,25 @@ const BOOK_COVER_FALLBACK_URL = "https://via.placeholder.com/150x200?text=No+Cov
 
 interface BookInfoCardProps {
   book: Book;
+  coverDisplay?: "framed" | "plain";
   isOnlyInfo?: boolean;
   onSelect?: (book: Book) => void;
   showWishlistRemove?: boolean;
   hideMenu?: boolean;
 }
 
-const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu }: BookInfoCardProps) => {
+const BookInfoCard = ({
+  book,
+  coverDisplay = "framed",
+  isOnlyInfo,
+  onSelect,
+  showWishlistRemove,
+  hideMenu,
+}: BookInfoCardProps) => {
   const displayAuthor = book.authors?.length > 0 ? book.authors.join(", ") : "Unknown Author";
   const navigate = useNavigate();
   const bookId = getBookId(book);
+  const isPlainCover = coverDisplay === "plain";
 
   const handleCreateReview = () => {
     navigate(`/post/create/${bookId}`, { state: { book } });
@@ -42,15 +51,15 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
         sx={{
           width: "15rem",
           height: "18rem",
-          borderRadius: "1rem",
+          borderRadius: isPlainCover ? 0 : "1rem",
           overflow: "hidden",
-          boxShadow: 1,
+          boxShadow: isPlainCover ? "none" : 1,
           position: "relative",
-          bgcolor: "rgba(31, 41, 51, 0.06)",
+          bgcolor: isPlainCover ? "transparent" : "rgba(31, 41, 51, 0.06)",
           transition: "box-shadow 0.2s ease, transform 0.2s ease",
           ...(!isSelectMode && {
             "&:hover": {
-              boxShadow: 6,
+              boxShadow: isPlainCover ? "none" : 6,
               transform: "translateY(-0.2rem)",
             },
           }),
@@ -67,7 +76,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
             justifyContent: "center",
             width: "100%",
             height: "100%",
-            p: 1.25,
+            p: isPlainCover ? 0 : 1.25,
             textDecoration: "none",
           }}
         >
@@ -86,8 +95,8 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
               maxHeight: "100%",
               objectFit: "contain",
               display: "block",
-              borderRadius: "0.45rem",
-              boxShadow: "0 10px 24px rgba(31, 41, 51, 0.18)",
+              borderRadius: isPlainCover ? 0 : "0.45rem",
+              boxShadow: isPlainCover ? "none" : "0 10px 24px rgba(31, 41, 51, 0.18)",
             }}
           />
         </Box>
@@ -150,14 +159,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
         </Typography>
       </Stack>
 
-      <div
-        style={{
-          display: "grid",
-          justifyItems: "center",
-          gap: "0.5rem",
-          width: "100%",
-        }}
-      >
+      <Box sx={{ display: "grid", justifyItems: "center", gap: "0.5rem", width: "100%" }}>
         {isOnlyInfo && (
           <Button
             variant="contained"
@@ -168,7 +170,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
             Write Review
           </Button>
         )}
-      </div>
+      </Box>
     </Stack>
   );
 };
