@@ -16,15 +16,6 @@ interface PostImageUploadProps {
   helperText?: string;
 }
 
-const DROP_ZONE_MAX_WIDTH = { xs: "100%", sm: "44rem", md: "52rem" } as const;
-const DROP_ZONE_HEIGHT = { xs: "16rem", sm: "22rem", md: "28rem" } as const;
-const DROP_ZONE_BORDER_RADIUS = "12px";
-const DROP_ZONE_EMPTY_BACKGROUND = "rgba(91, 111, 106, 0.04)";
-const DROP_ZONE_ICON_BACKGROUND = "rgba(91, 111, 106, 0.12)";
-const DROP_ZONE_TRANSITION = "border-color 0.2s ease, background-color 0.2s ease";
-const PREVIEW_BACKGROUND = "grey.50";
-const PREVIEW_OBJECT_FIT = "contain";
-
 const PostImageUpload = ({
   value,
   onChange,
@@ -104,35 +95,67 @@ const PostImageUpload = ({
         onClick={() => !preview && fileInputRef.current?.click()}
         sx={{
           width: "100%",
-          maxWidth: DROP_ZONE_MAX_WIDTH,
-          height: DROP_ZONE_HEIGHT,
+          maxWidth: { xs: "100%", sm: "44rem", md: "52rem" },
+          height: { xs: "17rem", sm: "23rem", md: "30rem" },
           mx: "auto",
-          bgcolor: preview ? PREVIEW_BACKGROUND : DROP_ZONE_EMPTY_BACKGROUND,
-          borderRadius: DROP_ZONE_BORDER_RADIUS,
+          bgcolor: preview ? "#101418" : "rgba(91, 111, 106, 0.04)",
+          borderRadius: "16px",
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           border: "2px dashed",
-          borderColor: error ? "error.main" : isDragging ? "primary.main" : "divider",
+          borderColor: error ? "error.main" : isDragging ? "primary.main" : preview ? "divider" : "divider",
           cursor: preview ? "default" : "pointer",
-          transition: DROP_ZONE_TRANSITION,
+          position: "relative",
+          boxShadow: preview ? "0 18px 40px rgba(31, 41, 51, 0.14)" : "none",
+          transition: "border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease",
         }}
       >
         {preview ? (
-          <Box
-            component="img"
-            src={preview}
-            alt="Post preview"
-            decoding="async"
-            sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: PREVIEW_OBJECT_FIT,
-              display: "block",
-              imageRendering: "auto",
-            }}
-          />
+          <>
+            <Box
+              component="img"
+              src={preview}
+              alt=""
+              aria-hidden="true"
+              decoding="async"
+              draggable={false}
+              sx={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "blur(22px)",
+                transform: "scale(1.08)",
+                opacity: 0.42,
+              }}
+            />
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                bgcolor: "rgba(11, 17, 20, 0.34)",
+              }}
+            />
+            <Box
+              component="img"
+              src={preview}
+              alt="Post preview"
+              decoding="async"
+              draggable={false}
+              sx={{
+                position: "relative",
+                zIndex: 1,
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                display: "block",
+                imageRendering: "auto",
+              }}
+            />
+          </>
         ) : (
           <Stack spacing={1.25} alignItems="center" sx={{ px: 3, textAlign: "center" }}>
             <Box
@@ -142,7 +165,7 @@ const PostImageUpload = ({
                 borderRadius: "50%",
                 display: "grid",
                 placeItems: "center",
-                bgcolor: DROP_ZONE_ICON_BACKGROUND,
+                bgcolor: "rgba(91, 111, 106, 0.12)",
                 color: "primary.main",
               }}
             >

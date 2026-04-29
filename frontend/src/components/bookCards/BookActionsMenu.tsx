@@ -153,6 +153,23 @@ const BookActionsMenu = ({ book, showWishlistRemove, edge = "end" }: BookActions
                             boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
                             border: "1px solid",
                             borderColor: "divider",
+                            "& .MuiMenuItem-root": {
+                                minHeight: 48,
+                                py: 1.25,
+                                px: 2,
+                                gap: 1,
+                            },
+                            "& .MuiListItemIcon-root": {
+                                minWidth: 34,
+                                "& svg": {
+                                    width: 22,
+                                    height: 22,
+                                },
+                            },
+                            "& .MuiListItemText-primary": {
+                                fontSize: "0.98rem",
+                                fontWeight: 600,
+                            },
                         },
                     },
                 }}

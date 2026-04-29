@@ -88,7 +88,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
             sx={{
               position: "absolute",
               top: 12,
-              right: 12,
+              right: 18,
               zIndex: 1,
             }}
             onClick={(event) => event.stopPropagation()}
