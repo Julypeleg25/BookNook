@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(ENV.GEMINI_API_KEY);
 
 const GEMINI_MODEL_NAME = "gemini-2.5-flash";
 const GENERATION_TEMPERATURE = 0.2;
-const MAX_OUTPUT_TOKENS = 260;
+const MAX_OUTPUT_TOKENS = 300;
 const MAX_ANSWER_LENGTH = 4000;
 const PROMPT_INPUT_TAG = "BOOK_RECOMMENDATION_INPUT";
 const PROMPT_USER_QUESTION_LABEL = "UNTRUSTED USER QUESTION:";
@@ -27,7 +27,6 @@ const ModelAnswerSchema = z
     .trim()
     .min(1)
     .max(MAX_ANSWER_LENGTH)
-    .refine((answer) => countSentences(answer) >= 2, "Model response must contain at least two complete sentences.")
     .refine((answer) => !SENSITIVE_OUTPUT_PATTERN.test(answer), "Model response contained sensitive data.")
     .refine((answer) => !INTERNAL_LANGUAGE_PATTERN.test(answer), "Model response mentioned internal generation details.")
     .refine((answer) => !LIMITATION_LANGUAGE_PATTERN.test(answer), "Model response mentioned information limitations.")
