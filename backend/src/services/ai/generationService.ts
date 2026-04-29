@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, type GenerateContentResult } from "@google/generative-ai";
 import { ENV } from "@config/config";
 import { logger } from "@utils/logger";
 
@@ -7,6 +7,8 @@ const genAI = new GoogleGenerativeAI(ENV.GEMINI_API_KEY);
 const GEMINI_MODEL_NAME = "gemini-2.5-flash";
 const GENERATION_TEMPERATURE = 0.2;
 const MAX_OUTPUT_TOKENS = 400;
+const RETRY_MAX_OUTPUT_TOKENS = 700;
+const MAX_GENERATION_ATTEMPTS = 2;
 const PROMPT_INPUT_TAG = "BOOK_RECOMMENDATION_INPUT";
 const PROMPT_USER_QUESTION_LABEL = "UNTRUSTED USER QUESTION:";
 const PROMPT_RESPONSE_REQUIREMENTS_LABEL = "RESPONSE REQUIREMENTS:";
@@ -17,6 +19,7 @@ const LIMITATION_LANGUAGE_PATTERN = /(not enough information|not enough info|ins
 const FOLLOW_UP_QUESTION_PATTERN = /\?\s*$/;
 const SENTENCE_PATTERN = /[^.!?]+[.!?]+/g;
 const COMPLETE_ENDING_PATTERN = /[.!?]["')\]]?\s*$/;
+const MAX_TOKENS_FINISH_REASON = "MAX_TOKENS";
 
 const countSentences = (answer: string): number =>
     answer.match(SENTENCE_PATTERN)?.length ?? 0;
@@ -35,6 +38,7 @@ const removeFollowUpQuestions = (answer: string): string => {
 
     return cleanedLines.join("\n").trim();
 };
+
 
 export interface GenerationOptions {
     personalized?: boolean;
@@ -82,6 +86,7 @@ const getResponseInstruction = (): string => {
     return [
         "Write the final answer like a thoughtful book expert.",
         "Be specific and practical enough to help the user pick a book.",
+        "Write 2-5 complete sentences and finish with proper punctuation.",
         "Give a direct answer first, then briefly explain the recommendation or comparison.",
         "For recommendations, include title and author when available, why it fits, and the reading vibe.",
         "Do not stop mid-sentence.",
@@ -96,14 +101,6 @@ export const generateAnswer = async (
     opts: GenerationOptions = {}
 ): Promise<string> => {
     try {
-        const model = genAI.getGenerativeModel({
-            model: GEMINI_MODEL_NAME,
-            generationConfig: {
-                temperature: GENERATION_TEMPERATURE,
-                maxOutputTokens: MAX_OUTPUT_TOKENS,
-            }
-        });
-
         const systemInstruction = getSystemInstruction(opts);
         const responseInstruction = getResponseInstruction();
 
@@ -121,21 +118,35 @@ ${PROMPT_RESPONSE_REQUIREMENTS_LABEL}
 ${responseInstruction}
 `.trim();
 
-        const result = await model.generateContent(prompt);
-        const answer = removeFollowUpQuestions(result.response.text()).trim();
+        for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt += 1) {
+            const model = genAI.getGenerativeModel({
+                model: GEMINI_MODEL_NAME,
+                generationConfig: {
+                    temperature: GENERATION_TEMPERATURE,
+                    maxOutputTokens: attempt === 0 ? MAX_OUTPUT_TOKENS : RETRY_MAX_OUTPUT_TOKENS,
+                }
+            });
 
-        const isInvalidAnswer =
-            !answer ||
-            SENSITIVE_OUTPUT_PATTERN.test(answer) ||
-            INTERNAL_LANGUAGE_PATTERN.test(answer) ||
-            LIMITATION_LANGUAGE_PATTERN.test(answer)
+            const result = await model.generateContent(prompt);
+            const answer = removeFollowUpQuestions(result.response.text()).trim();
 
-        if (isInvalidAnswer) {
-            logger.warn("[GenerationService] Model response failed validation.");
-            return SAFE_FALLBACK_ANSWER;
+            const isInvalidAnswer =
+                !answer ||
+                SENSITIVE_OUTPUT_PATTERN.test(answer) ||
+                INTERNAL_LANGUAGE_PATTERN.test(answer) ||
+                LIMITATION_LANGUAGE_PATTERN.test(answer);
+
+            if (!isInvalidAnswer) {
+                return answer;
+            }
+
+            logger.warn("[GenerationService] Model response failed validation.", {
+                attempt: attempt + 1,
+                answerPreview: answer.slice(0, 120),
+            });
         }
 
-        return answer;
+        return SAFE_FALLBACK_ANSWER;
     } catch (err: unknown) {
         logger.error("[GenerationService] Gemini generation failed:", err);
         throw err;
