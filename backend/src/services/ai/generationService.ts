@@ -56,9 +56,8 @@ const getSystemInstruction = (opts: GenerationOptions = {}): string => {
             "- Use only the current user's taste signals to describe the user's taste.",
             "- Other readers' reviews may help discover candidate books, but never describe them as the current user's taste.",
             "- Do not describe multiple readers or profiles.",
-            "- Recommend 3-5 books the user likely has not read.",
+            "- Recommend 1-2 books the user likely has not read.",
             "- Assume recommended books are unread unless the input explicitly marks them as already read.",
-            "- Briefly explain why each book fits the user.",
             "- Keep the answer natural, confident, and user-facing.",
         ]
         : [];
@@ -77,8 +76,7 @@ const getSystemInstruction = (opts: GenerationOptions = {}): string => {
         "",
         "Answer style:",
         "- Sound natural, simple, direct, and conversational.",
-        "- Prefer 2-4 strong recommendations over a long list.",
-        "- Briefly explain why each book fits.",
+        "- Prefer 1-2 strong recommendations over a long list.",
         "- Keep the answer concise and friendly.",
         "- End cleanly without asking follow-up questions or asking about preferences.",
         ...personalizedRules,
@@ -95,7 +93,7 @@ const getResponseInstruction = (): string => {
         "",
         "Write the final answer using this structure when it fits the question:",
         "1. Start with a direct 1-2 sentence answer that addresses the exact request.",
-        "2. Then give the main recommendations, comparisons, or explanation in 2-4 short sections or bullets.",
+        "2. Then give the main recommendations in 1-2 bullet points.",
         "3. For recommendations, include title/author when available, why it fits, and the reading vibe.",
         "4. End with a clean closing sentence, not a question.",
         "",
@@ -152,6 +150,7 @@ export const generateAnswer = async (
             model: GEMINI_MODEL_NAME,
             generationConfig: {
                 temperature: GENERATION_TEMPERATURE,
+                maxOutputTokens: 500,
             }
         });
 
