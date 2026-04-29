@@ -271,11 +271,6 @@ const ConversationCard = ({ item, loading, onRetry }: ConversationCardProps) => 
         </Alert>
       ) : item.response ? (
         <>
-          {item.response.sourceCount === 0 && (
-            <Alert severity="info">
-              Here is a broad recommendation to get you started.
-            </Alert>
-          )}
           <Box
             sx={{
               p: { xs: 2, md: 2.5 },

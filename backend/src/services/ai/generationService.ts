@@ -6,7 +6,7 @@ import { z } from "zod";
 const genAI = new GoogleGenerativeAI(ENV.GEMINI_API_KEY);
 
 const GEMINI_MODEL_NAME = "gemini-2.5-flash";
-const GENERATION_TEMPERATURE = 0.4;
+const GENERATION_TEMPERATURE = 0.2;
 const MAX_OUTPUT_TOKENS = 180;
 const MAX_ANSWER_LENGTH = 4000;
 const PROMPT_INPUT_TAG = "BOOK_RECOMMENDATION_INPUT";

@@ -5,7 +5,7 @@ import { RagQueryRequestSchema } from "@utils/ragValidation";
 import { SearchResult } from "./vectorRepository";
 
 const MAX_CONTEXT_CHARS = 3000;
-const MAX_SNIPPET_CHARS = 3000;
+const MAX_SNIPPET_CHARS = 550;
 const RAG_SEARCH_TOP_K = 6;
 const MAX_TASTE_SIGNAL_COUNT = 6;
 const SAFE_STRING_METADATA_LENGTH = 200;
