@@ -12,12 +12,6 @@ import * as vectorSyncService from "@services/ai/vectorSyncService";
 import User from "@models/User";
 import { logger } from "@utils/logger";
 import { userRepository } from "@repositories/userRepository";
-import { ENV } from "@config/config";
-import { deleteChunksByTypes } from "@services/ai/vectorRepository";
-import { ForbiddenError } from "@utils/errors";
-import { deleteFile } from "@utils/fileUtils";
-import { UPLOADS_FOLDER } from "@config/multerConfig";
-import path from "path";
 import {
   EnrichedUserReview,
   buildUnavailableBook,
@@ -26,12 +20,6 @@ import {
   requireObjectIdString,
   ReviewDocumentLike
 } from "@utils/reviewUtils";
-
-interface DeleteAllReviewsResult {
-  deletedReviews: number;
-  deletedVectorRows: number;
-  resetBooks: number;
-}
 
 const getNormalizedBookByLocalId = async (
   localBookId: string,
@@ -279,25 +267,6 @@ export const deleteReview = async (reviewId: string): Promise<void> => {
   if (user) {
     await userReviewServiceDeps.syncUserProfileToVector(user);
   }
-};
-
-export const deleteAllReviewsForTesting = async (): Promise<DeleteAllReviewsResult> => {
-  const picturePaths = await userReviewRepository.findAllPicturePaths();
-  const deletedVectorRows = await deleteChunksByTypes(["review", "profile"]);
-  const deletedReviews = await userReviewRepository.deleteAll();
-  const resetBooks = await bookRepository.resetAllRatings();
-
-  await Promise.all(
-    picturePaths.map((picturePath) =>
-      deleteFile(path.join(UPLOADS_FOLDER, path.basename(picturePath)))
-    )
-  );
-
-  return {
-    deletedReviews,
-    deletedVectorRows,
-    resetBooks,
-  };
 };
 
 export const isReviewAuthor = async (

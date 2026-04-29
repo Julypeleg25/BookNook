@@ -12,7 +12,6 @@ import { Types } from "mongoose";
 import { HttpStatusCode } from "axios";
 import {
   deleteReview,
-  deleteAllReviewsForTesting,
   getPopulatedReviewById,
   isReviewAuthor,
   updateReview,
@@ -215,24 +214,6 @@ export const deleteReviewHandler = async (
     res.json({ message: "Review deleted successfully" });
   } catch (error) {
     logger.error(`Error deleting review ${req.params.id}:`, error);
-    next(error);
-  }
-};
-
-export const deleteAllReviewsForTestingHandler = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  try {
-    const result = await deleteAllReviewsForTesting();
-
-    res.json({
-      message: "All posts deleted successfully",
-      ...result,
-    });
-  } catch (error) {
-    logger.error("Error deleting all posts for testing:", error);
     next(error);
   }
 };

@@ -180,22 +180,6 @@ export const deleteChunkBySourceId = async (sourceId: string): Promise<void> => 
     }
 };
 
-export const deleteChunksByTypes = async (types: ChunkType[]): Promise<number> => {
-    if (types.length === 0) return 0;
-
-    const client = await getPool().connect();
-    try {
-        const result = await client.query(
-            "DELETE FROM vector_search WHERE type = ANY($1);",
-            [types],
-        );
-
-        return result.rowCount ?? 0;
-    } finally {
-        client.release();
-    }
-};
-
 export const fetchChunksByMetadata = async (
     filters: Record<string, string>
 ): Promise<SearchResult[]> => {

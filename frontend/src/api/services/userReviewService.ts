@@ -64,9 +64,6 @@ export const userReviewService = {
         await axiosClient.delete(endpoints.userReviews.delete(reviewId));
     },
 
-    async deleteAllReviewsForTesting(): Promise<void> {
-        await axiosClient.delete(endpoints.userReviews.deleteAllTesting);
-    },
     async likeReview(reviewId: string): Promise<{ likes: number }> {
         const res = await axiosClient.post<{ likes: number }>(
             endpoints.userReviews.like(reviewId)

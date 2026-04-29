@@ -13,16 +13,12 @@ import {
 } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { enqueueSnackbar } from "notistack";
+import { useQuery } from "@tanstack/react-query";
 import { BsBookmark } from "react-icons/bs";
 import { FiHeart, FiMail, FiMessageCircle, FiPlus } from "react-icons/fi";
-import { MdDelete, MdEdit, MdPostAdd } from "react-icons/md";
-import DeleteModal from "@components/common/DeleteModal";
+import { MdEdit, MdPostAdd } from "react-icons/md";
 import ProfileForm from "@components/profile/ProfileForm";
 import MyPosts from "./MyPosts";
-import { getErrorMessage } from "@/api/apiError";
-import { invalidateReviewCaches } from "@/api/queryCache";
 import useUserStore from "@/state/useUserStore";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { userReviewService } from "@/api/services/userReviewService";
@@ -33,9 +29,7 @@ import { getCommentUser } from "@/utils/reviewUtils";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [isDeleteAllPostsOpen, setIsDeleteAllPostsOpen] = useState(false);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { user } = useUserStore();
 
   const { data: reviews = [], isLoading: isReviewsLoading } = useQuery({
@@ -54,20 +48,6 @@ const Profile = () => {
     queryKey: queryKeys.wishlist(user.username),
     queryFn: ListsService.getWishlistBooks,
     enabled: !!user.username,
-  });
-
-  const deleteAllPostsMutation = useMutation({
-    mutationFn: userReviewService.deleteAllReviewsForTesting,
-    onSuccess: () => {
-      enqueueSnackbar("All posts deleted for testing", { variant: "success" });
-      invalidateReviewCaches(queryClient);
-      setIsDeleteAllPostsOpen(false);
-    },
-    onError: (error: unknown) => {
-      enqueueSnackbar(getErrorMessage(error, "Failed to delete all posts"), {
-        variant: "error",
-      });
-    },
   });
 
   const profileStats = useMemo(() => {
@@ -262,26 +242,7 @@ const Profile = () => {
                   <Button variant="outlined" startIcon={<BsBookmark />} onClick={() => navigate("/lists")}>
                     View Wishlist
                   </Button>
-                  <Button
-                    color="error"
-                    disabled={deleteAllPostsMutation.isPending}
-                    startIcon={<MdDelete />}
-                    variant="outlined"
-                    onClick={() => setIsDeleteAllPostsOpen(true)}
-                  >
-                    Delete All Posts
-                  </Button>
                 </Stack>
-
-                <DeleteModal
-                  confirmDisabled={deleteAllPostsMutation.isPending}
-                  confirmLabel={deleteAllPostsMutation.isPending ? "Deleting..." : "Delete All"}
-                  isOpen={isDeleteAllPostsOpen}
-                  message="This testing action deletes every post by every user and resets review stats. This cannot be undone."
-                  title="Delete All Posts"
-                  onClose={() => setIsDeleteAllPostsOpen(false)}
-                  onConfirm={() => deleteAllPostsMutation.mutate()}
-                />
               </>
             )}
           </Stack>
