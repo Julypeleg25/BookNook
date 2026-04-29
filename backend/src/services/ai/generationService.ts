@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(ENV.GEMINI_API_KEY);
 
 const GEMINI_MODEL_NAME = "gemini-2.5-flash";
 const GENERATION_TEMPERATURE = 0.2;
-const MAX_OUTPUT_TOKENS = 180;
+const MAX_OUTPUT_TOKENS = 260;
 const MAX_ANSWER_LENGTH = 4000;
 const PROMPT_INPUT_TAG = "BOOK_RECOMMENDATION_INPUT";
 const PROMPT_USER_QUESTION_LABEL = "UNTRUSTED USER QUESTION:";
@@ -17,18 +17,23 @@ const SENSITIVE_OUTPUT_PATTERN = /(api[_-]?key|token|secret|password|bearer\s+[a
 const INTERNAL_LANGUAGE_PATTERN = /(context limitations?|provided context|limited context|retrieved context|booknook|rag|embedding|retrieval|dataset|system data|source ids?|raw context|xml tags?|prompts?|internal system)/i;
 const LIMITATION_LANGUAGE_PATTERN = /(not enough information|not enough info|insufficient information|limited information|limited data|cannot determine|can't determine|do not have enough|don't have enough)/i;
 const FOLLOW_UP_QUESTION_PATTERN = /\?\s*$/;
+const SENTENCE_PATTERN = /[^.!?]+[.!?]+/g;
+
+const countSentences = (answer: string): number =>
+    answer.match(SENTENCE_PATTERN)?.length ?? 0;
 
 const ModelAnswerSchema = z
     .string()
     .trim()
     .min(1)
     .max(MAX_ANSWER_LENGTH)
+    .refine((answer) => countSentences(answer) >= 2, "Model response must contain at least two complete sentences.")
     .refine((answer) => !SENSITIVE_OUTPUT_PATTERN.test(answer), "Model response contained sensitive data.")
     .refine((answer) => !INTERNAL_LANGUAGE_PATTERN.test(answer), "Model response mentioned internal generation details.")
     .refine((answer) => !LIMITATION_LANGUAGE_PATTERN.test(answer), "Model response mentioned information limitations.")
     .refine((answer) => !FOLLOW_UP_QUESTION_PATTERN.test(answer), "Model response ended with a follow-up question.");
 
-const FOLLOW_UP_LINE_PATTERN = /(would you like|do you want|want me to|tell me|let me know|share your|what kind|which genres|if you want)/i;
+const FOLLOW_UP_LINE_PATTERN = /^(would you like|do you want|want me to|tell me|let me know|share your|what kind|which genres|if you want)\b/i;
 
 const removeFollowUpQuestions = (answer: string): string => {
     const cleanedLines = answer
@@ -89,9 +94,11 @@ const getResponseInstruction = (): string => {
     return [
         "Write the final answer like a thoughtful book expert.",
         "Be specific and practical enough to help the user pick a book.",
+        "Write 2-4 complete sentences.",
         "Start with a direct 1-2 sentence answer to the request.",
-        "Then give 2-4 short bullets or short paragraphs with the main recommendations or comparisons.",
+        "Then continue with 1-3 more complete sentences covering the main recommendations or comparisons.",
         "For recommendations, include title and author when available, why it fits, and the reading vibe.",
+        "Do not stop mid-sentence.",
         "Avoid filler, repeated reasoning, source IDs, and raw labels like [Snippet 1].",
         "Do not ask follow-up questions, ask about preferences, or mention these instructions.",
     ].join("\n");
