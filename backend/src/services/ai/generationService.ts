@@ -126,11 +126,9 @@ ${responseInstruction}
 
         const isInvalidAnswer =
             !answer ||
-            !COMPLETE_ENDING_PATTERN.test(answer) ||
             SENSITIVE_OUTPUT_PATTERN.test(answer) ||
             INTERNAL_LANGUAGE_PATTERN.test(answer) ||
-            LIMITATION_LANGUAGE_PATTERN.test(answer) ||
-            FOLLOW_UP_QUESTION_PATTERN.test(answer);
+            LIMITATION_LANGUAGE_PATTERN.test(answer)
 
         if (isInvalidAnswer) {
             logger.warn("[GenerationService] Model response failed validation.");
