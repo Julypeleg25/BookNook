@@ -6,6 +6,7 @@ import { formatDate } from "@/utils/dateUtils";
 import { resolveMediaUrl } from "@/utils/mediaUtils";
 import { useState } from "react";
 import PostActionsMenu, { PostActionsMenuOverlay } from "./PostActionsMenu";
+import { POST_CARD_IMAGE_BACKGROUND, POST_CARD_IMAGE_SX } from "./postImageStyles";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -71,7 +72,7 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
           display: "block",
           width: "100%",
           aspectRatio: "4 / 3",
-          backgroundColor: "grey.100",
+          backgroundColor: POST_CARD_IMAGE_BACKGROUND,
           overflow: "hidden",
         }}
       >
@@ -85,9 +86,7 @@ const BookPostCardHeader = ({ post }: BookPostCardProps) => {
             onError={handleImageError}
             onLoad={handleImageLoad}
             sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
+              ...POST_CARD_IMAGE_SX,
               display: isImageLoading ? "none" : "block",
             }}
           />

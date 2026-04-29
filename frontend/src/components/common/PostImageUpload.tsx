@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { FiImage, FiUploadCloud } from "react-icons/fi";
+import { resolveMediaUrl } from "@/utils/mediaUtils";
 
 interface PostImageUploadProps {
   value: File | string | null;
@@ -21,6 +22,8 @@ const DROP_ZONE_BORDER_RADIUS = "12px";
 const DROP_ZONE_EMPTY_BACKGROUND = "rgba(91, 111, 106, 0.04)";
 const DROP_ZONE_ICON_BACKGROUND = "rgba(91, 111, 106, 0.12)";
 const DROP_ZONE_TRANSITION = "border-color 0.2s ease, background-color 0.2s ease";
+const PREVIEW_BACKGROUND = "grey.50";
+const PREVIEW_OBJECT_FIT = "contain";
 
 const PostImageUpload = ({
   value,
@@ -33,7 +36,7 @@ const PostImageUpload = ({
   const [isDragging, setIsDragging] = useState(false);
 
   const preview = useMemo(
-    () => (value instanceof File ? URL.createObjectURL(value) : value || ""),
+    () => (value instanceof File ? URL.createObjectURL(value) : resolveMediaUrl(value) || ""),
     [value],
   );
 
@@ -104,7 +107,7 @@ const PostImageUpload = ({
           maxWidth: DROP_ZONE_MAX_WIDTH,
           height: DROP_ZONE_HEIGHT,
           mx: "auto",
-          bgcolor: preview ? "grey.50" : DROP_ZONE_EMPTY_BACKGROUND,
+          bgcolor: preview ? PREVIEW_BACKGROUND : DROP_ZONE_EMPTY_BACKGROUND,
           borderRadius: DROP_ZONE_BORDER_RADIUS,
           overflow: "hidden",
           display: "flex",
@@ -121,11 +124,13 @@ const PostImageUpload = ({
             component="img"
             src={preview}
             alt="Post preview"
+            decoding="async"
             sx={{
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: PREVIEW_OBJECT_FIT,
               display: "block",
+              imageRendering: "auto",
             }}
           />
         ) : (

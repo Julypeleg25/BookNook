@@ -12,6 +12,7 @@ import { Link as RouterLink } from "react-router-dom";
 import { RATING_STEP } from "@shared/constants/validation";
 import { resolveMediaUrl } from "@/utils/mediaUtils";
 import PostActionsMenu, { PostActionsMenuOverlay } from "./post/PostActionsMenu";
+import { POST_CARD_IMAGE_BACKGROUND, POST_CARD_IMAGE_SX } from "./post/postImageStyles";
 
 interface MyBookPostCardProps {
   post: BookPost;
@@ -28,6 +29,7 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => (
         overflow: "hidden",
         userSelect: "none",
         position: "relative",
+        bgcolor: POST_CARD_IMAGE_BACKGROUND,
       }}
     >
       <Box
@@ -35,10 +37,7 @@ const MyBookPostCard = ({ post }: MyBookPostCardProps) => (
         src={resolveMediaUrl(post.imageUrl)}
         alt={post.book.title}
         sx={{
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          bgcolor: "grey.50",
+          ...POST_CARD_IMAGE_SX,
           pointerEvents: "none",
         }}
         draggable={false}

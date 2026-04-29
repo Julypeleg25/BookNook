@@ -20,6 +20,7 @@ import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { resolveMediaUrl } from "@/utils/mediaUtils";
 import { useReviewLikeToggle } from "@/hooks/useReviewLikeToggle";
 import PostActionsMenu, { PostActionsMenuOverlay } from "./PostActionsMenu";
+import { POST_CARD_IMAGE_BACKGROUND, POST_CARD_IMAGE_SX } from "./postImageStyles";
 
 interface BookPostCardProps {
   post: BookPost;
@@ -100,7 +101,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
         sx={{
           position: "relative",
           aspectRatio: "16 / 10",
-          bgcolor: "grey.50",
+          bgcolor: POST_CARD_IMAGE_BACKGROUND,
           overflow: "hidden",
         }}
       >
@@ -111,12 +112,7 @@ const BookPostCard = ({ post }: BookPostCardProps) => {
             src={imgSrc}
             alt={post.book.title}
             onError={() => setImgSrc(post.book.thumbnail)}
-            sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              display: "block",
-            }}
+            sx={POST_CARD_IMAGE_SX}
           />
         )}
         <Box

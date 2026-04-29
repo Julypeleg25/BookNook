@@ -12,6 +12,7 @@ import { FiHeart } from "react-icons/fi";
 import PostActionsMenu, { PostActionsMenuOverlay } from "./post/PostActionsMenu";
 import { RATING_STEP } from "@shared/constants/validation";
 import { resolveMediaUrl } from "@/utils/mediaUtils";
+import { POST_CARD_IMAGE_BACKGROUND, POST_CARD_IMAGE_SX } from "./post/postImageStyles";
 
 interface FullBookPostCardProps {
   post: BookPost;
@@ -29,7 +30,7 @@ const FullBookPostCard = ({ post }: FullBookPostCardProps) => {
               width: "11rem",
               aspectRatio: "4 / 5",
               borderRadius: "0.5rem",
-              bgcolor: "grey.50",
+              bgcolor: POST_CARD_IMAGE_BACKGROUND,
               overflow: "hidden",
               position: "relative",
             }}
@@ -38,12 +39,7 @@ const FullBookPostCard = ({ post }: FullBookPostCardProps) => {
               component="img"
               src={resolveMediaUrl(post.imageUrl)}
               alt={post.book.title}
-              sx={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                display: "block",
-              }}
+              sx={POST_CARD_IMAGE_SX}
             />
             <PostActionsMenuOverlay>
               <PostActionsMenu post={post} />
