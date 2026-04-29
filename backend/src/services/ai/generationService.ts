@@ -11,7 +11,8 @@ const MAX_ANSWER_LENGTH = 4000;
 const PROMPT_INPUT_TAG = "BOOK_RECOMMENDATION_INPUT";
 const PROMPT_USER_QUESTION_LABEL = "UNTRUSTED USER QUESTION:";
 const PROMPT_RESPONSE_REQUIREMENTS_LABEL = "RESPONSE REQUIREMENTS:";
-const SAFE_FALLBACK_ANSWER = "For a strong mystery pick, try a story with a sharp central puzzle, a tense atmosphere, and characters whose secrets unfold piece by piece. A twisty psychological mystery or a classic locked-room setup is a great place to start.";
+const SAFE_FALLBACK_ANSWER = "I do not have enough reliable information to give a good recommendation right now.";
+const AI_BUSY_FALLBACK_ANSWER = "The AI assistant is busy right now. Please try again in a moment.";
 const SENSITIVE_OUTPUT_PATTERN = /(api[_-]?key|token|secret|password|bearer\s+[a-z0-9._-]+|postgres(?:ql)?:\/\/|mongodb(?:\+srv)?:\/\/|https?:\/\/(?:localhost|127\.0\.0\.1|10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.))/i;
 const INTERNAL_LANGUAGE_PATTERN = /(context limitations?|provided context|limited context|retrieved context|booknook|rag|embedding|retrieval|dataset|system data|source ids?|raw context|xml tags?|prompts?|internal system)/i;
 const LIMITATION_LANGUAGE_PATTERN = /(not enough information|not enough info|insufficient information|limited information|limited data|cannot determine|can't determine|do not have enough|don't have enough)/i;
@@ -108,6 +109,39 @@ const getResponseInstruction = (): string => {
     ].join("\n");
 };
 
+const getErrorStatusCode = (err: unknown): number | undefined => {
+    if (typeof err !== "object" || err === null) {
+        return undefined;
+    }
+
+    const errorWithFields = err as {
+        code?: unknown;
+        status?: unknown;
+        response?: { status?: unknown };
+    };
+
+    const candidateStatuses = [
+        errorWithFields.status,
+        errorWithFields.code,
+        errorWithFields.response?.status,
+    ];
+
+    for (const candidate of candidateStatuses) {
+        if (typeof candidate === "number") {
+            return candidate;
+        }
+
+        if (typeof candidate === "string") {
+            const parsedCandidate = Number(candidate);
+            if (!Number.isNaN(parsedCandidate)) {
+                return parsedCandidate;
+            }
+        }
+    }
+
+    return undefined;
+};
+
 export const generateAnswer = async (
     query: string,
     context: string,
@@ -151,7 +185,14 @@ Provide a helpful, 2-5 sentences long, natural book recommendation answer for th
 
         return parsedAnswer.data;
     } catch (err: unknown) {
+        const statusCode = getErrorStatusCode(err);
+
+        if (statusCode === 429 || statusCode === 503) {
+            logger.warn("[GenerationService] Gemini generation is busy.", err);
+            return AI_BUSY_FALLBACK_ANSWER;
+        }
+
         logger.error("[GenerationService] Gemini generation failed:", err);
-        throw err;
+        return SAFE_FALLBACK_ANSWER;
     }
 };
