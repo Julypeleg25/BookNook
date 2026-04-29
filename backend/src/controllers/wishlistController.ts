@@ -3,7 +3,7 @@ import {
   addBookToUserWishlist,
   getUserWishlist,
   removeBookFromUserWishlist,
-} from "@services/listService";
+} from "@services/wishlistService";
 import { getUserById } from "@services/userService";
 import { logger } from "@utils/logger";
 import { ValidationError } from "@utils/errors";

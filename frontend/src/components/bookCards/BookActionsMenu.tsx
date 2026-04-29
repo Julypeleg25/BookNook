@@ -43,7 +43,7 @@ const BookActionsMenu = ({ book, showWishlistRemove, edge = "end" }: BookActions
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const { navigateProtected } = useProtectedNavigation();
 
-    const { mutate: removeFromList, isPending } = useMutation<
+    const { mutate: removeFromWishlist, isPending } = useMutation<
         Book[],
         Error,
         void,
@@ -91,7 +91,7 @@ const BookActionsMenu = ({ book, showWishlistRemove, edge = "end" }: BookActions
     const handleRemove = (event: React.MouseEvent) => {
         event.stopPropagation();
         if (showWishlistRemove) {
-            removeFromList();
+            removeFromWishlist();
         }
     };
 

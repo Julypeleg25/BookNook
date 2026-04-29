@@ -5,7 +5,7 @@ import { LiaBookmark } from "react-icons/lia";
 import { useNavigate } from "react-router-dom";
 import { useProtectedNavigation } from "@/hooks/useProtectedNavigation";
 import type { Book } from "@/models/Book";
-import { useBookListToggle } from "@/hooks/useBookListToggle";
+import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 import { getBookId } from "@/utils/bookUtils";
 
 interface BookHeaderProps {
@@ -17,7 +17,7 @@ const BookHeader = ({ book, isBookPost }: BookHeaderProps) => {
   const navigate = useNavigate();
   const { isAuthenticated, navigateProtected, redirectToLogin } = useProtectedNavigation();
   const bookId = getBookId(book);
-  const wishlist = useBookListToggle({
+  const wishlist = useWishlistToggle({
     book,
     enabled: isAuthenticated,
   });

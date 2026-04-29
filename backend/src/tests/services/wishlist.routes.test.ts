@@ -7,7 +7,7 @@ const mockGetUserWishlist = jest.fn() as any;
 const mockRemoveBookFromUserWishlist = jest.fn() as any;
 const mockGetUserById = jest.fn() as any;
 
-jest.unstable_mockModule("@services/listService", () => ({
+jest.unstable_mockModule("@services/wishlistService", () => ({
   addBookToUserWishlist: mockAddBookToUserWishlist,
   getUserWishlist: mockGetUserWishlist,
   removeBookFromUserWishlist: mockRemoveBookFromUserWishlist,
@@ -41,18 +41,18 @@ jest.unstable_mockModule("@utils/logger", () => ({
   },
 }));
 
-const listRouter = (await import("@routes/list")).default;
+const wishlistRouter = (await import("@routes/wishlist")).default;
 const { errorHandler } = await import("@middlewares/errorHandler");
 
 const createApp = () => {
   const app = express();
   app.use(express.json());
-  app.use("/api/lists", listRouter);
+  app.use("/api/wishlist", wishlistRouter);
   app.use(errorHandler);
   return app;
 };
 
-describe("list API routes", () => {
+describe("wishlist API routes", () => {
   const app = createApp();
   const authHeader = { Authorization: "Bearer test-token" };
   const bookSummary = {
@@ -67,7 +67,7 @@ describe("list API routes", () => {
   });
 
   it("rejects wishlist requests without a bearer token", async () => {
-    const response = await request(app).get("/api/lists/wishlist");
+    const response = await request(app).get("/api/wishlist");
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ message: "No token provided" });
@@ -79,7 +79,7 @@ describe("list API routes", () => {
     mockGetUserWishlist.mockResolvedValue([bookSummary]);
 
     const response = await request(app)
-      .get("/api/lists/wishlist")
+      .get("/api/wishlist")
       .set(authHeader);
 
     expect(response.status).toBe(200);
@@ -93,7 +93,7 @@ describe("list API routes", () => {
     mockGetUserWishlist.mockResolvedValue([bookSummary, null, undefined]);
 
     const response = await request(app)
-      .get("/api/lists/wishlist")
+      .get("/api/wishlist")
       .set(authHeader);
 
     expect(response.status).toBe(200);
@@ -104,7 +104,7 @@ describe("list API routes", () => {
     mockAddBookToUserWishlist.mockResolvedValue([bookSummary]);
 
     const response = await request(app)
-      .post("/api/lists/book-1")
+      .post("/api/wishlist/book-1")
       .set(authHeader);
 
     expect(response.status).toBe(200);
@@ -116,7 +116,7 @@ describe("list API routes", () => {
     mockAddBookToUserWishlist.mockResolvedValue([bookSummary]);
 
     const response = await request(app)
-      .post("/api/lists/google%3Abook%2F1")
+      .post("/api/wishlist/google%3Abook%2F1")
       .set(authHeader);
 
     expect(response.status).toBe(200);
@@ -130,7 +130,7 @@ describe("list API routes", () => {
     mockRemoveBookFromUserWishlist.mockResolvedValue([]);
 
     const response = await request(app)
-      .delete("/api/lists/book-1")
+      .delete("/api/wishlist/book-1")
       .set(authHeader);
 
     expect(response.status).toBe(200);
@@ -145,7 +145,7 @@ describe("list API routes", () => {
     mockAddBookToUserWishlist.mockRejectedValue(new Error("wishlist failed"));
 
     const response = await request(app)
-      .post("/api/lists/book-1")
+      .post("/api/wishlist/book-1")
       .set(authHeader);
 
     expect(response.status).toBe(500);

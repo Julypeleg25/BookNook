@@ -12,20 +12,20 @@ import type { Book } from "@/models/Book";
 import useUserStore from "@/state/useUserStore";
 import { getBookId } from "@/utils/bookUtils";
 
-interface UseBookListToggleOptions {
+interface UseWishlistToggleOptions {
   book: Book;
   enabled: boolean;
 }
 
-interface BookListMutationContext {
+interface WishlistMutationContext {
   previousBooks?: Book[];
   hadPreviousBooks: boolean;
 }
 
-export const useBookListToggle = ({
+export const useWishlistToggle = ({
   book,
   enabled,
-}: UseBookListToggleOptions) => {
+}: UseWishlistToggleOptions) => {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useUserStore();
@@ -33,7 +33,7 @@ export const useBookListToggle = ({
   const wishlistQueryKey = queryKeys.wishlist(username);
   const bookId = getBookId(book);
 
-  const { data: books = [], isLoading: isListLoading } = useQuery({
+  const { data: books = [], isLoading: isWishlistLoading } = useQuery({
     queryKey: wishlistQueryKey,
     queryFn: WishlistService.getWishlistBooks,
     enabled: enabled && Boolean(username),
@@ -45,7 +45,7 @@ export const useBookListToggle = ({
     Book[],
     Error,
     boolean,
-    BookListMutationContext
+    WishlistMutationContext
   >({
     mutationFn: (shouldRemove) =>
       shouldRemove
@@ -87,7 +87,7 @@ export const useBookListToggle = ({
 
   return {
     isAdded,
-    isLoading: isListLoading || mutation.isPending,
+    isLoading: isWishlistLoading || mutation.isPending,
     toggle,
   };
 };

@@ -1,5 +1,5 @@
 import useUserStore from "@/state/useUserStore";
-import BooksList from "@components/lists/BooksList";
+import WishlistBooksGrid from "@components/wishlist/WishlistBooksGrid";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { BsBookmark } from "react-icons/bs";
@@ -43,14 +43,14 @@ const Wishlist = () => {
           </Typography>
         </Paper>
 
-        <BooksList
+        <WishlistBooksGrid
           title={
             <Stack direction="row" alignItems="center" spacing={1}>
               <BsBookmark size="1.3rem" />
               <Typography variant="h6" fontWeight={800}>Wishlist</Typography>
             </Stack>
           }
-          booksList={wishlistBooks}
+          books={wishlistBooks}
           loading={isWishlistLoading}
           showWishlistRemove
         />

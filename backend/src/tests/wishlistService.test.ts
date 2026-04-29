@@ -37,14 +37,14 @@ jest.unstable_mockModule("@xenova/transformers", () => ({
   ),
 }));
 
-let listService: typeof import("../services/listService");
+let wishlistService: typeof import("../services/wishlistService");
 
-describe("ListService", () => {
+describe("WishlistService", () => {
   const userId = "507f191e810c19729de860ea";
   const bookId = "bookkk";
 
   beforeAll(async () => {
-    listService = await import("../services/listService");
+    wishlistService = await import("../services/wishlistService");
   });
 
   beforeEach(() => {
@@ -54,13 +54,13 @@ describe("ListService", () => {
   });
 
   describe("addBookToUserWishlist", () => {
-    it("adds the requested book and returns the enriched source-of-truth list", async () => {
+    it("adds the requested book and returns the enriched source-of-truth wishlist", async () => {
       mockAddBookToWishlist.mockResolvedValue(["id1"]);
       mockGetWishlist.mockResolvedValue(["id1"]);
       mockGetBook.mockResolvedValue({ id: "id1", volumeInfo: { title: "Book 1" } });
       mockNormalize.mockReturnValue({ id: "id1", title: "Book 1" });
 
-      const result = await listService.addBookToUserWishlist(userId, bookId);
+      const result = await wishlistService.addBookToUserWishlist(userId, bookId);
 
       expect(result).toEqual([{ id: "id1", title: "Book 1" }]);
       expect(mockAddBookToWishlist).toHaveBeenCalledWith(userId, bookId);
@@ -69,12 +69,12 @@ describe("ListService", () => {
   });
 
   describe("getUserWishlist", () => {
-    it("returns the saved list enriched with Google Books details", async () => {
+    it("returns the saved wishlist enriched with Google Books details", async () => {
       mockGetWishlist.mockResolvedValue(["id1"]);
       mockGetBook.mockResolvedValue({ id: "id1", volumeInfo: { title: "Book 1" } });
       mockNormalize.mockReturnValue({ id: "id1", title: "Book 1" });
 
-      const result = await listService.getUserWishlist(userId);
+      const result = await wishlistService.getUserWishlist(userId);
 
       expect(result).toHaveLength(1);
       expect(mockGetWishlist).toHaveBeenCalledWith(userId);
@@ -92,7 +92,7 @@ describe("ListService", () => {
       });
       mockNormalizeLocal.mockReturnValue({ id: "id1", title: "Local Book" });
 
-      const result = await listService.getUserWishlist(userId);
+      const result = await wishlistService.getUserWishlist(userId);
 
       expect(result).toEqual([{ id: "id1", title: "Local Book" }]);
       expect(mockGetLocalBook).toHaveBeenCalledWith("id1");
@@ -115,7 +115,7 @@ describe("ListService", () => {
         title: "Local Book",
       });
 
-      const result = await listService.getUserWishlist(userId);
+      const result = await wishlistService.getUserWishlist(userId);
 
       expect(result).toEqual([{ id: "google-book-id", title: "Local Book" }]);
       expect(mockGetLocalBook).toHaveBeenCalledWith(localBookId);
@@ -125,13 +125,13 @@ describe("ListService", () => {
   });
 
   describe("removeBookFromUserWishlist", () => {
-    it("removes the requested book and returns the enriched source-of-truth list", async () => {
+    it("removes the requested book and returns the enriched source-of-truth wishlist", async () => {
       mockRemoveBookFromWishlist.mockResolvedValue(["book2"]);
       mockGetWishlist.mockResolvedValue(["book2"]);
       mockGetBook.mockResolvedValue({ id: "book2", volumeInfo: { title: "Book 2" } });
       mockNormalize.mockReturnValue({ id: "book2", title: "Book 2" });
 
-      const result = await listService.removeBookFromUserWishlist(
+      const result = await wishlistService.removeBookFromUserWishlist(
         userId,
         bookId,
       );
@@ -151,7 +151,7 @@ describe("ListService", () => {
       mockRemoveBookFromWishlist.mockResolvedValue([]);
       mockGetWishlist.mockResolvedValue([]);
 
-      const result = await listService.removeBookFromUserWishlist(
+      const result = await wishlistService.removeBookFromUserWishlist(
         userId,
         bookId,
       );
@@ -164,3 +164,5 @@ describe("ListService", () => {
     });
   });
 });
+
+
