@@ -282,10 +282,6 @@ export const deleteReview = async (reviewId: string): Promise<void> => {
 };
 
 export const deleteAllReviewsForTesting = async (): Promise<DeleteAllReviewsResult> => {
-  if (ENV.NODE_ENV === "production") {
-    throw new ForbiddenError("Deleting all posts is disabled in production");
-  }
-
   const picturePaths = await userReviewRepository.findAllPicturePaths();
   const deletedVectorRows = await deleteChunksByTypes(["review", "profile"]);
   const deletedReviews = await userReviewRepository.deleteAll();

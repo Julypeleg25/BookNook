@@ -4,16 +4,18 @@ import http from "http";
 import fs from "fs";
 import { logger } from "@utils/logger";
 
-initApp()
-  .then((app) => {
-    logger.info("Starting HTTPS server in production mode");
-    const options2 = {
-      key: fs.readFileSync("../client-key.pem"),
-      cert: fs.readFileSync("../client-cert.pem"),
-    };
-    https.createServer(options2, app).listen(process.env.HTTPS_PORT);
-  })
-  .catch((err) => {
+initApp().then((app) => {
+    if (process.env.NODE_ENV !== "production") {
+        http.createServer(app).listen(process.env.PORT || 3000);
+    } else {
+        logger.info("Starting HTTPS server in production mode");
+        const options2 = {
+            key: fs.readFileSync("../client-key.pem"),
+            cert: fs.readFileSync("../client-cert.pem")
+        };
+        https.createServer(options2, app).listen(process.env.HTTPS_PORT);
+    }
+}).catch((err) => {
     console.error("Failed to start server:", err);
     process.exit(1);
-  });
+});
