@@ -345,9 +345,6 @@ const NewPost = () => {
                 <Typography variant="h6" fontWeight={800} gutterBottom>
                   Post Setup
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Add the image and rating for this review.
-                </Typography>
               </Box>
             </Stack>
 
