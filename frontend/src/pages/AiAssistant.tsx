@@ -1,8 +1,7 @@
-import React from "react";
 import { Box, Container } from "@mui/material";
 import { RagAssistant } from "@components/common/RagAssistant";
 
-const AiAssistant: React.FC = () => {
+const AiAssistant = () => {
   return (
     <Box
       sx={{
