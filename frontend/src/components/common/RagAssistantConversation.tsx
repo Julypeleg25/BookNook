@@ -78,7 +78,7 @@ const EmptyConversation = () => (
         Your reading assistant is ready
       </Typography>
       <Typography color="text.secondary">
-        Ask for recommendations, compare genres, or explore what BookNook readers are saying.
+        Ask for recommendations based on genres, themes, keywords or general interests.
       </Typography>
     </Stack>
   </Paper>
