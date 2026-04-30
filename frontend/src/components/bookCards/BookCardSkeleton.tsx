@@ -2,15 +2,11 @@ import { Skeleton, Stack } from "@mui/material";
 
 interface BookCardSkeletonProps {
   showAction?: boolean;
-  coverDisplay?: "framed" | "plain";
 }
 
 const BookCardSkeleton = ({
-  coverDisplay = "framed",
   showAction = false,
 }: BookCardSkeletonProps) => {
-  const isPlainCover = coverDisplay === "plain";
-
   return (
     <Stack alignItems="center" spacing="0.6rem" width="15rem">
       <Skeleton
@@ -18,8 +14,7 @@ const BookCardSkeleton = ({
         width="15rem"
         height="18rem"
         sx={{
-          borderRadius: isPlainCover ? 0 : "1rem",
-          bgcolor: isPlainCover ? "action.hover" : undefined,
+          borderRadius: "1rem",
         }}
       />
       <Stack spacing="0.2rem" width="15rem">
