@@ -1,33 +1,11 @@
 import React, { useState } from "react";
 import {
-  Alert,
   Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Divider,
-  IconButton,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
 } from "@mui/material";
-import {
-  AutoAwesome as AiIcon,
-  Clear as ClearIcon,
-  Send as SendIcon,
-} from "@mui/icons-material";
-import { FiBookOpen, FiRefreshCw } from "react-icons/fi";
-import { useRag, type RagConversationItem } from "@hooks/useRag";
-import { MarkdownMessage } from "./MarkdownMessage";
-
-const QUERY_MAX_LENGTH = 500;
-
-const EXAMPLE_PROMPTS = [
-  "Recommend a teen book with a good story about friendship",
-  "Find me a slow-burn romance that's rated well",
-  "Suggest a good mystery book for an adult",
-];
+import { useRag } from "@hooks/useRag";
+import RagAssistantConversation from "./RagAssistantConversation";
+import RagAssistantPanel from "./RagAssistantPanel";
+import { QUERY_MAX_LENGTH } from "./ragAssistantPrompts";
 
 export const RagAssistant: React.FC = () => {
   const [query, setQuery] = useState("");
@@ -67,16 +45,26 @@ export const RagAssistant: React.FC = () => {
           alignItems: "start",
         }}
       >
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2.5, md: 3 },
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 3,
-            bgcolor: "background.paper",
-            position: { lg: "sticky" },
-            top: { lg: 24 },
+        <RagAssistantPanel
+          canSubmit={canSubmit}
+          historyLength={history.length}
+          isTooLong={isTooLong}
+          loading={loading}
+          query={query}
+          onClear={clearHistory}
+          onExampleClick={setQuery}
+          onQueryChange={setQuery}
+          onQueryKeyDown={handleQueryKeyDown}
+          onSubmit={handleSubmit}
+        />
+
+        <RagAssistantConversation
+          currentItem={currentItem}
+          loading={loading}
+          onRetry={() => {
+            if (!currentItem || loading) return;
+            setQuery(currentItem.query);
+            void fetchAiResponse(currentItem.query);
           }}
         >
           <Stack spacing={3}>
@@ -232,63 +220,3 @@ export const RagAssistant: React.FC = () => {
     </Box>
   );
 };
-
-interface ConversationCardProps {
-  item: RagConversationItem;
-  loading: boolean;
-  onRetry: () => void;
-}
-
-const ConversationCard = ({ item, loading, onRetry }: ConversationCardProps) => (
-  <Paper
-    elevation={0}
-    sx={{
-      border: "1px solid",
-      borderColor: "divider",
-      borderRadius: 3,
-      bgcolor: "background.paper",
-      overflow: "hidden",
-    }}
-  >
-    <Stack spacing={2.5} sx={{ p: { xs: 2.5, md: 3 } }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
-        <Box>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-            <Chip size="small" label="BookNook AI" color="primary" />
-          </Stack>
-          <Typography variant="h6" fontWeight={800}>
-            {item.query}
-          </Typography>
-        </Box>
-        {item.error && (
-          <IconButton onClick={onRetry} aria-label="Retry question" size="small" disabled={loading}>
-            <FiRefreshCw size={18} />
-          </IconButton>
-        )}
-      </Stack>
-
-      {item.error ? (
-        <Alert severity="error" action={<Button onClick={onRetry} disabled={loading}>Retry</Button>}>
-          {item.error}
-        </Alert>
-      ) : item.response ? (
-        <>
-          {item.response.sourceCount === 0 && (
-            <Alert severity="info">
-              Here is a broad recommendation to get you started.
-            </Alert>
-          )}
-          <Box
-            sx={{
-              p: { xs: 2, md: 2.5 },
-              borderRadius: 2,
-              bgcolor: "rgba(91, 111, 106, 0.035)",
-            }}
-          >
-            <MarkdownMessage content={item.response.answer} />
-          </Box>
-        </>
-      ) : null}
-    </Stack>
-  </Paper>
-);

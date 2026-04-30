@@ -78,9 +78,7 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
       >
         <Box justifySelf="center" width="100%">
           <NewComment ref={newCommentRef} avatarUrl={user?.avatar} onSubmit={handleAddComment} />
-          <Divider
-            style={{ width: "93%", justifySelf: "center", opacity: 0.3 }}
-          />
+          <Divider sx={{ width: "93%", justifySelf: "center", opacity: 0.3 }} />
           <CommentsHeader length={bookPost.comments.length} />
           {bookPost.comments.map((comment) => {
             const canDelete =
@@ -88,52 +86,51 @@ const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
               (comment.user.id === user.id || bookPost.user.id === user.id);
 
             return (
-            <Box key={comment.id} style={{ padding: "1rem" }}>
-              <Box
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-              >
-                <Avatar src={getAvatarSrcUrl(comment.user.avatar)} />
-                <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <div style={{ fontWeight: "bold", fontSize: "1.15rem" }}>
-                      {comment.user.username}
-                    </div>
-                    <div style={{ opacity: 0.7 }}>
-                      {timeAgo(comment.createdDate)}
-                    </div>
+              <Box key={comment.id} sx={{ p: "1rem" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <Avatar src={getAvatarSrcUrl(comment.user.avatar)} />
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Box sx={{ fontWeight: "bold", fontSize: "1.15rem" }}>
+                        {comment.user.username}
+                      </Box>
+                      <Box sx={{ opacity: 0.7 }}>
+                        {timeAgo(comment.createdDate)}
+                      </Box>
+                    </Box>
                   </Box>
+                  {canDelete ? (
+                    <Tooltip title="Delete comment">
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={() => deleteComment(comment.id)}
+                          disabled={isDeletingComment}
+                          sx={{ flexShrink: 0 }}
+                        >
+                          {isDeletingComment ? (
+                            <CircularProgress size={16} />
+                          ) : (
+                            <FiTrash2 size={16} />
+                          )}
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  ) : null}
                 </Box>
-                {canDelete ? (
-                  <Tooltip title="Delete comment">
-                    <span>
-                      <IconButton
-                        size="small"
-                        onClick={() => deleteComment(comment.id)}
-                        disabled={isDeletingComment}
-                        sx={{ flexShrink: 0 }}
-                      >
-                        {isDeletingComment ? (
-                          <CircularProgress size={16} />
-                        ) : (
-                          <FiTrash2 size={16} />
-                        )}
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                ) : null}
+                <Box
+                  sx={{
+                    ml: "3rem",
+                    whiteSpace: "pre-wrap",
+                    overflowWrap: "anywhere",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {comment.content}
+                </Box>
               </Box>
-              <Box
-                sx={{
-                  ml: "3rem",
-                  whiteSpace: "pre-wrap",
-                  overflowWrap: "anywhere",
-                  wordBreak: "break-word",
-                }}
-              >
-                {comment.content}
-              </Box>
-            </Box>
-          )})}
+            );
+          })}
         </Box>
       </Box>
     );

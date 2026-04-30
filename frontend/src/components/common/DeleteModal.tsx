@@ -1,4 +1,4 @@
-import { Button, Modal } from "@mui/material";
+import { Box, Button, Modal, Stack, Typography } from "@mui/material";
 
 interface DeleteModalProps {
   confirmDisabled?: boolean;
@@ -21,29 +21,27 @@ const DeleteModal = ({
 }: DeleteModalProps) => {
   return (
     <Modal open={isOpen} onClose={onClose}>
-      <div
-        style={{
+      <Box
+        sx={{
           position: "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          backgroundColor: "white",
-          padding: "1.5rem",
+          bgcolor: "background.paper",
+          p: "1.5rem",
           borderRadius: "1rem",
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
           display: "grid",
+          minWidth: { xs: "calc(100vw - 2rem)", sm: "24rem" },
         }}
       >
-        <h2>{title}</h2>
-        <p>{message}</p>
-        <div
-          style={{
-            display: "flex",
-            gap: "1rem",
-            marginTop: "1.5rem",
-            justifyContent: "space-between",
-          }}
-        >
+        <Typography variant="h6" fontWeight={800}>
+          {title}
+        </Typography>
+        <Typography color="text.secondary" sx={{ mt: 1 }}>
+          {message}
+        </Typography>
+        <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ mt: 3 }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -55,8 +53,8 @@ const DeleteModal = ({
           >
             {confirmLabel}
           </Button>
-        </div>
-      </div>
+        </Stack>
+      </Box>
     </Modal>
   );
 };

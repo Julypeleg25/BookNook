@@ -1,4 +1,4 @@
-import { CircularProgress, Tooltip, IconButton } from "@mui/material";
+import { Box, CircularProgress, Tooltip, IconButton } from "@mui/material";
 import React from "react";
 import { BiBookmark } from "react-icons/bi";
 import { TbPencilPlus } from "react-icons/tb";
@@ -20,7 +20,7 @@ const BookInfoActions = ({ book }: BookInfoActionsProps) => {
   });
 
   return (
-    <div style={{ display: "flex", gap: "1.6rem" }}>
+    <Box sx={{ display: "flex", gap: "1.6rem" }}>
       <Tooltip title={wishlist.isAdded ? "remove from wishlist" : "add to wishlist"}>
         <IconButton
           color={wishlist.isAdded ? "primary" : "default"}
@@ -45,7 +45,7 @@ const BookInfoActions = ({ book }: BookInfoActionsProps) => {
           <TbPencilPlus size={"1.5rem"} />
         </IconButton>
       </Tooltip>
-    </div>
+    </Box>
   );
 };
 

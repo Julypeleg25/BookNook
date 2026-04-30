@@ -41,9 +41,6 @@ const resolveQueuedRequests = (error?: Error, token?: string) => {
   unauthorizedRequestsQueue = [];
 };
 
-/* =========================
-   REQUEST INTERCEPTOR
-========================= */
 axiosClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = tokenService.getAccess();
@@ -55,9 +52,6 @@ axiosClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-/* =========================
-   RESPONSE INTERCEPTOR
-========================= */
 axiosClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {

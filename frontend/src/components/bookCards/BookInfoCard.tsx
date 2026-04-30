@@ -7,7 +7,7 @@ import React from "react";
 import { getAvatarSrcUrl } from "@/utils/userUtils";
 import { getBookId } from "@/utils/bookUtils";
 
-const BOOK_COVER_FALLBACK_URL = "https://via.placeholder.com/150x200?text=No+Cover";
+export const BOOK_COVER_FALLBACK_URL = "https://via.placeholder.com/150x200?text=No+Cover";
 
 interface BookInfoCardProps {
   book: Book;
@@ -17,7 +17,13 @@ interface BookInfoCardProps {
   hideMenu?: boolean;
 }
 
-const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu }: BookInfoCardProps) => {
+const BookInfoCard = ({
+  book,
+  isOnlyInfo,
+  onSelect,
+  showWishlistRemove,
+  hideMenu,
+}: BookInfoCardProps) => {
   const displayAuthor = book.authors?.length > 0 ? book.authors.join(", ") : "Unknown Author";
   const navigate = useNavigate();
   const bookId = getBookId(book);
@@ -150,14 +156,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
         </Typography>
       </Stack>
 
-      <div
-        style={{
-          display: "grid",
-          justifyItems: "center",
-          gap: "0.5rem",
-          width: "100%",
-        }}
-      >
+      <Box sx={{ display: "grid", justifyItems: "center", gap: "0.5rem", width: "100%" }}>
         {isOnlyInfo && (
           <Button
             variant="contained"
@@ -168,7 +167,7 @@ const BookInfoCard = ({ book, isOnlyInfo, onSelect, showWishlistRemove, hideMenu
             Write Review
           </Button>
         )}
-      </div>
+      </Box>
     </Stack>
   );
 };

@@ -65,11 +65,11 @@ const BookPostHeader = ({ bookPost }: BookPostHeaderProps) => {
 
         <Typography variant="h5" component="div" sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
-            <FaCalendar style={{ fontSize: '1.2rem' }} />
+            <Box component={FaCalendar} sx={{ fontSize: "1.2rem" }} />
             {formatDate(bookPost.createdDate)}
           </Box>
           <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
-            <FaUser style={{ fontSize: '1.2rem' }} />
+            <Box component={FaUser} sx={{ fontSize: "1.2rem" }} />
             {bookPost.user.username}
           </Box>
         </Typography>

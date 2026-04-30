@@ -19,13 +19,11 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 const Router = () => {
   return (
     <Routes>
-      {/* Public routes */}
       <Route element={<PublicLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<SignUp />} />
       </Route>
 
-      {/* Protected app routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/posts">
@@ -49,10 +47,8 @@ const Router = () => {
         </Route>
       </Route>
 
-      {/* Root */}
       <Route path="/" element={<Navigate to="/posts" replace />} />
 
-      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

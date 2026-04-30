@@ -7,18 +7,14 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Rating,
-  Slider,
-  TextField,
-  Typography,
 } from "@mui/material";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   ISearchFiltersForm,
   SearchMode,
 } from "./models/SearchFiltersOptions";
-import { RATING_STEP } from "@shared/constants/validation";
 import { HiOutlineAdjustmentsVertical } from "react-icons/hi2";
+import SearchFilterFields from "./SearchFilterFields";
 
 interface SearchFiltersModalProps {
   open: boolean;
@@ -78,188 +74,7 @@ const SearchFiltersModal = ({ open, onClose, onApply, currentFilters, mode }: Se
 
         <DialogContent sx={{ pt: 3, pb: 2 }}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-
-            {mode === "books" && (
-              <>
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ mb: 1, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em" }}
-                  >
-                    Author
-                  </Typography>
-                  <Controller
-                    name="author"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        placeholder="e.g. J.K. Rowling"
-                        variant="outlined"
-                        fullWidth
-                        size="small"
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "0.5rem",
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ mb: 1, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em" }}
-                  >
-                    Minimum Rating
-                  </Typography>
-                  <Controller
-                    name="rating"
-                    control={control}
-                    render={({ field }) => (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        <Rating
-                          {...field}
-                          precision={RATING_STEP}
-                          value={Number(field.value) || 0}
-                          onChange={(_, val) => field.onChange(Number(val ?? 0))}
-                          size="large"
-                        />
-                        <Typography variant="body2" color="text.secondary">
-                          {field.value > 0 ? `${field.value}+` : "Any"}
-                        </Typography>
-                      </Box>
-                    )}
-                  />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ mb: 1, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em" }}
-                  >
-                    Min Number of Reviews
-                  </Typography>
-                  <Controller
-                    name="minReviews"
-                    control={control}
-                    render={({ field }) => (
-                      <Box sx={{ px: 1 }}>
-                        <Slider
-                          {...field}
-                          value={field.value || 0}
-                          onChange={(_, value) => field.onChange(value)}
-                          min={0}
-                          max={100}
-                          step={1}
-                          valueLabelDisplay="auto"
-                          marks={[
-                            { value: 0, label: "0" },
-                            { value: 25, label: "25" },
-                            { value: 50, label: "50" },
-                            { value: 75, label: "75" },
-                            { value: 100, label: "100+" },
-                          ]}
-                        />
-                      </Box>
-                    )}
-                  />
-                </Box>
-              </>
-            )}
-
-            {mode === "posts" && (
-              <>
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ mb: 1, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em" }}
-                  >
-                    Username
-                  </Typography>
-                  <Controller
-                    name="username"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        placeholder="Filter by username"
-                        variant="outlined"
-                        fullWidth
-                        size="small"
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "0.5rem",
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ mb: 1, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em" }}
-                  >
-                    Minimum Rating
-                  </Typography>
-                  <Controller
-                    name="rating"
-                    control={control}
-                    render={({ field }) => (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        <Rating
-                          {...field}
-                          precision={RATING_STEP}
-                          value={Number(field.value) || 0}
-                          onChange={(_, val) => field.onChange(Number(val ?? 0))}
-                          size="large"
-                        />
-                        <Typography variant="body2" color="text.secondary">
-                          {field.value > 0 ? `${field.value}+` : "Any"}
-                        </Typography>
-                      </Box>
-                    )}
-                  />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ mb: 1, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em" }}
-                  >
-                    Minimum Likes
-                  </Typography>
-                  <Controller
-                    name="likesAmount"
-                    control={control}
-                    render={({ field }) => (
-                      <Box sx={{ px: 1 }}>
-                        <Slider
-                          {...field}
-                          value={field.value || 0}
-                          onChange={(_, value) => field.onChange(value)}
-                          min={0}
-                          max={50}
-                          step={1}
-                          valueLabelDisplay="auto"
-                          marks={[
-                            { value: 0, label: "0" },
-                            { value: 10, label: "10" },
-                            { value: 25, label: "25" },
-                            { value: 50, label: "50+" },
-                          ]}
-                        />
-                      </Box>
-                    )}
-                  />
-                </Box>
-
-              </>
-            )}
+            <SearchFilterFields control={control} mode={mode} />
           </Box>
         </DialogContent>
 
