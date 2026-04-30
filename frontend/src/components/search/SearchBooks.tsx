@@ -91,7 +91,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
             {isLoading && !isFetchingNextPage && (
                 <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={2.5} mt={3} justifyItems="center">
                     {[...Array(8)].map((_, i) => (
-                        <BookCardSkeleton key={i} />
+                        <BookCardSkeleton key={i} showAction />
                     ))}
                 </Box>
             )}
@@ -110,7 +110,7 @@ const SearchBooks = ({ isSelectMode = false, onBookSelect }: SearchBooksProps) =
                         ))}
                     </Box>
 
-                    <div ref={observerTarget} style={{ height: '20px', margin: '20px 0' }} />
+                    <Box ref={observerTarget} sx={{ height: 20, my: 2.5 }} />
 
                     {isFetchingNextPage && (
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>

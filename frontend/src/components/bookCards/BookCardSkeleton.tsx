@@ -1,19 +1,38 @@
-import { Box, Skeleton } from "@mui/material";
+import { Skeleton, Stack } from "@mui/material";
 
-const BookCardSkeleton = () => {
-    return (
-        <Box>
-            <Skeleton
-                variant="rectangular"
-                width="15rem"
-                height="18rem"
-                sx={{ borderRadius: "1rem" }}
-            />
-            <Skeleton width="80%" sx={{ mt: 1 }} />
-            <Skeleton width="60%" />
-            <Skeleton width="40%" height={32} sx={{ mt: 1 }} />
-        </Box>
-    );
+interface BookCardSkeletonProps {
+  showAction?: boolean;
+}
+
+const BookCardSkeleton = ({
+  showAction = false,
+}: BookCardSkeletonProps) => {
+  return (
+    <Stack alignItems="center" spacing="0.6rem" width="15rem">
+      <Skeleton
+        variant="rectangular"
+        width="15rem"
+        height="18rem"
+        sx={{
+          borderRadius: "1rem",
+        }}
+      />
+      <Stack spacing="0.2rem" width="15rem">
+        <Skeleton variant="text" width="100%" height="1.3rem" />
+        <Skeleton variant="text" width="72%" height="1.3rem" />
+        <Skeleton variant="text" width="62%" height="1.2rem" />
+        <Skeleton variant="text" width="46%" height="1.2rem" />
+      </Stack>
+      {showAction && (
+        <Skeleton
+          variant="rounded"
+          width="15rem"
+          height="1.9rem"
+          sx={{ borderRadius: 1 }}
+        />
+      )}
+    </Stack>
+  );
 };
 
 export default BookCardSkeleton;

@@ -147,9 +147,9 @@ const BookPost = () => {
         <Box mt="2rem">
           <BookInfoSection book={bookPost.book} />
         </Box>
-        <div id="comments-section">
+        <Box id="comments-section">
           <CommentsSection ref={commentsRef} bookPost={bookPost} />
-        </div>
+        </Box>
       </Box>
     </Box>
   );

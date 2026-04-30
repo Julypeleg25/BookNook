@@ -1,16 +1,10 @@
 import {
-  Box,
   Button,
-  IconButton,
-  TextField,
   Typography,
   Stack,
-  InputAdornment,
   CircularProgress,
 } from "@mui/material";
-import loginIcon from "@assets/login-icon.png";
 import { Controller, useForm } from "react-hook-form";
-import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +12,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { RegisterSchema } from "@shared/schemas/auth.schema";
 import { ApiError } from "@/api/apiError";
 import ImageUpload from "@/components/common/ImageUpload";
+import AuthPageLayout from "@/components/auth/AuthPageLayout";
+import AuthTextField from "@/components/auth/AuthTextField";
+import PasswordVisibilityButton from "@/components/auth/PasswordVisibilityButton";
 
 interface RegisterFormValues {
   username: string;
@@ -73,152 +70,89 @@ const SignUp = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", alignItems: "center", px: "4rem" }}>
-      <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-        <Stack
-          component="form"
-          onSubmit={handleSubmit(onSubmit)}
-          spacing="1.5rem"
-          sx={{ width: "100%", maxWidth: "23rem" }}
-        >
-          <Typography variant="h4" fontWeight="bold">
-            Sign up now
-          </Typography>
-
-          <Stack spacing="1.5rem">
-            <Controller
-              name="avatar"
-              control={control}
-              render={({ field }) => (
-                <ImageUpload
-                  value={field.value ?? null}
-                  onChange={field.onChange}
-                  onRemove={() => field.onChange(null)}
-                  disabled={loading}
-                  compactActions
-                />
-              )}
-            />
-
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: "0.5rem", fontWeight: 600 }}>
-                Username
-              </Typography>
-              <Controller
-                name="username"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    placeholder="Choose a username"
-                    error={!!errors.username}
-                    helperText={errors.username?.message}
-                  />
-                )}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: "0.5rem", fontWeight: 600 }}>
-                Email
-              </Typography>
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    placeholder="you@example.com"
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                  />
-                )}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: "0.5rem", fontWeight: 600 }}>
-                Password
-              </Typography>
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
-                    error={!!errors.password}
-                    helperText={errors.password?.message}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                            {showPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            </Box>
-          </Stack>
-
-          {errors.root && (
-            <Typography color="error" variant="body2" textAlign="center">
-              {errors.root.message}
-            </Typography>
-          )}
-
-          <Button
-            sx={{
-              width: "18rem",
-              marginTop: "2rem",
-              alignSelf: "center",
-            }}
-            disabled={loading}
-            variant="outlined"
-            type="submit"
-          >
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Sign up"}
-          </Button>
-
-        </Stack>
-      </Box>
-
-      <Box
-        sx={{
-          flex: 1,
-          display: "grid",
-          justifyItems: "center",
-          alignSelf: "center",
-          gap: 2,
-        }}
+    <AuthPageLayout
+      footerLabel="Already have an account?"
+      footerLinkLabel="Log in"
+      onFooterClick={() => navigate("/login")}
+    >
+      <Stack
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        spacing="1.5rem"
+        sx={{ width: "100%", maxWidth: "23rem" }}
       >
-        <Box
-          component="img"
-          src={loginIcon}
-          sx={{ display: { xs: "none", md: "block" }, width: "100%", maxWidth: "30rem" }}
-        />
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="body2">Already have an account?</Typography>
-          <Box
-            onClick={() => navigate("/login")}
-            sx={{
-              color: "blue",
-              cursor: "pointer",
-              textDecoration: "underline",
-            }}
-          >
-            Log in
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+        <Typography variant="h4" fontWeight="bold">
+          Sign up now
+        </Typography>
+
+        <Stack spacing="1.5rem">
+          <Controller
+            name="avatar"
+            control={control}
+            render={({ field }) => (
+              <ImageUpload
+                value={field.value ?? null}
+                onChange={field.onChange}
+                onRemove={() => field.onChange(null)}
+                disabled={loading}
+                compactActions
+              />
+            )}
+          />
+
+          <AuthTextField
+            control={control}
+            error={errors.username?.message}
+            label="Username"
+            name="username"
+            placeholder="Choose a username"
+          />
+
+          <AuthTextField
+            control={control}
+            error={errors.email?.message}
+            label="Email"
+            name="email"
+            placeholder="you@example.com"
+          />
+
+          <AuthTextField
+            control={control}
+            error={errors.password?.message}
+            label="Password"
+            name="password"
+            placeholder="Create a password"
+            type={showPassword ? "text" : "password"}
+            endAdornment={
+              <PasswordVisibilityButton
+                showPassword={showPassword}
+                onToggle={() => setShowPassword((prev) => !prev)}
+              />
+            }
+          />
+        </Stack>
+
+        {errors.root && (
+          <Typography color="error" variant="body2" textAlign="center">
+            {errors.root.message}
+          </Typography>
+        )}
+
+        <Button
+          sx={{
+            width: "18rem",
+            marginTop: "2rem",
+            alignSelf: "center",
+          }}
+          disabled={loading}
+          variant="outlined"
+          type="submit"
+        >
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Sign up"}
+        </Button>
+
+      </Stack>
+    </AuthPageLayout>
   );
 };
 

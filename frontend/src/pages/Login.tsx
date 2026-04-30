@@ -1,17 +1,12 @@
 import {
-  Box,
   Button,
   Divider,
-  IconButton,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
-import loginIcon from "@assets/login-icon.png";
 import { GoogleLogin } from "@react-oauth/google";
 import type { GoogleCredentialResponse } from "@react-oauth/google";
-import { Controller, useForm } from "react-hook-form";
-import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
+import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
@@ -21,6 +16,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AuthService } from "@/api/services/authService";
 import useUserStore from "@/state/useUserStore";
 import { tokenService } from "@/api/services/tokenService";
+import AuthPageLayout from "@/components/auth/AuthPageLayout";
+import AuthTextField from "@/components/auth/AuthTextField";
+import PasswordVisibilityButton from "@/components/auth/PasswordVisibilityButton";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -77,136 +75,75 @@ const Login = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", alignItems: "center", px: "4rem" }}>
-      <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-        <Stack
-          component="form"
-          onSubmit={handleSubmit(onSubmit)}
-          spacing="1.5rem"
-          sx={{ width: "100%", maxWidth: "23rem" }}
-        >
-          <Typography variant="h4" fontWeight="bold">
-            Welcome back
-          </Typography>
+    <AuthPageLayout
+      footerLabel="Don't have an account?"
+      footerLinkLabel="Sign up"
+      onFooterClick={handleSignup}
+    >
+      <Stack
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        spacing="1.5rem"
+        sx={{ width: "100%", maxWidth: "23rem" }}
+      >
+        <Typography variant="h4" fontWeight="bold">
+          Welcome back
+        </Typography>
 
-          <Stack spacing="1.5rem">
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <GoogleLogin
-                shape="circle"
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleFailure}
-              />
-            </Box>
-
-            <Divider>or</Divider>
-
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: "0.5rem", fontWeight: 600 }}>
-                Username
-              </Typography>
-              <Controller
-                name="username"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    helperText={errors.username?.message}
-                    error={!!errors.username}
-                    placeholder="Enter your username"
-                  />
-                )}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: "0.5rem", fontWeight: 600 }}>
-                Password
-              </Typography>
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    type={showPassword ? "text" : "password"}
-                    helperText={errors.password?.message}
-                    error={!!errors.password}
-                    placeholder="Enter your password"
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <IconButton
-                            onClick={() => setShowPassword((prev) => !prev)}
-                            edge="end"
-                            sx={{
-                              outline: "none",
-                              border: "none",
-                              "&:focus": { outline: "none" },
-                            }}
-                          >
-                            {showPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
-                          </IconButton>
-                        ),
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Box>
+        <Stack spacing="1.5rem">
+          <Stack alignItems="center">
+            <GoogleLogin
+              shape="circle"
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleFailure}
+            />
           </Stack>
 
-          {(errors.root || loginError) && (
-            <Typography color="error" variant="body2" textAlign="center">
-              {errors.root?.message || loginError}
-            </Typography>
-          )}
+          <Divider>or</Divider>
 
-          <Button
-            sx={{
-              width: "18rem",
-              marginTop: "2rem",
-              alignSelf: "center",
-            }}
-            variant="outlined"
-            type="submit"
-          >
-            Log in
-          </Button>
+          <AuthTextField
+            control={control}
+            error={errors.username?.message}
+            label="Username"
+            name="username"
+            placeholder="Enter your username"
+          />
+
+          <AuthTextField
+            control={control}
+            error={errors.password?.message}
+            label="Password"
+            name="password"
+            placeholder="Enter your password"
+            type={showPassword ? "text" : "password"}
+            endAdornment={
+              <PasswordVisibilityButton
+                showPassword={showPassword}
+                onToggle={() => setShowPassword((prev) => !prev)}
+              />
+            }
+          />
         </Stack>
-      </Box>
 
-      <Box
-        sx={{
-          flex: 1,
-          display: "grid",
-          justifyItems: "center",
-          alignSelf: "center",
-          gap: 2,
-        }}
-      >
-        <Box
-          component="img"
-          src={loginIcon}
-          sx={{ display: { xs: "none", md: "block" }, width: "100%", maxWidth: "30rem" }}
-        />
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="body2">Don't have an account?</Typography>
+        {(errors.root || loginError) && (
+          <Typography color="error" variant="body2" textAlign="center">
+            {errors.root?.message || loginError}
+          </Typography>
+        )}
 
-          <Box
-            onClick={handleSignup}
-            sx={{
-              color: "blue",
-              cursor: "pointer",
-              textDecoration: "underline",
-            }}
-          >
-            Sign up
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+        <Button
+          sx={{
+            width: "18rem",
+            marginTop: "2rem",
+            alignSelf: "center",
+          }}
+          variant="outlined"
+          type="submit"
+        >
+          Log in
+        </Button>
+      </Stack>
+    </AuthPageLayout>
   );
 };
 

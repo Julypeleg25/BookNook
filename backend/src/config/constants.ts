@@ -18,4 +18,4 @@ export const SALT_ROUNDS = 10;
 
 export const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"] as const;
 
-export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;

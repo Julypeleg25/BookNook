@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@hooks/useAuth";
+import { Box } from "@mui/material";
 
 interface AuthInitializerProps {
   children: React.ReactNode;
@@ -21,7 +22,7 @@ export const AuthInitializer = ({ children }: AuthInitializerProps) => {
   }, [syncUser]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Box>Loading...</Box>;
   }
 
   return <>{children}</>;
