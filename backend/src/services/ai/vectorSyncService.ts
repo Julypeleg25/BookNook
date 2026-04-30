@@ -8,7 +8,7 @@ import { generateEmbedding } from "@services/ai/embeddingService";
 import { upsertChunk, deleteChunkBySourceId } from "@services/ai/vectorRepository";
 import { logger } from "@utils/logger";
 
-async function getUserTopGenres(userId: string): Promise<string[]> {
+const getUserTopGenres = async (userId: string): Promise<string[]> => {
     const reviews = await UserReviewModel.find({ user: userId });
     const genresCount: Record<string, number> = {};
 
@@ -26,7 +26,7 @@ async function getUserTopGenres(userId: string): Promise<string[]> {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
         .map(([genre]) => genre);
-}
+};
 
 export const syncBookToVector = async (book: IBook): Promise<void> => {
     try {

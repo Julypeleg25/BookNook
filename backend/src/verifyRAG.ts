@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-async function testSecurity() {
+const testSecurity = async () => {
   console.log("--- Testing Security Middleware ---");
 
   const testCases = [
@@ -43,9 +43,9 @@ async function testSecurity() {
 
     securityFilter(mockReq, mockRes, next);
   }
-}
+};
 
-async function testRagPipeline() {
+const testRagPipeline = async () => {
   console.log("\n--- Testing RAG Pipeline ---");
 
   try {
@@ -55,11 +55,11 @@ async function testRagPipeline() {
   } catch (err) {
     console.error("[FAIL] RAG Pipeline failed:", err);
   }
-}
+};
 
-async function runTests() {
+const runTests = async () => {
   await testSecurity();
   await testRagPipeline();
-}
+};
 
 runTests();

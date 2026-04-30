@@ -6,12 +6,15 @@ import {
 } from "./vectorRepository";
 import { generateEmbedding } from "./embeddingService";
 
-const DEFAULT_SEARCH_TOP_K = 8;
+const DEFAULT_SEARCH_TOP_K = 4;
 const PROFILE_METADATA_TYPE = "profile";
 const REVIEW_CHUNK_TYPE: ChunkType = "review";
 const BOOK_CHUNK_TYPE: ChunkType = "book";
 const USER_ID_METADATA_KEY = "userId";
 const EXTERNAL_ID_METADATA_KEY = "externalId";
+const MIN_SEARCH_SCORE = 0.35;
+const CONTROL_CHARACTER_PATTERN = /[\u0000-\u001F\u007F]/g;
+const WHITESPACE_PATTERN = /\s+/g;
 
 export interface SearchOptions {
     topK?: number;
@@ -22,7 +25,6 @@ export interface SearchOptions {
 export interface SearchResponse {
     candidateChunks: SearchResult[];
     userTasteChunks: SearchResult[];
-    excludedExternalIds: string[];
 }
 
 const getStringMetadataValue = (
@@ -32,6 +34,12 @@ const getStringMetadataValue = (
     const value = metadata?.[key];
     return typeof value === "string" && value.trim() ? value : null;
 };
+
+const normalizeQuery = (query: string): string =>
+    query
+        .replace(CONTROL_CHARACTER_PATTERN, " ")
+        .replace(WHITESPACE_PATTERN, " ")
+        .trim();
 
 export const performSearch = async (
     query: string,
@@ -57,7 +65,7 @@ export const performSearch = async (
             });
     }
 
-    const queryEmbedding = await generateEmbedding(query);
+    const queryEmbedding = await generateEmbedding(normalizeQuery(query));
 
     const searchResults = await similaritySearch(queryEmbedding, {
         topK,
@@ -66,8 +74,11 @@ export const performSearch = async (
     });
 
     return {
-        candidateChunks: searchResults.filter((result) => result.type === BOOK_CHUNK_TYPE || result.type === REVIEW_CHUNK_TYPE),
+        candidateChunks: searchResults.filter(
+            (result) =>
+                result.score >= MIN_SEARCH_SCORE &&
+                (result.type === BOOK_CHUNK_TYPE || result.type === REVIEW_CHUNK_TYPE),
+        ),
         userTasteChunks,
-        excludedExternalIds: Array.from(excludedExternalIds),
     };
 };

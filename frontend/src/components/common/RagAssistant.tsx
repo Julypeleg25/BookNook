@@ -15,11 +15,15 @@ export const RagAssistant: React.FC = () => {
   const canSubmit = Boolean(trimmedQuery) && !loading && !isTooLong;
   const currentItem = history[0];
 
+  const submitQuery = (nextQuery: string) => {
+    void fetchAiResponse(nextQuery);
+    setQuery("");
+  };
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!canSubmit) return;
-    void fetchAiResponse(trimmedQuery);
-    setQuery("");
+    submitQuery(trimmedQuery);
   };
 
   const handleQueryKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -28,8 +32,7 @@ export const RagAssistant: React.FC = () => {
     event.preventDefault();
     if (!canSubmit) return;
 
-    void fetchAiResponse(trimmedQuery);
-    setQuery("");
+    submitQuery(trimmedQuery);
   };
 
   return (
@@ -63,7 +66,156 @@ export const RagAssistant: React.FC = () => {
             setQuery(currentItem.query);
             void fetchAiResponse(currentItem.query);
           }}
-        />
+        >
+          <Stack spacing={3}>
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1.5} alignItems="center">
+                <Box
+                  sx={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    display: "grid",
+                    placeItems: "center",
+                    bgcolor: "rgba(91, 111, 106, 0.12)",
+                    color: "primary.main",
+                  }}
+                >
+                  <AiIcon />
+                </Box>
+                <Box>
+                  <Typography variant="h4" fontWeight={800}>
+                    AI Assistant
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Ask for book recommendations and start reading!
+                  </Typography>
+                </Box>
+              </Stack>
+            </Stack>
+
+            <Divider />
+
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={1.5}>
+                <TextField
+                  fullWidth
+                  multiline
+                  minRows={5}
+                  maxRows={8}
+                  label="Ask a book question"
+                  placeholder="Recommend a character-driven fantasy book"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  onKeyDown={handleQueryKeyDown}
+                  disabled={loading}
+                  error={isTooLong}
+                  helperText={`${query.length}/${QUERY_MAX_LENGTH}${isTooLong ? " - shorten your question" : ""}`}
+                />
+
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    disabled={!canSubmit}
+                    startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+                    fullWidth
+                  >
+                    {loading ? "Thinking..." : "Ask"}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={clearHistory}
+                    disabled={history.length === 0 || loading}
+                    startIcon={<ClearIcon />}
+                    fullWidth
+                  >
+                    Clear
+                  </Button>
+                </Stack>
+              </Stack>
+            </form>
+
+            <Box>
+              <Typography fontWeight={800} sx={{ mb: 1 }}>
+                Try asking
+              </Typography>
+              <Stack spacing={1}>
+                {EXAMPLE_PROMPTS.map((prompt) => (
+                  <Button
+                    key={prompt}
+                    variant="outlined"
+                    onClick={() => setQuery(prompt)}
+                    disabled={loading}
+                    sx={{ justifyContent: "flex-start", textAlign: "left" }}
+                  >
+                    {prompt}
+                  </Button>
+                ))}
+              </Stack>
+            </Box>
+          </Stack>
+        </Paper>
+
+        <Stack spacing={2.5}>
+          {!currentItem ? (
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 3, md: 4 },
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 3,
+                bgcolor: "background.paper",
+                minHeight: "24rem",
+                display: "grid",
+                placeItems: "center",
+                textAlign: "center",
+              }}
+            >
+              <Stack spacing={1.5} alignItems="center" maxWidth="32rem">
+                <FiBookOpen size={34} color="#5B6F6A" />
+                <Typography variant="h5" fontWeight={800}>
+                  Your reading assistant is ready
+                </Typography>
+                <Typography color="text.secondary">
+                  Ask for recommendations, compare genres, or explore what BookNook readers are saying.
+                </Typography>
+              </Stack>
+            </Paper>
+          ) : (
+            <ConversationCard
+              item={currentItem}
+              loading={loading}
+              onRetry={() => {
+                if (loading) return;
+                submitQuery(currentItem.query);
+              }}
+            />
+          )}
+
+          {loading && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 3,
+                bgcolor: "background.paper",
+              }}
+            >
+              <Stack direction="row" spacing={1.5} alignItems="center">
+                <CircularProgress size={22} />
+                <Typography color="text.secondary">
+                  Thinking...
+                </Typography>
+              </Stack>
+            </Paper>
+          )}
+        </Stack>
       </Box>
     </Box>
   );
