@@ -48,9 +48,7 @@ const RagAssistantConversation = ({
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
           <CircularProgress size={22} />
-          <Typography color="text.secondary">
-            Thinking...
-          </Typography>
+          <Typography color="text.secondary">Thinking...</Typography>
         </Stack>
       </Paper>
     )}
@@ -78,7 +76,8 @@ const EmptyConversation = () => (
         Your reading assistant is ready
       </Typography>
       <Typography color="text.secondary">
-        Ask for recommendations based on genres, themes, keywords or general interests.
+        Ask for recommendations based on genres, themes, keywords or general
+        interests.
       </Typography>
     </Stack>
   </Paper>
@@ -90,7 +89,11 @@ interface ConversationCardProps {
   onRetry: () => void;
 }
 
-const ConversationCard = ({ item, loading, onRetry }: ConversationCardProps) => (
+const ConversationCard = ({
+  item,
+  loading,
+  onRetry,
+}: ConversationCardProps) => (
   <Paper
     elevation={0}
     sx={{
@@ -102,7 +105,12 @@ const ConversationCard = ({ item, loading, onRetry }: ConversationCardProps) => 
     }}
   >
     <Stack spacing={2.5} sx={{ p: { xs: 2.5, md: 3 } }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="flex-start"
+        gap={2}
+      >
         <Box>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
             <Chip size="small" label="BookNook AI" color="primary" />
@@ -112,23 +120,30 @@ const ConversationCard = ({ item, loading, onRetry }: ConversationCardProps) => 
           </Typography>
         </Box>
         {item.error && (
-          <IconButton onClick={onRetry} aria-label="Retry question" size="small" disabled={loading}>
+          <IconButton
+            onClick={onRetry}
+            aria-label="Retry question"
+            size="small"
+            disabled={loading}
+          >
             <FiRefreshCw size={18} />
           </IconButton>
         )}
       </Stack>
 
       {item.error ? (
-        <Alert severity="error" action={<Button onClick={onRetry} disabled={loading}>Retry</Button>}>
+        <Alert
+          severity="error"
+          action={
+            <Button onClick={onRetry} disabled={loading}>
+              Retry
+            </Button>
+          }
+        >
           {item.error}
         </Alert>
       ) : item.response ? (
         <>
-          {item.response.sourceCount === 0 && (
-            <Alert severity="info">
-              Here is a broad recommendation to get you started.
-            </Alert>
-          )}
           <Box
             sx={{
               p: { xs: 2, md: 2.5 },
