@@ -4,7 +4,6 @@ import { SearchResult } from "@services/ai/vectorRepository";
 type SearchResponse = {
     candidateChunks: SearchResult[];
     userTasteChunks: SearchResult[];
-    excludedExternalIds: string[];
 };
 
 const mockPerformSearch = jest.fn<() => Promise<SearchResponse>>();
@@ -81,7 +80,6 @@ describe("RAG orchestrator personalization", () => {
                     },
                 }),
             ],
-            excludedExternalIds: ["reviewed-ext"],
         });
 
         await processQuery("What should I read next?", { userId: "user-123" });
@@ -94,12 +92,10 @@ describe("RAG orchestrator personalization", () => {
         expect(mockGenerateAnswer).toHaveBeenCalledWith(
             "What should I read next?",
             expect.stringContaining("CURRENT_USER_TASTE_SIGNALS"),
-            { personalized: true },
         );
         expect(mockGenerateAnswer).toHaveBeenCalledWith(
             expect.any(String),
             expect.stringContaining("I loved the eerie setting and clever reveal"),
-            expect.any(Object),
         );
     });
 
@@ -107,7 +103,6 @@ describe("RAG orchestrator personalization", () => {
         mockPerformSearch.mockResolvedValue({
             candidateChunks: [createSearchResult({})],
             userTasteChunks: [],
-            excludedExternalIds: [],
         });
 
         await processQuery("Recommend a mystery novel", { userId: "user-123" });
@@ -120,7 +115,6 @@ describe("RAG orchestrator personalization", () => {
         expect(mockGenerateAnswer).toHaveBeenCalledWith(
             "Recommend a mystery novel",
             expect.not.stringContaining("CURRENT_USER_TASTE_SIGNALS"),
-            { personalized: false },
         );
     });
 });
